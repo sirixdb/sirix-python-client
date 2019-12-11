@@ -9,6 +9,7 @@ The api docs can be built with the following:
 cd docs
 make html
 ```
+> NOTE: currently many methods are not documented, due to the dynamic assignment of functions. The library is being restructured.
 
 If there are any changes to docstrings, run (from the ./docs directory):
 ```bash
