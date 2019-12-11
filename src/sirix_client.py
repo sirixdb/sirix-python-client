@@ -17,22 +17,22 @@ class SirixClient:
         asynchronous: bool = False,
     ):
         """
-        :param: `username` the username registered with keycloak for this application
-        :param: `password` the password registered with keycloak for this application
-        :param: `sirix_uri` the uri of the sirix instance
-        :param: `client_id` optional parameter, for authenticating directly with
-                keycloak (also requires the `client_secret` and optional `keycloak_uri` params).
+        :param username: the username registered with keycloak for this application
+        :param password: the password registered with keycloak for this application
+        :param sirix_uri: the uri of the sirix instance
+        :param client_id: optional parameter, for authenticating directly with
+                keycloak (also requires the ``client_secret`` and optional ``keycloak_uri`` params).
                 This option is not recommended.
-        :param: `client_secret` optional parameter, for authenticating directly with
-                keycloak (also requires the `client_id` and optional `keycloak_uri` params).
+        :param client_secret: optional parameter, for authenticating directly with
+                keycloak (also requires the ``client_id`` and optional ``keycloak_uri`` params).
                 This option is not recommended.
-        :param: `keycloak_uri` optional parameter, for authenticating directly with
-                keycloak (also requires the `client_id` and optional `client_secret` params).
+        :param keycloak_uri: optional parameter, for authenticating directly with
+                keycloak (also requires the ``client_id`` and optional ``client_secret`` params).
                 This option is not recommended.
-        :param: `allow_self_signed` whether to accept self signed certificates. Not recommended.
-        :param: `asynchronous` whether the methods on this class should be asynchronous.
+        :param allow_self_signed: whether to accept self signed certificates. Not recommended.
+        :param asynchronous: whether the methods on this class should be asynchronous.
                 The interface this class provides is the same regardless of the value of this param,
-                however, all methods on this class must be `await`ed if it is true.
+                however, all methods on this class must be ``await``\ ed if it is true.
         """
         self._auth_data = AuthData(
             username, password, keycloak_uri, client_id, client_secret

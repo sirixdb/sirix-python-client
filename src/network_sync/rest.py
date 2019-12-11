@@ -4,19 +4,20 @@ import json
 
 from sirix_client import SirixClient
 
+
 def update(
     data, resource: str, database: str = None, data_type: str = None, self: SirixClient = None
 ):
     """
-    :param: `data` the updated data, can be of type `str`, `dict`, or
-            `xml.etree.ElementTree.Element` 
-    :param: `resource` the name of the resource to update
-    :param: `database` the name of the database to update.
+    :param data: the updated data, can be of type ``str``, ``dict``, or
+            ``xml.etree.ElementTree.Element``
+    :param resource: the name of the resource to update
+    :param database: the name of the database to update.
             On a database instance, this param is provided internally
-    :param: `data_type` the type of database being accessed
+    :param data_type: the type of database being accessed
             On a database instance, this param is provided internally
-    :param: `self` THIS IS PROVIDED UNDER THE HOOD. PRETEND THIS PARAM DOES
-            NOT EXIST.
+    :param self: THIS IS PROVIDED UNDER THE HOOD. USE ONLY IF YOU ARE DEVELOPING
+            THIS LIBRARY
     """
     
     if data_type:

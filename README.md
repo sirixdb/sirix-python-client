@@ -2,7 +2,20 @@
 
 ### The home of the SirixDB python client
 
-This is currently a work in progress. Some example code:
+This is currently a work in progress.
+
+The api docs can be built with the following:
+```bash
+cd docs
+make html
+```
+
+If there are any changes to docstrings, run (from the ./docs directory):
+```bash
+sphinx-apidoc -o . ../../src
+```
+
+Some example code:
 ```python
 from sirix_client import SirixClient, Database
 from xml.etree import ElementTree as ET

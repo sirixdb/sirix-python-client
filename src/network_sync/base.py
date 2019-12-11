@@ -59,9 +59,9 @@ def get_sirix_info(
     ret: bool = True, self: SirixClient = None
 ) -> Union[None, List[Dict[str, str]]]:
     """
-    :param: `self` THIS IS PROVIDED UNDER THE HOOD. PRETEND THIS PARAM DOES
-            NOT EXIST.
-    :param: `ret` whether or not to return the info from the function
+    :param ret: whether or not to return the info from the function
+    :param self: THIS IS PROVIDED UNDER THE HOOD. USE ONLY IF YOU ARE DEVELOPING
+            THIS LIBRARY
     """
     response = self._network.get(
         f"{self._instance_data.sirix_uri}/?withResources=true",
