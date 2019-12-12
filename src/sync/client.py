@@ -3,8 +3,7 @@ import xml.etree.ElementTree as ET
 
 from typing import Tuple
 
-from .. import shared.info.AuthData as AuthData
-from .. import shared.info.InstanceData as InstanceData
+from .info import AuthData, InstanceData
 
 
 class SirixClient:
