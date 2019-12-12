@@ -1,9 +1,10 @@
-import json
-import xml.etree.ElementTree as ET
+from typing import Tuple, Dict, Union
 
-from typing import Tuple
+from requests import Session
 
 from .info import AuthData, InstanceData
+from .auth import Auth
+from .database import Database
 
 
 class SirixClient:
@@ -31,71 +32,34 @@ class SirixClient:
                 keycloak (also requires the ``client_id`` and optional ``client_secret`` params).
                 This option is not recommended.
         :param allow_self_signed: whether to accept self signed certificates. Not recommended.
-        :param asynchronous: whether the methods on this class should be asynchronous.
-                The interface this class provides is the same regardless of the value of this param,
-                however, all methods on this class must be ``await``\ ed if it is true.
         """
         self._auth_data = AuthData(
             username, password, keycloak_uri, client_id, client_secret
         )
         self._instance_data = InstanceData(sirix_uri)
+        self._session = Session()
+        if allow_self_signed:
+            self._session.verify = False
+        self._auth = Auth(self._auth_data, self._instance_data, self._session)
         # initialize:
-        self._authenticate(self)
+        self._auth.authenticate()
         self.get_info(False)
 
     def __getitem__(self, key: Tuple[str]):
         return Database(*key, parent=self)
 
-    def update(self, data: str, resource: str, database: str = None, data_type: str = None):
+    def get_info(self, ret: bool = True) -> Union[None, List[Dict[str, str]]]:
         """
-        :param data: the updated data, can be of type ``str``, ``dict``, or
-                ``xml.etree.ElementTree.Element``
-        :param resource: the name of the resource to update
-        :param database: the name of the database to update.
-                On a database instance, this param is provided internally
-        :param data_type: the type of database being accessed
-                On a database instance, this param is provided internally
+        :param ret: whether or not to return the info from the function
         """
-
-        if data_type:
-            pass
-        elif self.database_type == "json":
-            data_type = "application/json"
-        else:
-            data_type = ("application/xml",)
-        return self._network.put(
-            f"{self._instance_data.sirix_uri}/{database if database else self.database_name}/{resource}",
-            data=data
-            if type(data) is str
-            else json.dumps(data)
-            if self.database_type == "json"
-            else ET.tostring(data),
+        response = self._session.get(
+            f"{self._instance_data.sirix_uri}/?withResources=true",
             headers={
                 "Authorization": f"Bearer {self._auth_data.access_token}",
-                "Content-Type": data_type,
-                "Accept": data_type,
+                "Accept": "application/json",
             },
         )
-
-
-class Database:
-    def __init__(self, database_name: str, database_type: str, parent: SirixClient):
-        self._client = parent
-        self._network = parent._network
-        self._instance_data = parent._instance_data
-        self._auth_data = parent._auth_data
-
-        self.database_name = database_name
-        data_list = [
-            db
-            for db in self._instance_data.database_info
-            if db["name"] == database_name
-        ]
-        if len(data_list) != 0:
-            self.database_type = data_list[0]["type"]
-        elif database_type:
-            self.database_type = database_type.lower()
-        else:
-            raise Exception(
-                "No database type specified, and database does not already exist"
-            )
+        if response.status_code == 200:
+            self._instance_data.database_info += response.json()["databases"]
+        if ret:
+            return self._instance_data.database_info
