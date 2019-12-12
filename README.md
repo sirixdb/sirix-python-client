@@ -4,6 +4,9 @@
 
 This is currently a work in progress.
 
+The python client will support both sync and async programs,
+by way of two distinct packages
+
 The api docs can be built with the following:
 ```bash
 cd docs
