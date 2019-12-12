@@ -17,7 +17,7 @@ class Database:
                 if it does not yet exist
         :param database_type: the type of the database being accessed, or to
                 be created if the database does not yet exist
-        :param parent: the ``Sirix`` instance which created this instance
+        :param parent: the ``SirixClient`` instance which created this instance
         """
         self._session: Session = parent._session
         self._instance_data: InstanceData = parent._instance_data

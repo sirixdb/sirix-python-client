@@ -1,13 +1,18 @@
 from typing import Tuple, Dict, List, Union
+import asyncio
 
 from requests import Session
+from aiohttp import ClientSession
 
 from .info import AuthData, InstanceData
 from .auth import Auth
 from .database import Database
 
+from .sync.rest import get_info
+from .asynchronous.rest import async_get_info
 
-class Sirix:
+
+class SirixClient:
     def __init__(
         self,
         username: str,
@@ -16,6 +21,7 @@ class Sirix:
         client_id: str = None,
         client_secret: str = None,
         keycloak_uri: str = "http://localhost:8080",
+        asynchronous: bool = False,
         allow_self_signed: bool = False,
     ):
         """
@@ -33,17 +39,34 @@ class Sirix:
                 This option is not recommended.
         :param allow_self_signed: whether to accept self signed certificates. Not recommended.
         """
+        self._asynchronous = asynchronous
         self._auth_data = AuthData(
             username, password, keycloak_uri, client_id, client_secret
         )
         self._instance_data = InstanceData(sirix_uri)
-        self._session = Session()
-        if allow_self_signed:
-            self._session.verify = False
-        self._auth = Auth(self._auth_data, self._instance_data, self._session)
-        # initialize:
+        if asynchronous:
+            self._session = ClientSession()
+            # we can't pass a global allow_self_signed setting to the async
+            # ClientSession, so we have to store it and handle it manually
+            self._allow_self_signed = allow_self_signed
+        else:
+            self._session = Session()
+            if allow_self_signed:
+                self._session.verify = False
+        self._auth = Auth(self._auth_data, self._instance_data, self._session, self._asynchronous, allow_self_signed)
+
+    def _init(self):
+        """
+        Initialize the instance. We may need to make async function calls,
+        so we can't put this code in ``__init__`` 
+        """
+        
         self._auth.authenticate()
         self.get_info(False)
+
+    async def _async_init(self):
+        await self._auth.authenticate()
+        await self.get_info()
 
     def __getitem__(self, key: Tuple[str]):
         """
@@ -76,14 +99,10 @@ class Sirix:
         """
         :param ret: whether or not to return the info from the function
         """
-        response = self._session.get(
-            f"{self._instance_data.sirix_uri}/?withResources=true",
-            headers={
-                "Authorization": f"Bearer {self._auth_data.access_token}",
-                "Accept": "application/json",
-            },
-        )
-        if response.status_code == 200:
-            self._instance_data.database_info += response.json()["databases"]
-        if ret:
-            return self._instance_data.database_info
+        if self._asynchronous:
+            loop = asyncio.get_running_loop()
+            fut = loop.create_future()
+            loop.create_task(async_get_info(self, ret, fut))
+            return fut
+        else:
+            return get_info(self, ret)

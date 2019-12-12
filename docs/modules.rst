@@ -1,7 +1,7 @@
-PySirix
+pysirix
 =======
 
 .. toctree::
    :maxdepth: 4
 
-   sync
+   pysirix
