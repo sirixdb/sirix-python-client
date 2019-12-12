@@ -1,13 +1,24 @@
 import json
 import xml.etree.ElementTree as ET
 
+from typing import Union, Dict
+
 from requests import Session  # for type support
 
 from .info import AuthData, InstanceData  # for type support
 
 
 class Database:
-    def __init__(self, database_name: str, database_type: str, parent: SirixClient):
+    def __init__(self, database_name: str, database_type: str, parent):
+        """database access class
+        this class allows for manipulation of a database 
+
+        :param database_name: the name of the database to access, or create
+                if it does not yet exist
+        :param database_type: the type of the database being accessed, or to
+                be created if the database does not yet exist
+        :param parent: the ``Sirix`` instance which created this instance
+        """
         self._session: Session = parent._session
         self._instance_data: InstanceData = parent._instance_data
         self._auth_data: AuthData = parent._auth_data
@@ -27,16 +38,15 @@ class Database:
                 "No database type specified, and database does not already exist"
             )
 
-    def update(self, resource: str, data: Union[str, ET.Element, Dict], data_type: str):
+    def update(self, resource: str, data: Union[str, ET.Element, Dict]):
         """Update a resource
+
         :param resource: the name of the resource to update
         :param data: the updated data, can be of type ``str``, ``dict``, or
                 ``xml.etree.ElementTree.Element``
         :param data_type: the type of database being accessed
         """
-        if data_type:
-            pass
-        elif self.database_type == "json":
+        if self.database_type == "json":
             data_type = "application/json"
         else:
             data_type = ("application/xml",)

@@ -11,9 +11,7 @@ Indices and tables
 
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 3
    :caption: Contents:
-
-   sirix_client
 
    modules

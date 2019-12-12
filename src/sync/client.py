@@ -1,4 +1,4 @@
-from typing import Tuple, Dict, Union
+from typing import Tuple, Dict, List, Union
 
 from requests import Session
 
@@ -7,7 +7,7 @@ from .auth import Auth
 from .database import Database
 
 
-class SirixClient:
+class Sirix:
     def __init__(
         self,
         username: str,
@@ -46,7 +46,31 @@ class SirixClient:
         self.get_info(False)
 
     def __getitem__(self, key: Tuple[str]):
+        """
+        Returns a database instance. See :meth:`get_database` for further information
+        """
         return Database(*key, parent=self)
+
+    def get_database(self, database_name: str, database_type: str):
+        """Returns a database instance
+
+        If a database with the given name and type does not exist,
+        it is created.
+        
+        If ``database_type`` conflicts with the actual database type,
+        the value of ``database_type`` is ignored.
+
+        if ``database_type`` is not provided, and the database does not yet exist,
+        an error is raised.
+
+        :param database_name: the name of the database to access
+        :param database_type: the type of the database to access
+
+        Note that you can also use the following syntax:
+        >>> sirix = Sirix(params)
+        >>> sirix[(database_name, database_type)]
+        """
+        return Database(database_name, database_type, parent=self)
 
     def get_info(self, ret: bool = True) -> Union[None, List[Dict[str, str]]]:
         """

@@ -38,8 +38,8 @@ class Auth:
                     "grant_type": "password",
                 },
             )
-        request = self._network.prepare_request(request)
-        response = self._network.send(request)
+        request = self._session.prepare_request(request)
+        response = self._session.send(request)
         try:
             json_res = response.json()
             self._auth_data.access_token = json_res["access_token"]
