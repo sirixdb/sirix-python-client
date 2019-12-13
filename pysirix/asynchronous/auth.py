@@ -14,15 +14,9 @@ async def async_authenticate(self, fut):
         and self._auth_data.client_id is not None
         and self._auth_data.keycloak_uri is not None
     ):
-        response = await keycloak_auth_call(self)
+        await keycloak_auth_call(self)
     else:
-        response = await sirix_auth_call(self)
-    try:
-        json_res = await response.json()
-        self._auth_data.access_token = json_res["access_token"]
-        self._auth_data.refresh_token = json_res["refresh_token"]
-    except Exception as e:
-        raise Exception(e)
+        await sirix_auth_call(self)
     fut.set_result(None)
 
 
@@ -38,7 +32,12 @@ async def keycloak_auth_call(self):
         },
         ssl=False if self._allow_self_signed else True,
     ) as response:
-        return response
+        try:
+            json_res = await response.json()
+            self._auth_data.access_token = json_res["access_token"]
+            self._auth_data.refresh_token = json_res["refresh_token"]
+        except Exception as e:
+            raise Exception(e)
 
 
 async def sirix_auth_call(self):
@@ -51,4 +50,9 @@ async def sirix_auth_call(self):
         },
         ssl=False if self._allow_self_signed else True,
     ) as response:
-        return response
+        try:
+            json_res = await response.json()
+            self._auth_data.access_token = json_res["access_token"]
+            self._auth_data.refresh_token = json_res["refresh_token"]
+        except Exception as e:
+            raise Exception(e)
