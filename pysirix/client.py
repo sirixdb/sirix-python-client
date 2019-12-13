@@ -89,9 +89,9 @@ class SirixClient:
         :param database_name: the name of the database to access
         :param database_type: the type of the database to access
 
-        Note that you can also use the following syntax:
-        >>> sirix = Sirix(params)
-        >>> sirix[(database_name, database_type)]
+        Note that you get the same behavior with index access, as follows:
+            >>> sirix = Sirix(params)
+            >>> sirix[(database_name, database_type)]
         """
         return Database(database_name, database_type, parent=self)
 

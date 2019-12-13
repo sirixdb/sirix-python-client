@@ -1,6 +1,15 @@
 pysirix package
 ===============
 
+Module contents
+---------------
+
+.. automodule:: pysirix
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+
 Submodules
 ----------
 
@@ -36,11 +45,3 @@ pysirix.info module
    :undoc-members:
    :show-inheritance:
 
-
-Module contents
----------------
-
-.. automodule:: pysirix
-   :members:
-   :undoc-members:
-   :show-inheritance:

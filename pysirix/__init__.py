@@ -10,7 +10,22 @@ def Sirix(
     client_secret: str = None,
     keycloak_uri: str = "http://localhost:8080",
     allow_self_signed: bool = False,
-):
+) -> SirixClient:
+    """
+    :param username: the username registered with keycloak for this application
+    :param password: the password registered with keycloak for this application
+    :param sirix_uri: the uri of the sirix instance
+    :param client_id: optional parameter, for authenticating directly with
+            keycloak (also requires the ``client_secret`` and optional ``keycloak_uri`` params).
+            This option is not recommended.
+    :param client_secret: optional parameter, for authenticating directly with
+            keycloak (also requires the ``client_id`` and optional ``keycloak_uri`` params).
+            This option is not recommended.
+    :param keycloak_uri: optional parameter, for authenticating directly with
+            keycloak (also requires the ``client_id`` and optional ``client_secret`` params).
+            This option is not recommended.
+    :param allow_self_signed: whether to accept self signed certificates. Not recommended.
+    """
     sirix = SirixClient(
         username=username,
         password=password,
@@ -33,7 +48,22 @@ async def SirixAsync(
     client_secret: str = None,
     keycloak_uri: str = "http://localhost:8080",
     allow_self_signed: bool = False,
-):
+) -> SirixClient:
+    """
+    :param username: the username registered with keycloak for this application
+    :param password: the password registered with keycloak for this application
+    :param sirix_uri: the uri of the sirix instance
+    :param client_id: optional parameter, for authenticating directly with
+            keycloak (also requires the ``client_secret`` and optional ``keycloak_uri`` params).
+            This option is not recommended.
+    :param client_secret: optional parameter, for authenticating directly with
+            keycloak (also requires the ``client_id`` and optional ``keycloak_uri`` params).
+            This option is not recommended.
+    :param keycloak_uri: optional parameter, for authenticating directly with
+            keycloak (also requires the ``client_id`` and optional ``client_secret`` params).
+            This option is not recommended.
+    :param allow_self_signed: whether to accept self signed certificates. Not recommended.
+    """
     sirix = SirixClient(
         username=username,
         password=password,

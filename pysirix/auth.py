@@ -28,7 +28,7 @@ class Auth:
         if self._asynchronous:
             loop = asyncio.get_running_loop()
             fut = loop.create_future()
-            loop.create_task(async_authenticate(self, self._allow_self_signed, fut))
+            loop.create_task(async_authenticate(self, fut))
             return fut
         else:
             authenticate(self)
