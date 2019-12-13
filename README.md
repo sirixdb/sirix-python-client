@@ -44,7 +44,7 @@ Or with Async Support (in progress):
 ```python
 import asyncio
 
-from PySirix import SirixAsync, SirixClient, Database
+from pysirix import SirixAsync, SirixClient, Database
 
 async def run():
     client: SirixClient = await SirixAsync(
