@@ -22,11 +22,11 @@ from PySirix import Sirix, SirixClient, Database
 client: SirixClient = Sirix(
     "admin",
     "admin",
-    "https://192.168.99.101:9443",
+    "https://localhost:9443",
     # the below are optional
     client_id="sirix",
     client_secret="<secret>",
-    keycloak_uri="http://192.168.99.101:8080",
+    keycloak_uri="http://localhost:8080",
     allow_self_signed=True,
 )
 
@@ -50,11 +50,11 @@ async def run():
     client: SirixClient = await SirixAsync(
         "admin",
         "admin",
-        "https://192.168.99.101:9443",
+        "https://localhost:9443",
         # the below are optional
         client_id="sirix",
-        client_secret="661f7ebf-174f-4157-aa42-47920a0ec76a",
-        keycloak_uri="http://192.168.99.101:8080",
+        client_secret="<secret>",
+        keycloak_uri="http://localhost:8080",
         allow_self_signed=True,
     )
     print(client._instance_data.database_info)
