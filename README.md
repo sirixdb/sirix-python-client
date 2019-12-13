@@ -46,7 +46,7 @@ import asyncio
 
 from PySirix import SirixAsync, SirixClient, Database
 
-async def client():
+async def run():
     client: SirixClient = await SirixAsync(
         "admin",
         "admin",
@@ -60,5 +60,5 @@ async def client():
     print(client._instance_data.database_info)
 
 loop = asyncio.get_event_loop()
-loop.run_until_complete(client())
+loop.run_until_complete(run())
 ```
