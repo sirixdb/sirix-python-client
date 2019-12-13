@@ -16,7 +16,7 @@ async def async_authenticate(self, fut):
     ):
         response = await keycloak_auth_call(self)
     else:
-        await sirix_auth_call(self)
+        response = await sirix_auth_call(self)
     try:
         json_res = await response.json()
         self._auth_data.access_token = json_res["access_token"]
