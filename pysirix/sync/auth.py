@@ -10,28 +10,10 @@ def authenticate(self) -> None:
         and self._auth_data.client_id is not None
         and self._auth_data.keycloak_uri is not None
     ):
-        request = Request(
-            "POST",
-            f"{self._auth_data.keycloak_uri}/auth/realms/sirixdb/protocol/openid-connect/token",
-            data={
-                "username": self._auth_data.username,
-                "password": self._auth_data.password,
-                "grant_type": "password",
-                "client_id": self._auth_data.client_id,
-                "client_secret": self._auth_data.client_secret,
-            },
-        )
+        request = keycloak_auth_prepare(self._auth_data)
     # let's authenticate the regular way
     else:
-        request = Request(
-            "POST",
-            f"{self._instance_data.sirix_uri}/token",
-            data={
-                "username": self._auth_data.username,
-                "password": self._auth_data.password,
-                "grant_type": "password",
-            },
-        )
+        request = sirix_auth_prepare(self.auth_data, self.instance_data)
     request = self._session.prepare_request(request)
     response = self._session.send(request)
     try:
@@ -40,3 +22,29 @@ def authenticate(self) -> None:
         self._auth_data.refresh_token = json_res["refresh_token"]
     except Exception as e:
         raise Exception(e)
+
+
+def keycloak_auth_prepare(auth_data):
+    return Request(
+        "POST",
+        f"{auth_data.keycloak_uri}/auth/realms/sirixdb/protocol/openid-connect/token",
+        data={
+            "username": auth_data.username,
+            "password": auth_data.password,
+            "grant_type": "password",
+            "client_id": auth_data.client_id,
+            "client_secret": auth_data.client_secret,
+        },
+    )
+
+
+def sirix_auth_prepare(auth_data, instance_data):
+    return Request(
+        "POST",
+        f"{instance_data.sirix_uri}/token",
+        data={
+            "username": auth_data.username,
+            "password": auth_data.password,
+            "grant_type": "password",
+        },
+    )

@@ -15,7 +15,7 @@ make html
 
 Some example code:
 ```python
-from PySirix import Sirix, SirixClient, Database
+from pysirix import Sirix, SirixClient, Database
 
 
 client: SirixClient = Sirix(

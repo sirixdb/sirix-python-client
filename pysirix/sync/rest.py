@@ -8,5 +8,7 @@ def get_info(self, ret: bool):
     )
     if response.status_code == 200:
         self._instance_data.database_info += response.json()["databases"]
+    else:
+        print(response)
     if ret:
         return self._instance_data.database_info
