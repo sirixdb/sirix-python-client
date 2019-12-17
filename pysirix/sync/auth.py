@@ -13,7 +13,7 @@ def authenticate(self) -> None:
         request = keycloak_auth_prepare(self._auth_data)
     # let's authenticate the regular way
     else:
-        request = sirix_auth_prepare(self.auth_data, self.instance_data)
+        request = sirix_auth_prepare(self._auth_data, self._instance_data)
     request = self._session.prepare_request(request)
     response = self._session.send(request)
     try:
