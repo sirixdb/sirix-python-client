@@ -34,7 +34,7 @@ db: Database = client[
 ]  # specify type in case the database doesn't already exist
 
 res = db.update(
-    {"amazingly": "easy"}, "sirix"
+    "sirix", {"amazingly": "easy"}
 )  # specify resource name, since this is a database instance, not a resource instance
 
 ```
