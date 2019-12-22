@@ -5,6 +5,10 @@ from typing import Union, Dict
 
 from requests import Session  # for type support
 
+from .sync.rest import create_database
+from .asynchronous.rest import async_create_database
+from .utils import handle_async
+
 from .info import AuthData, InstanceData  # for type support
 
 
@@ -24,6 +28,8 @@ class Database:
         self._auth_data: AuthData = parent._auth_data
 
         self.database_name = database_name
+        
+    def _init(self):
         database_list = [
             db
             for db in self._instance_data.database_info
@@ -31,12 +37,19 @@ class Database:
         ]
         if len(database_list) != 0:
             self.database_type: str = database_list[0]["type"]
-        elif database_type:
-            self.database_type: str = database_type.lower()
+        elif self.database_type:
+            self.database_type: str = self.database_type.lower()
+            self._create()
         else:
             raise Exception(
                 "No database type specified, and database does not already exist"
             )
+
+    def _create(self):
+        if self._asynchronous:
+            return handle_async(async_create_database, self, self.database_name, self.database_type)
+        else:
+            return create_database(self, self.database_type, self.database_type)
 
     def update(self, resource: str, data: Union[str, ET.Element, Dict]):
         """Update a resource
@@ -46,20 +59,21 @@ class Database:
                 ``xml.etree.ElementTree.Element``
         :param data_type: the type of database being accessed
         """
-        if self.database_type == "json":
-            data_type = "application/json"
-        else:
-            data_type = ("application/xml",)
-        return self._session.put(
-            f"{self._instance_data.sirix_uri}/{self.database_name}/{resource}",
-            data=data
-            if type(data) is str
-            else json.dumps(data)
-            if self.database_type == "json"
-            else ET.tostring(data),
-            headers={
-                "Authorization": f"Bearer {self._auth_data.access_token}",
-                "Content-Type": data_type,
-                "Accept": data_type,
-            },
-        )
+        if self.exists:
+            if self.database_type == "json":
+                data_type = "application/json"
+            else:
+                data_type = ("application/xml",)
+            return self._session.put(
+                f"{self._instance_data.sirix_uri}/{self.database_name}/{resource}",
+                data=data
+                if type(data) is str
+                else json.dumps(data)
+                if self.database_type == "json"
+                else ET.tostring(data),
+                headers={
+                    "Authorization": f"Bearer {self._auth_data.access_token}",
+                    "Content-Type": data_type,
+                    "Accept": data_type,
+                },
+            )

@@ -14,3 +14,6 @@ async def async_get_info(self, ret: bool, fut):
             fut.set_result(self._instance_data.database_info)
         else:
             fut.set_result(None)
+
+async def async_create_database():
+    pass

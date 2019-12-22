@@ -12,3 +12,6 @@ def get_info(self, ret: bool):
         print(response)
     if ret:
         return self._instance_data.database_info
+
+def create_database():
+    pass
