@@ -15,7 +15,7 @@ def get_info(self, ret: bool):
 
 
 def create_database(self, db_name, db_type):
-    response = self._session.get(
+    response = self._session.post(
         f"{self._instance_data.sirix_uri}/{db_name}",
         headers={
             "Authorization": f"Bearer {self._auth_data.access_token}",

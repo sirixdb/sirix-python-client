@@ -28,7 +28,9 @@ class Database:
         self._auth_data: AuthData = parent._auth_data
 
         self.database_name = database_name
-        
+
+        self._allow_self_signed = parent._allow_self_signed
+
     def _init(self):
         database_list = [
             db
@@ -47,7 +49,9 @@ class Database:
 
     def _create(self):
         if self._asynchronous:
-            return handle_async(async_create_database, self, self.database_name, self.database_type)
+            return handle_async(
+                async_create_database, self, self.database_name, self.database_type
+            )
         else:
             return create_database(self, self.database_type, self.database_type)
 

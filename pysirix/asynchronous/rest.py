@@ -1,4 +1,4 @@
-async def async_get_info(self, ret: bool, fut):
+async def async_get_info(self, fut, ret: bool):
     async with self._session.get(
         f"{self._instance_data.sirix_uri}/?withResources=true",
         headers={
@@ -15,5 +15,17 @@ async def async_get_info(self, ret: bool, fut):
         else:
             fut.set_result(None)
 
-async def async_create_database():
-    pass
+
+async def async_create_database(self, fut, db_name, db_type):
+    async with self._session.post(
+        f"{self._instance_data.sirix_uri}/{db_name}",
+        headers={
+            "Authorization": f"Bearer {self._auth_data.access_token}",
+            "Accept": "application/json" if db_type == "json" else "application/xml",
+        },
+        ssl=False if self._allow_self_signed else True,
+    ) as response:
+        if response.status == 200:
+            fut.set_result(True)
+        else:
+            fut.set_result(False)
