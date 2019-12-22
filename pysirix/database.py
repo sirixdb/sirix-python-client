@@ -3,8 +3,6 @@ import xml.etree.ElementTree as ET
 
 from typing import Union, Dict
 
-from requests import Session  # for type support
-
 from .sync.rest import create_database
 from .asynchronous.rest import async_create_database
 from .utils import handle_async
@@ -23,11 +21,12 @@ class Database:
                 be created if the database does not yet exist
         :param parent: the ``SirixClient`` instance which created this instance
         """
-        self._session: Session = parent._session
+        self._session = parent._session
         self._instance_data: InstanceData = parent._instance_data
         self._auth_data: AuthData = parent._auth_data
 
         self.database_name = database_name
+        self.database_type = database_type
 
         self._allow_self_signed = parent._allow_self_signed
 
@@ -64,21 +63,20 @@ class Database:
                 ``xml.etree.ElementTree.Element``
         :param data_type: the type of database being accessed
         """
-        if self.exists:
-            if self.database_type == "json":
-                data_type = "application/json"
-            else:
-                data_type = ("application/xml",)
-            return self._session.put(
-                f"{self._instance_data.sirix_uri}/{self.database_name}/{resource}",
-                data=data
-                if type(data) is str
-                else json.dumps(data)
-                if self.database_type == "json"
-                else ET.tostring(data),
-                headers={
-                    "Authorization": f"Bearer {self._auth_data.access_token}",
-                    "Content-Type": data_type,
-                    "Accept": data_type,
-                },
-            )
+        if self.database_type == "json":
+            data_type = "application/json"
+        else:
+            data_type = "application/xml"
+        return self._session.put(
+            f"{self._instance_data.sirix_uri}/{self.database_name}/{resource}",
+            data=data
+            if type(data) is str
+            else json.dumps(data)
+            if self.database_type == "json"
+            else ET.tostring(data),
+            headers={
+                "Authorization": f"Bearer {self._auth_data.access_token}",
+                "Content-Type": data_type,
+                "Accept": data_type,
+            },
+        )

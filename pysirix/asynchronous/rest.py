@@ -1,3 +1,6 @@
+from ..utils import handle_async
+
+
 async def async_get_info(self, fut, ret: bool):
     async with self._session.get(
         f"{self._instance_data.sirix_uri}/?withResources=true",
@@ -26,6 +29,13 @@ async def async_create_database(self, fut, db_name, db_type):
         ssl=False if self._allow_self_signed else True,
     ) as response:
         if response.status == 200:
+            # refresh database_info
+            await handle_async(async_get_info, False)
             fut.set_result(True)
         else:
+            print(response)
             fut.set_result(False)
+
+
+async def async_create_resource():
+    pass

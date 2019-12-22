@@ -23,6 +23,13 @@ def create_database(self, db_name, db_type):
         },
     )
     if response.status_code == 200:
-        self._instance_data.database_info += response.json()["databases"]
+        # refresh database_info
+        get_info(self, False)
+        return True
     else:
         print(response)
+        return False
+
+
+def create_resource():
+    pass
