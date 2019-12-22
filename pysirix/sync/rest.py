@@ -31,5 +31,19 @@ def create_database(self, db_name, db_type):
         return False
 
 
-def create_resource():
+def create_resource(self, data):
+    data_type = (
+        "application/json" if self.database_type == "json" else "application/xml"
+    )
+    return self._session.put(
+        f"{self._instance_data.sirix_uri}/{self.database_name}/{self.resource_name}",
+        data=data,
+        headers={
+            "Authorization": f"Bearer {self._auth_data.access_token}",
+            "Content-Type": data_type,
+            "Accept": data_type,
+        },
+    )
+
+def update_resource(self, data):
     pass

@@ -1,7 +1,9 @@
 import json
 import xml.etree.ElementTree as ET
 
-from typing import Union, Dict
+from typing import Union, Dict, Tuple
+
+from .resource import Resource
 
 from .sync.rest import create_database
 from .asynchronous.rest import async_create_database
@@ -24,6 +26,7 @@ class Database:
         self._session = parent._session
         self._instance_data: InstanceData = parent._instance_data
         self._auth_data: AuthData = parent._auth_data
+        self._asynchronous = parent._asynchronous
 
         self.database_name = database_name
         self.database_type = database_type
@@ -55,28 +58,28 @@ class Database:
         else:
             return create_database(self, self.database_type, self.database_type)
 
-    def update(self, resource: str, data: Union[str, ET.Element, Dict]):
-        """Update a resource
-
-        :param resource: the name of the resource to update
-        :param data: the updated data, can be of type ``str``, ``dict``, or
-                ``xml.etree.ElementTree.Element``
-        :param data_type: the type of database being accessed
+    def __getitem__(self, key: str):
         """
-        if self.database_type == "json":
-            data_type = "application/json"
-        else:
-            data_type = "application/xml"
-        return self._session.put(
-            f"{self._instance_data.sirix_uri}/{self.database_name}/{resource}",
-            data=data
-            if type(data) is str
-            else json.dumps(data)
-            if self.database_type == "json"
-            else ET.tostring(data),
-            headers={
-                "Authorization": f"Bearer {self._auth_data.access_token}",
-                "Content-Type": data_type,
-                "Accept": data_type,
-            },
-        )
+        Returns a resource instance. See :meth:`_get_resource` for further information
+        """
+        return self._get_resource(key)
+
+    def _get_resource(self, resource_name: str, data: Union[str, ET.Element, Dict] = None):
+        """Returns a resource instance
+
+        If a resource with the given name and type does not exist,
+        it is created.
+
+        If the resource does not yet exist, it is created
+
+        :param database_name: the name of the database to access
+        :param database_type: the type of the database to access
+        :param resource_name: the name of the resource to aceess
+        :param data: data to initialize resource with if it does
+                yet exist
+
+        You shouldn't use this method directly, rather, you should use index access, as follows:
+            >>> sirix = Sirix(params)
+            >>> sirix[(database_name, database_type)]
+        """
+        return Resource(resource_name, parent=self)

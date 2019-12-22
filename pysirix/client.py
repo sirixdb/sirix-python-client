@@ -70,13 +70,15 @@ class SirixClient:
         await self._auth.authenticate()
         await self.get_info()
 
-    def __getitem__(self, key: Tuple[str]):
+    def __getitem__(self, key: Union[Tuple[str], str]):
         """
-        Returns a database instance. See :meth:`get_database` for further information
+        Returns a database instance. See :meth:`_get_database` for further information
         """
-        return Database(*key, parent=self)
+        if type(key) == tuple:
+            return self._get_database(*key)
+        return self._get_database(key)
 
-    def get_database(self, database_name: str, database_type: str):
+    def _get_database(self, database_name: str, database_type: str = None):
         """Returns a database instance
 
         If a database with the given name and type does not exist,
@@ -91,11 +93,13 @@ class SirixClient:
         :param database_name: the name of the database to access
         :param database_type: the type of the database to access
 
-        Note that you get the same behavior with index access, as follows:
-            >>> sirix = Sirix(params)
+        You shouldn't use this method directly, rather, you should use index access, as follows:
+            >>> sirix = Sirix(*params)
             >>> sirix[(database_name, database_type)]
         """
-        return Database(database_name, database_type, parent=self)
+        db = Database(database_name, database_type, parent=self)
+        db._init()
+        return db
 
     def get_info(self, ret: bool = True) -> Union[None, List[Dict[str, str]]]:
         """
