@@ -10,10 +10,10 @@ def authenticate(self) -> None:
         and self._auth_data.client_id is not None
         and self._auth_data.keycloak_uri is not None
     ):
-        request = keycloak_auth_prepare(self._auth_data)
+        request = _keycloak_auth_prepare(self._auth_data)
     # let's authenticate the regular way
     else:
-        request = sirix_auth_prepare(self._auth_data, self._instance_data)
+        request = _sirix_auth_prepare(self._auth_data, self._instance_data)
     request = self._session.prepare_request(request)
     response = self._session.send(request)
     try:
@@ -24,7 +24,7 @@ def authenticate(self) -> None:
         raise Exception(e)
 
 
-def keycloak_auth_prepare(auth_data):
+def _keycloak_auth_prepare(auth_data):
     return Request(
         "POST",
         f"{auth_data.keycloak_uri}/auth/realms/sirixdb/protocol/openid-connect/token",
@@ -38,7 +38,7 @@ def keycloak_auth_prepare(auth_data):
     )
 
 
-def sirix_auth_prepare(auth_data, instance_data):
+def _sirix_auth_prepare(auth_data, instance_data):
     return Request(
         "POST",
         f"{instance_data.sirix_uri}/token",
