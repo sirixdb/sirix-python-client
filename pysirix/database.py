@@ -48,6 +48,7 @@ class Database:
             )
 
     def _create(self):
+        """Creates the database. Should be called if the database does not yet exist"""
         if self._asynchronous:
             return handle_async(
                 async_create_database, self, self.database_name, self.database_type
