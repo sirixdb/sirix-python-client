@@ -11,6 +11,8 @@ from .database import Database
 from .sync.rest import get_info
 from .asynchronous.rest import async_get_info
 
+from .utils import handle_async
+
 
 class SirixClient:
     def __init__(
@@ -100,9 +102,6 @@ class SirixClient:
         :param ret: whether or not to return the info from the function
         """
         if self._asynchronous:
-            loop = asyncio.get_running_loop()
-            fut = loop.create_future()
-            loop.create_task(async_get_info(self, ret, fut))
-            return fut
+            return handle_async(async_get_info, self, ret)
         else:
             return get_info(self, ret)
