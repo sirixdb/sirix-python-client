@@ -56,5 +56,33 @@ async def async_create_resource(self, fut, data) -> bool:
             fut.set_result(False)
 
 
-async def async_update_resource(self, data):
-    pass
+async def async_update_resource(
+    self, nodeId: int, data: str, insert="asFirstChild"
+) -> bool:
+    # prepare to get ETag
+    params = {"nodeId": nodeId}
+    data_type = (
+        "application/json" if self.database_type == "json" else "application/xml"
+    )
+    # get ETag
+    async with self._session.head(
+        f"{self._instance_data.sirix_uri}/{self.database_name}/{self.resource_name}",
+        params=params,
+        headers={"Authorization": f"Bearer {self._auth_data.access_token}"},
+    ) as response:
+        etag = response.headers().getone("ETag")
+    # prepare to update
+    params.update({"insert": insert})
+    # update
+    async with self._session.post(
+        f"{self._instance_data.sirix_uri}/{self.database_name}/{self.resource_name}",
+        params=params,
+        headers={
+            "Authorization": f"Bearer {self._auth_data.access_token}",
+            "Content-Type": data_type,
+        },
+        data=data,
+    ) as response:
+        if response.status == 201:
+            return True
+        return False
