@@ -56,9 +56,7 @@ async def async_create_resource(self, fut, data) -> bool:
             fut.set_result(False)
 
 
-async def async_update_resource(
-    self, nodeId: int, data: str, insert="asFirstChild"
-) -> bool:
+async def async_update_resource(self, fut, nodeId: int, data: str, insert: str) -> bool:
     # prepare to get ETag
     params = {"nodeId": nodeId}
     data_type = (
@@ -84,5 +82,6 @@ async def async_update_resource(
         data=data,
     ) as response:
         if response.status == 201:
-            return True
-        return False
+            fut.set_result(True)
+        else:
+            fut.set_result(False)

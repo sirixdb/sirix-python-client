@@ -47,7 +47,7 @@ class Resource:
                 self, self.database_type, self.database_type, self.resource_name
             )
 
-    def update(self, data: Union[str, ET.Element, Dict]):
+    def update(self, nodeId: int, data: Union[str, ET.Element, Dict], insert: str = "asFirstChild"):
         """Update a resource
 
         :param data: the updated data, can be of type ``str``, ``dict``, or
@@ -63,6 +63,6 @@ class Resource:
             return self._create(data)
         else:
             if self._asynchronous:
-                return async_update_resource(self, data)
+                return async_update_resource(self, nodeId, data, insert)
             else:
-                return update_resource(self, data)
+                return update_resource(self, nodeId, data, insert)

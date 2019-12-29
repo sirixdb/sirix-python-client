@@ -46,7 +46,7 @@ def create_resource(self, data):
     )
 
 
-def update_resource(self, nodeId: int, data: str, insert="asFirstChild") -> bool:
+def update_resource(self, nodeId: int, data: str, insert: str) -> bool:
     # prepare to get ETag
     params = {"nodeId": nodeId}
     data_type = (
