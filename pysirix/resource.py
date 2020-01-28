@@ -4,6 +4,7 @@ import xml.etree.ElementTree as ET
 from typing import Union, Dict
 from .info import AuthData, InstanceData  # for type support
 
+from .constants import Insert
 from .utils import handle_async
 from .sync.rest import create_resource, update_resource
 from .asynchronous.rest import async_create_resource, async_update_resource
@@ -47,7 +48,7 @@ class Resource:
                 self, self.database_type, self.database_type, self.resource_name
             )
 
-    def update(self, nodeId: int, data: Union[str, ET.Element, Dict], insert: str = "asFirstChild"):
+    def update(self, nodeId: int, data: Union[str, ET.Element, Dict], insert: Insert = Insert.CHILD):
         """Update a resource
 
         :param data: the updated data, can be of type ``str``, ``dict``, or
