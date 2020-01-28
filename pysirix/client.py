@@ -59,14 +59,17 @@ class SirixClient:
 
     def _init(self):
         """
-        Initialize the instance. We may need to make async function calls,
+        Initialize the instance. In async mode, these calls need to be awaited,
         so we can't put this code in ``__init__`` 
         """
-        
         self._auth.authenticate()
         self.get_info(False)
 
     async def _async_init(self):
+        """
+        Initialize the instance. We are making async function calls,
+        so we can't put this code in ``__init__``
+        """
         await self._auth.authenticate()
         await self.get_info()
 
