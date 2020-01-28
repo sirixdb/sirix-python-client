@@ -20,7 +20,6 @@ pysirix.auth module
    :members:
    :private-members:
    :undoc-members:
-   :show-inheritance:
 
 pysirix.client module
 ---------------------
@@ -29,7 +28,6 @@ pysirix.client module
    :members:
    :private-members:
    :undoc-members:
-   :show-inheritance:
 
 pysirix.database module
 -----------------------
@@ -38,7 +36,6 @@ pysirix.database module
    :members:
    :private-members:
    :undoc-members:
-   :show-inheritance:
 
 pysirix.info module
 -------------------
@@ -47,5 +44,12 @@ pysirix.info module
    :members:
    :private-members:
    :undoc-members:
-   :show-inheritance:
 
+pysirix.constants module
+------------------------
+
+.. automodule:: pysirix.constants
+   :members:
+   :private-members:
+   :undoc-members:
+   :show-inheritance:
