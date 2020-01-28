@@ -1,10 +1,10 @@
 async def async_authenticate(self, fut):
     """Retrieve and store access_token and refresh_token
-    This function calls either :ref:`keycloak_auth_call` or
-    :ref:`sirix_auth_call` depending on whether or not enough
+    This function calls either :py:func:`keycloak_auth_call` or
+    :py:func:`sirix_auth_call` depending on whether or not enough
     information has been provided to access keycloak directly.
 
-    :param self: an instance of :ref:`pysirix.auth.Auth`
+    :param self: an instance of :py:func:`pysirix.auth.Auth`
     :param fut: an instance of an asynchronous Future
     """
     # if we were provided adequate credentials to authenticate
