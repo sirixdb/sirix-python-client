@@ -110,10 +110,7 @@ async def async_delete(self, fut, nodeId: Union[int, None]):
                 "Content-Type": self.database_type,
             },
         ) as response:
-            if response.status == 204:
-                fut.set_result(True)
-            else:
-                fut.set_result(False)
+            status = response.status
     elif hasattr(self, "database_name"):
         async with self._session.delete(
             f"{self._instance_data.sirix_uri}/{self.database_name}",
@@ -122,17 +119,17 @@ async def async_delete(self, fut, nodeId: Union[int, None]):
                 "Content-Type": self.database_type,
             },
         ) as response:
-            if response.status == 204:
-                fut.set_result(True)
-            else:
-                fut.set_result(False)
+            status = response.status
     else:
         async with self._session.delete(
             self._instance_data.sirix_uri,
             headers={"Authorization": f"Bearer {self._auth_data.access_token}"},
         ) as response:
-            if response.status == 204:
-                fut.set_result(True)
-            else:
-                fut.set_result(False)
+            status = response.status
+    if status == 204:
+        # refresh database_info
+        await handle_async(async_get_info, False)
+        fut.set_result(True)
+    else:
+        fut.set_result(False)
 

@@ -102,6 +102,8 @@ def delete(self, nodeId: Union[int, None]):
             headers={"Authorization": f"Bearer {self._auth_data.access_token}",},
         )
     if response.status_code == 204:
+        # refresh database_info
+        get_info(self, False)
         return True
     else:
         return False
