@@ -1,5 +1,6 @@
 from .client import SirixClient
 from .database import Database
+from .resource import Resource
 
 
 def Sirix(
@@ -78,4 +79,4 @@ async def SirixAsync(
     return sirix
 
 
-__all__ = ["Sirix", "SirixAsync", "SirixClient", "Database"]
+__all__ = ["Sirix", "SirixAsync", "SirixClient", "Database", "Resource"]
