@@ -22,8 +22,6 @@ class Resource:
 
         :param resource_name: the name of the resource being accessed, or to
                 be created if the resource does not yet exist
-        :param data: the data to initialize the resource with, if it does not
-                yet exist
         :param parent: the ``SirixClient`` instance which created this instance
         """
         self._session = parent._session
@@ -38,7 +36,10 @@ class Resource:
         self._allow_self_signed = parent._allow_self_signed
 
     def _create(self, data: str):
-        """Creates the resource. Should be called if the resource does not yet exist"""
+        """Creates the resource. Should be called if the resource does not yet exist
+        
+        :param data: the data to initialize the resource with
+                """
         if self._asynchronous:
             return handle_async(
                 async_create_resource,
