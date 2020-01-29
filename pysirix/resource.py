@@ -1,13 +1,18 @@
 import json
 import xml.etree.ElementTree as ET
 
-from typing import Union, Dict
+from typing import Union, Dict, Tuple
 from .info import AuthData, InstanceData  # for type support
 
-from .constants import Insert
+from .constants import Insert, Revision
 from .utils import handle_async
-from .sync.rest import create_resource, update_resource, delete
-from .asynchronous.rest import async_create_resource, async_update_resource, async_delete
+from .sync.rest import create_resource, read_resource, update_resource, delete
+from .asynchronous.rest import (
+    async_create_resource,
+    async_read_resource,
+    async_update_resource,
+    async_delete,
+)
 
 
 class Resource:
@@ -48,15 +53,34 @@ class Resource:
                 self, self.database_type, self.database_type, self.resource_name
             )
 
-    def update(self, nodeId: int, data: Union[str, ET.Element, Dict], insert: Insert = Insert.CHILD):
+    def read(
+        node_id: Union[int, None],
+        revision: Union[Revision, Tuple[Revision, Revision], None] = None,
+        max_level: Union[int, None] = None,
+    ):
+        if self._asynchronous:
+            return handle_async(async_read_resource, revision, node_id, max_level)
+        else:
+            return read_resource(revision, node_id, max_level)
+
+    def update(
+        self,
+        nodeId: int,
+        data: Union[str, ET.Element, Dict],
+        insert: Insert = Insert.CHILD,
+    ):
         """Update a resource
 
         :param data: the updated data, can be of type ``str``, ``dict``, or
                 ``xml.etree.ElementTree.Element``
         """
-        data = data if type(data) is str else json.dumps(
+        data = (
             data
-        ) if self.database_type == "json" else ET.tostring(data)
+            if type(data) is str
+            else json.dumps(data)
+            if self.database_type == "json"
+            else ET.tostring(data)
+        )
         if (
             self.resource_name
             not in self._instance_data.database_info[self.database_name]

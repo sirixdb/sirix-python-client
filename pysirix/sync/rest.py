@@ -1,4 +1,9 @@
-from typing import Union
+from typing import Union, Dict, List, Tuple
+from datetime import datetime
+
+import xml.etree.ElementTree as ET
+
+from ..constants import Revision
 
 
 def get_info(self, ret: bool):
@@ -49,9 +54,45 @@ def create_resource(self, data):
     )
 
 
-def update_resource(self, nodeId: int, data: str, insert: str) -> bool:
+def read_resource(
+    self,
+    revision: Union[Revision, Tuple[Revision, Revision], None],
+    node_id: Union[int, None],
+    max_level: Union[int, None],
+) -> Union[ET.Element, Dict, List]:
+    params = {}
+    if node_id:
+        params.update({"nodeId": node_id})
+    if max_level:
+        params.update({"maxLevel": max_level})
+    if revision:
+        if isinstance(revision, int):
+            params.update({"revision": revision})
+        elif isinstance(revision, datetime):
+            params.update({"revision-timestamp": revision.isoformat()})
+        elif isinstance(revision[0], int):
+            params.update({"start-revision": revision[0], "end-revision": revision[1]})
+        else:
+            params.update(
+                {
+                    "start-revision-timestamp": revision[0].isoformat(),
+                    "end-revision-timestamp": revision[1].isoformat(),
+                }
+            )
+
+    res = self._session.get(
+        f"{self._instance_data.sirix_uri}/{self.database_name}/{self.resource_name}",
+        params=params,
+    )
+    if self.database_type == "json":
+        return res.json()
+    else:
+        return ET.fromstring(res.content)
+
+
+def update_resource(self, node_id: int, data: str, insert: str) -> bool:
     # prepare to get ETag
-    params = {"nodeId": nodeId}
+    params = {"nodeId": node_id}
     data_type = (
         "application/json" if self.database_type == "json" else "application/xml"
     )
@@ -79,28 +120,29 @@ def update_resource(self, nodeId: int, data: str, insert: str) -> bool:
     return False
 
 
-def delete(self, nodeId: Union[int, None]):
+def delete(self, node_id: Union[int, None]):
+    params = {}
+    headers = {"Authorization": f"Bearer {self._auth_data.access_token}"}
+    if node_id is not None:
+        URL_string = (
+            f"{self._instance_data.sirix_uri}/{self.database_name}/{self.resource_name}"
+        )
+        params.update({"nodeId": node_id})
+    if hasattr(self, "database_name"):
+        headers.update(
+            {
+                "Content-Type": "application/json"
+                if self.database_type == "json"
+                else "application/xml",
+            }
+        )
     if hasattr(self, "resource_name"):
-        response = self._session.delete(
-            f"{self._instance_data.sirix_uri}/{self.database_name}/{self.resource_name}",
-            headers={
-                "Authorization": f"Bearer {self._auth_data.access_token}",
-                "Content-Type": self.database_type,
-            },
+        URL_string = (
+            f"{self._instance_data.sirix_uri}/{self.database_name}/{self.resource_name}"
         )
     elif hasattr(self, "database_name"):
-        response = self._session.delete(
-            f"{self._instance_data.sirix_uri}/{self.database_name}",
-            headers={
-                "Authorization": f"Bearer {self._auth_data.access_token}",
-                "Content-Type": self.database_type,
-            },
-        )
-    else:
-        response = self._session.delete(
-            self._instance_data.sirix_uri,
-            headers={"Authorization": f"Bearer {self._auth_data.access_token}",},
-        )
+        URL_string = f"{self._instance_data.sirix_uri}/{self.database_name}"
+    response = self._session.delete(URL_string, params=params, headers=headers)
     if response.status_code == 204:
         # refresh database_info
         get_info(self, False)

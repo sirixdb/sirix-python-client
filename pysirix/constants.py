@@ -1,4 +1,6 @@
 import enum
+from datetime import datetime
+from typing import Union
 
 
 class Insert(enum.Enum):
@@ -9,3 +11,6 @@ class Insert(enum.Enum):
     LEFT = "asLeftSibling"
     RIGHT = "asRightSibling"
     REPLACE = "replace"
+
+
+Revision = Union[int, datetime]
