@@ -5,8 +5,8 @@ from typing import Union, Dict, Tuple
 
 from .resource import Resource
 
-from .sync.rest import create_database
-from .asynchronous.rest import async_create_database
+from .sync.rest import create_database, delete
+from .asynchronous.rest import async_create_database, async_delete
 from .utils import handle_async
 
 from .info import AuthData, InstanceData  # for type support
@@ -83,3 +83,9 @@ class Database:
             >>> sirix[(database_name, database_type)]
         """
         return Resource(resource_name, parent=self)
+
+    def delete(self) -> bool:
+        if self._asynchronous:
+            return handle_async(async_delete, self, None)
+        else:
+            return delete(self, None)

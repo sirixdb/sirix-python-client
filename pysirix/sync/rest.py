@@ -1,3 +1,6 @@
+from typing import Union
+
+
 def get_info(self, ret: bool):
     response = self._session.get(
         f"{self._instance_data.sirix_uri}/?withResources=true",
@@ -74,3 +77,31 @@ def update_resource(self, nodeId: int, data: str, insert: str) -> bool:
     if response.status_code == 201:
         return True
     return False
+
+
+def delete(self, nodeId: Union[int, None]):
+    if hasattr(self, "resource_name"):
+        response = self._session.delete(
+            f"{self._instance_data.sirix_uri}/{self.database_name}/{self.resource_name}",
+            headers={
+                "Authorization": f"Bearer {self._auth_data.access_token}",
+                "Content-Type": self.database_type,
+            },
+        )
+    elif hasattr(self, "database_name"):
+        response = self._session.delete(
+            f"{self._instance_data.sirix_uri}/{self.database_name}",
+            headers={
+                "Authorization": f"Bearer {self._auth_data.access_token}",
+                "Content-Type": self.database_type,
+            },
+        )
+    else:
+        response = self._session.delete(
+            self._instance_data.sirix_uri,
+            headers={"Authorization": f"Bearer {self._auth_data.access_token}",},
+        )
+    if response.status_code == 204:
+        return True
+    else:
+        return False

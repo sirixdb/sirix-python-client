@@ -6,8 +6,8 @@ from .info import AuthData, InstanceData  # for type support
 
 from .constants import Insert
 from .utils import handle_async
-from .sync.rest import create_resource, update_resource
-from .asynchronous.rest import async_create_resource, async_update_resource
+from .sync.rest import create_resource, update_resource, delete
+from .asynchronous.rest import async_create_resource, async_update_resource, async_delete
 
 
 class Resource:
@@ -67,3 +67,9 @@ class Resource:
                 return async_update_resource(self, nodeId, data, insert)
             else:
                 return update_resource(self, nodeId, data, insert)
+
+    def delete(self, nodeId: Union[int, None]) -> bool:
+        if self._asynchronous:
+            return handle_async(async_delete, self, nodeId)
+        else:
+            return delete(self, nodeId)

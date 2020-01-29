@@ -1,3 +1,5 @@
+from typing import Union
+
 from ..utils import handle_async
 
 
@@ -85,3 +87,52 @@ async def async_update_resource(self, fut, nodeId: int, data: str, insert: str) 
             fut.set_result(True)
         else:
             fut.set_result(False)
+
+
+async def async_delete(self, fut, nodeId: Union[int, None]):
+    if nodeId is not None:
+        async with self._session.delete(
+            f"{self._instance_data.sirix_uri}/{self.database_name}/{self.resource_name}?nodeId={nodeId}",
+            headers={
+                "Authorization": f"Bearer {self._auth_data.access_token}",
+                "Content-Type": self.database_type,
+            },
+        ) as response:
+            if response.status == 204:
+                fut.set_result(True)
+            else:
+                fut.set_result(False)
+    if hasattr(self, "resource_name"):
+        async with self._session.delete(
+            f"{self._instance_data.sirix_uri}/{self.database_name}/{self.resource_name}",
+            headers={
+                "Authorization": f"Bearer {self._auth_data.access_token}",
+                "Content-Type": self.database_type,
+            },
+        ) as response:
+            if response.status == 204:
+                fut.set_result(True)
+            else:
+                fut.set_result(False)
+    elif hasattr(self, "database_name"):
+        async with self._session.delete(
+            f"{self._instance_data.sirix_uri}/{self.database_name}",
+            headers={
+                "Authorization": f"Bearer {self._auth_data.access_token}",
+                "Content-Type": self.database_type,
+            },
+        ) as response:
+            if response.status == 204:
+                fut.set_result(True)
+            else:
+                fut.set_result(False)
+    else:
+        async with self._session.delete(
+            self._instance_data.sirix_uri,
+            headers={"Authorization": f"Bearer {self._auth_data.access_token}"},
+        ) as response:
+            if response.status == 204:
+                fut.set_result(True)
+            else:
+                fut.set_result(False)
+

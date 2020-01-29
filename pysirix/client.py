@@ -8,8 +8,8 @@ from .info import AuthData, InstanceData
 from .auth import Auth
 from .database import Database
 
-from .sync.rest import get_info
-from .asynchronous.rest import async_get_info
+from .sync.rest import get_info, delete
+from .asynchronous.rest import async_get_info, async_delete
 
 from .utils import handle_async
 
@@ -112,3 +112,9 @@ class SirixClient:
             return handle_async(async_get_info, self, ret)
         else:
             return get_info(self, ret)
+
+    def delete(self) -> bool:
+        if self._asynchronous:
+            return handle_async(async_delete, self, None)
+        else:
+            return delete(self, None)
