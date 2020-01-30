@@ -39,7 +39,7 @@ def create_database(self, db_name, db_type):
         return False
 
 
-def create_resource(self, data):
+def create_resource(self, data: str):
     data_type = (
         "application/json" if self.database_type == "json" else "application/xml"
     )

@@ -43,7 +43,7 @@ async def async_create_database(self, fut, db_name, db_type):
             fut.set_result(False)
 
 
-async def async_create_resource(self, fut, data) -> bool:
+async def async_create_resource(self, fut, data: str) -> bool:
     data_type = (
         "application/json" if self.database_type == "json" else "application/xml"
     )
