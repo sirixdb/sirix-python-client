@@ -26,7 +26,7 @@ async def async_get_info(self, fut, ret: bool):
 
 
 async def async_create_database(self, fut, db_name, db_type):
-    async with self._session.post(
+    async with self._session.put(
         f"{self._instance_data.sirix_uri}/{db_name}",
         headers={
             "Authorization": f"Bearer {self._auth_data.access_token}",

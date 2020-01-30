@@ -23,11 +23,11 @@ def get_info(self, ret: bool):
 
 
 def create_database(self, db_name, db_type):
-    response = self._session.post(
+    response = self._session.put(
         f"{self._instance_data.sirix_uri}/{db_name}",
         headers={
             "Authorization": f"Bearer {self._auth_data.access_token}",
-            "Accept": "application/json" if db_type == "json" else "application/xml",
+            "Content-Type": "application/json" if db_type == "json" else "application/xml",
         },
     )
     if response.status_code == 200:
@@ -35,7 +35,7 @@ def create_database(self, db_name, db_type):
         get_info(self, False)
         return True
     else:
-        print(response)
+        print(response, response.content)
         return False
 
 
