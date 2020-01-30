@@ -30,7 +30,7 @@ def create_database(self, db_name, db_type):
             "Content-Type": "application/json" if db_type == "json" else "application/xml",
         },
     )
-    if response.status_code == 200:
+    if response.status_code == 201:
         # refresh database_info
         get_info(self, False)
         return True
@@ -43,7 +43,7 @@ def create_resource(self, data):
     data_type = (
         "application/json" if self.database_type == "json" else "application/xml"
     )
-    return self._session.put(
+    response = self._session.put(
         f"{self._instance_data.sirix_uri}/{self.database_name}/{self.resource_name}",
         data=data,
         headers={
@@ -52,6 +52,9 @@ def create_resource(self, data):
             "Accept": data_type,
         },
     )
+    print(response, response.content)
+    # refresh database_info
+    get_info(self, False)
 
 
 def read_resource(

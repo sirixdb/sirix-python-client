@@ -34,7 +34,7 @@ async def async_create_database(self, fut, db_name, db_type):
         },
         ssl=False if self._allow_self_signed else True,
     ) as response:
-        if response.status == 200:
+        if response.status == 201:
             # refresh database_info
             await handle_async(async_get_info, False)
             fut.set_result(True)
