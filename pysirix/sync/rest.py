@@ -27,7 +27,9 @@ def create_database(self, db_name, db_type):
         f"{self._instance_data.sirix_uri}/{db_name}",
         headers={
             "Authorization": f"Bearer {self._auth_data.access_token}",
-            "Content-Type": "application/json" if db_type == "json" else "application/xml",
+            "Content-Type": "application/json"
+            if db_type == "json"
+            else "application/xml",
         },
     )
     if response.status_code == 201:
@@ -61,7 +63,6 @@ def create_resource(self, data: str):
         return False
 
 
-
 def read_resource(
     self,
     revision: Union[Revision, Tuple[Revision, Revision], None],
@@ -91,7 +92,12 @@ def read_resource(
     res = self._session.get(
         f"{self._instance_data.sirix_uri}/{self.database_name}/{self.resource_name}",
         params=params,
-        headers={"Authorization": f"Bearer {self._auth_data.access_token}"},
+        headers={
+            "Authorization": f"Bearer {self._auth_data.access_token}",
+            "Accept": "application/json"
+            if self.database_type == "json"
+            else "application/xml",
+        },
     )
     if self.database_type == "json":
         return res.json()

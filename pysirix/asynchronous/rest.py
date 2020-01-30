@@ -93,7 +93,12 @@ async def async_read_resource(
     async with self._session.get(
         f"{self._instance_data.sirix_uri}/{self.database_name}/{self.resource_name}",
         params=params,
-        headers={"Authorization": f"Bearer {self._auth_data.access_token}"},
+        headers={
+            "Authorization": f"Bearer {self._auth_data.access_token}",
+            "Accept": "application/json"
+            if self.database_type == "json"
+            else "application/xml",
+        },
         ssl=False if self._allow_self_signed else True,
     ) as response:
         if self.database_type == "json":
