@@ -91,6 +91,7 @@ def read_resource(
     res = self._session.get(
         f"{self._instance_data.sirix_uri}/{self.database_name}/{self.resource_name}",
         params=params,
+        headers={"Authorization": f"Bearer {self._auth_data.access_token}"},
     )
     if self.database_type == "json":
         return res.json()
