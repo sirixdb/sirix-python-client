@@ -58,6 +58,7 @@ async def async_create_resource(self, fut, data) -> bool:
         ssl=False if self._allow_self_signed else True,
     ) as response:
         if response.status == 200:
+            handle_async(async_get_info, False)
             fut.set_result(True)
         else:
             fut.set_result(False)

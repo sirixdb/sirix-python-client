@@ -52,9 +52,14 @@ def create_resource(self, data):
             "Accept": data_type,
         },
     )
-    print(response, response.content)
-    # refresh database_info
-    get_info(self, False)
+    if response.status_code == 200:
+        # refresh database_info
+        get_info(self, False)
+        return True
+    else:
+        print(response, response.content)
+        return False
+
 
 
 def read_resource(
