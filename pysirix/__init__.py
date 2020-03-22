@@ -1,4 +1,4 @@
-from .client import SirixClient
+from .sirix import Sirix
 from .database import Database
 from .resource import Resource
 from .constants import Insert
@@ -12,7 +12,7 @@ def Sirix(
     client_secret: str = None,
     keycloak_uri: str = "http://localhost:8080",
     allow_self_signed: bool = False,
-) -> SirixClient:
+) -> Sirix:
     """
     :param username: the username registered with keycloak for this application
     :param password: the password registered with keycloak for this application
@@ -28,7 +28,7 @@ def Sirix(
             This option is not recommended.
     :param allow_self_signed: whether to accept self signed certificates. Not recommended.
     """
-    sirix = SirixClient(
+    sirix = Sirix(
         username=username,
         password=password,
         sirix_uri=sirix_uri,
@@ -50,7 +50,7 @@ async def SirixAsync(
     client_secret: str = None,
     keycloak_uri: str = "http://localhost:8080",
     allow_self_signed: bool = False,
-) -> SirixClient:
+) -> Sirix:
     """
     :param username: the username registered with keycloak for this application
     :param password: the password registered with keycloak for this application
@@ -66,7 +66,7 @@ async def SirixAsync(
             This option is not recommended.
     :param allow_self_signed: whether to accept self signed certificates. Not recommended.
     """
-    sirix = SirixClient(
+    sirix = Sirix(
         username=username,
         password=password,
         sirix_uri=sirix_uri,
@@ -80,4 +80,4 @@ async def SirixAsync(
     return sirix
 
 
-__all__ = ["Sirix", "SirixAsync", "SirixClient", "Database", "Resource"]
+__all__ = ["Sirix", "SirixAsync", "Sirix", "Database", "Resource"]

@@ -13,7 +13,7 @@ from .asynchronous.rest import async_get_info, async_delete
 from .utils import handle_async
 
 
-class SirixClient:
+class Sirix:
     def __init__(
         self,
         username: str,
