@@ -1,34 +1,60 @@
-import asyncio
+from asyncio import Future, sleep
+import httpx
 
 from typing import Union
 
-from .sync.auth import authenticate
-from .asynchronous.auth import async_authenticate
-
-from .info import InstanceData, AuthData
+from pysirix.info import AuthData, TokenData
+from pysirix.utils import handle_async
 
 
 class Auth:
     def __init__(
         self,
         auth_data: AuthData,
-        instance_data: InstanceData,
-        session,
+        client: Union[httpx.Client, httpx.AsyncClient],
         asynchronous: bool,
-        allow_self_signed: bool,
     ):
         self._auth_data = auth_data
-        self._instance_data = instance_data
         self._asynchronous = asynchronous
-        self._session = session
-        if asynchronous:
-            self._allow_self_signed = allow_self_signed
+        self._client = client
 
-    def authenticate(self) -> Union[None, asyncio.Future]:
+    def authenticate(self) -> Union[None, Future]:
         if self._asynchronous:
-            loop = asyncio.get_running_loop()
-            fut = loop.create_future()
-            loop.create_task(async_authenticate(self, fut))
-            return fut
+            return handle_async(self._async_authenticate)
         else:
-            authenticate(self)
+            self._authenticate()
+
+    def _authenticate(self):
+        resp = self._client.post(
+            "/token",
+            json={
+                "username": self._auth_data.username,
+                "password": self._auth_data.password,
+                "grant_type": "password",
+            },
+        )
+        resp.raise_for_status()
+        self._token_data = TokenData(**resp.json())
+
+    async def _async_authenticate(self, fut: Future):
+        resp = await self._client.post(
+            "/token",
+            json={
+                "username": self._auth_data.username,
+                "password": self._auth_data.password,
+                "grant_type": "password",
+            },
+        )
+        resp.raise_for_status()
+        self._token_data = TokenData(**resp.json())
+        fut.set_result(None)
+
+
+"""
+    async def _async_refresh(self):
+        await sleep(self._token_data.expires_in - 5)
+        resp = await self._client.post(
+            "/token", json={"refresh_token": self._token_data.refresh_token}
+        )
+        self._token_data = TokenData(**resp.json())
+"""
