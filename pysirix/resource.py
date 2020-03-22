@@ -2,17 +2,10 @@ import json
 import xml.etree.ElementTree as ET
 
 from typing import Union, Dict, Tuple
-from .info import AuthData, InstanceData  # for type support
+from .info import AuthData  # for type support
 
 from .constants import Insert, Revision
 from .utils import handle_async
-from .sync.rest import create_resource, read_resource, update_resource, delete
-from .asynchronous.rest import (
-    async_create_resource,
-    async_read_resource,
-    async_update_resource,
-    async_delete,
-)
 
 
 class Resource:
@@ -25,7 +18,7 @@ class Resource:
         :param parent: the ``SirixClient`` instance which created this instance
         """
         self._session = parent._session
-        self._instance_data: InstanceData = parent._instance_data
+        self._instance_data = parent._instance_data
         self._auth_data: AuthData = parent._auth_data
         self._asynchronous = parent._asynchronous
 
@@ -51,7 +44,7 @@ class Resource:
                     if self.database_type == "json"
                     else ET.tostring(data)
                 )
-            return create_resource(self, data)
+            # return create_resource(self, data)
 
     def _async_init(self, data: Union[str, Dict, ET.Element]):
         database_info = [
@@ -59,8 +52,8 @@ class Resource:
             for db in self._instance_data.database_info
             if db["name"] == self.database_name
         ][0]
-        if self.resource_name not in database_info.get("resources"):
-            return handle_async(async_create_resource, self, data,)
+        # if self.resource_name not in database_info.get("resources"):
+            # return handle_async(async_create_resource, self, data,)
 
     def read(
         self,
@@ -68,10 +61,11 @@ class Resource:
         revision: Union[Revision, Tuple[Revision, Revision], None] = None,
         max_level: Union[int, None] = None,
     ):
-        if self._asynchronous:
-            return handle_async(async_read_resource, self, revision, node_id, max_level)
-        else:
-            return read_resource(self, revision, node_id, max_level)
+        pass
+        # if self._asynchronous:
+            # return handle_async(async_read_resource, self, revision, node_id, max_level)
+        # else:
+            # return read_resource(self, revision, node_id, max_level)
 
     def update(
         self,
@@ -102,13 +96,14 @@ class Resource:
             return self._create(data)
         else:
             print(insert.value)
-            if self._asynchronous:
-                return async_update_resource(self, nodeId, data, insert)
-            else:
-                return update_resource(self, nodeId, data, insert.value)
+            # if self._asynchronous:
+                # return async_update_resource(self, nodeId, data, insert)
+            # else:
+                # return update_resource(self, nodeId, data, insert.value)
 
     def delete(self, nodeId: Union[int, None]) -> bool:
-        if self._asynchronous:
-            return handle_async(async_delete, self, nodeId)
-        else:
-            return delete(self, nodeId)
+        pass
+        # if self._asynchronous:
+            # return handle_async(async_delete, self, nodeId)
+        # else:
+            # return delete(self, nodeId)

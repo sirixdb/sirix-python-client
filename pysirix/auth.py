@@ -36,7 +36,8 @@ class Auth:
             },
         )
         resp.raise_for_status()
-        self._token_data = TokenData(**resp.json())
+        data = {k.replace("-", "_"): v for k, v in resp.json().items()}
+        self._token_data = TokenData(**data)
         self._timer = Timer(self._token_data.expires_in - 5, self._refresh)
 
     async def _async_authenticate(self, fut: Future):
@@ -49,15 +50,17 @@ class Auth:
             },
         )
         resp.raise_for_status()
-        self._token_data = TokenData(**resp.json())
+        data = {k.replace("-", "_"): v for k, v in resp.json().items()}
+        self._token_data = TokenData(**data)
         self._timer = ensure_future(self._async_refresh())
         fut.set_result(None)
 
     def _refresh(self):
-        resp = await self._client.post(
+        resp = self._client.post(
             "/token", json={"refresh_token": self._token_data.refresh_token}
         )
-        self._token_data = TokenData(**resp.json())
+        data = {k.replace("-", "_"): v for k, v in resp.json().items()}
+        self._token_data = TokenData(**data)
         self._timer = Timer(self._token_data.expires_in - 5, self._refresh)
 
     async def _async_refresh(self):
@@ -65,5 +68,6 @@ class Auth:
         resp = await self._client.post(
             "/token", json={"refresh_token": self._token_data.refresh_token}
         )
-        self._token_data = TokenData(**resp.json())
+        data = {k.replace("-", "_"): v for k, v in resp.json().items()}
+        self._token_data = TokenData(**data)
         self._timer = ensure_future(self._async_refresh())

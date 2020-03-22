@@ -5,11 +5,9 @@ from typing import Union, Dict, Tuple
 
 from .resource import Resource
 
-from .sync.rest import create_database, delete
-from .asynchronous.rest import async_create_database, async_delete
 from .utils import handle_async
 
-from .info import AuthData, InstanceData  # for type support
+from .info import AuthData  # for type support
 
 
 class Database:
@@ -24,7 +22,7 @@ class Database:
         :param parent: the ``SirixClient`` instance which created this instance
         """
         self._session = parent._session
-        self._instance_data: InstanceData = parent._instance_data
+        self._instance_data = parent._instance_data
         self._auth_data: AuthData = parent._auth_data
         self._asynchronous = parent._asynchronous
 
@@ -74,7 +72,4 @@ class Database:
         return resource
 
     def delete(self) -> bool:
-        if self._asynchronous:
-            return handle_async(async_delete, self, None)
-        else:
-            return delete(self, None)
+        pass

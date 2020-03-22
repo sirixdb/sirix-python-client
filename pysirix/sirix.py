@@ -18,18 +18,10 @@ class Sirix:
         username: str,
         password: str,
         client: Union[httpx.Client, httpx.AsyncClient],
-        client_id: str = None,
-        client_secret: str = None,
     ):
         """
         :param username: the username registered with keycloak for this application
         :param password: the password registered with keycloak for this application
-        :param client_id: optional parameter, for authenticating directly with
-                keycloak (also requires the ``client_secret`` and optional ``keycloak_uri`` params).
-                This option is not recommended.
-        :param client_secret: optional parameter, for authenticating directly with
-                keycloak (also requires the ``client_id`` and optional ``keycloak_uri`` params).
-                This option is not recommended.
         """
         if isinstance(client, httpx.Client):
             self._asynchronous = False
@@ -40,7 +32,7 @@ class Sirix:
         else:
             self._client = SyncClient(client)
         self._auth = Auth(
-            AuthData(username, password, client_id, client_secret),
+            AuthData(username, password),
             client,
             self._asynchronous,
         )
@@ -75,7 +67,7 @@ class Sirix:
 
     def get_info(
         self, ret: bool = True
-    ) -> Union[Coroutine[List[Dict[str, str]]], List[Dict[str, str]]]:
+    ) -> Union[Coroutine[List[Dict[str, str]], str, int], List[Dict[str, str]]]:
         """
         :param ret: whether or not to return the info from the function
         """
