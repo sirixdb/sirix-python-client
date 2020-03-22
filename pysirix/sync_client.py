@@ -1,6 +1,6 @@
 from httpx import Client
 
-from typing import Dict, Union
+from typing import Dict, Union, List
 
 from pysirix.constants import DBType, Insert
 
@@ -9,13 +9,13 @@ class SyncClient:
     def __init__(self, client: Client):
         self.client = client
 
-    def global_info(self, resources=True) -> str:
+    def global_info(self, resources=True) -> List[Dict]:
         params = {}
         if resources:
             params["withResources"] = "true"
         resp = self.client.get("/", params=params)
         resp.raise_for_status()
-        return resp.text
+        return resp.json()["databases"]
 
     def delete_all(self) -> None:
         resp = self.client.delete("/")
@@ -25,10 +25,10 @@ class SyncClient:
         resp = self.client.put(name, headers={"Content-Type": db_type.value})
         resp.raise_for_status()
 
-    def get_database_info(self, name: str) -> str:
-        resp = self.client.get(name)
+    def get_database_info(self, name: str) -> Dict:
+        resp = self.client.get(name, headers={"Accept": "application/json"})
         resp.raise_for_status()
-        return resp.text
+        return resp.json()
 
     def delete_database(self, name: str) -> None:
         resp = self.client.delete(name)

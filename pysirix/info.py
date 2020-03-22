@@ -1,8 +1,4 @@
 from dataclasses import dataclass
-from typing import Dict, List
-
-
-DatabaseInfo = List[Dict[str, str]]
 
 
 @dataclass

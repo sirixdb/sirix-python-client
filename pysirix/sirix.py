@@ -1,16 +1,15 @@
-from typing import Dict, List, Union
+from typing import Dict, List, Union, Coroutine
 
-from requests import Session
-from aiohttp import ClientSession
+import httpx
 
-from .info import AuthData, InstanceData
-from .auth import Auth
-from .database import Database
+from pysirix.async_client import AsyncClient
+from pysirix.info import AuthData
+from pysirix.auth import Auth
+from pysirix.database import Database
 
-from .sync.rest import get_info, delete
-from .asynchronous.rest import async_get_info, async_delete
+from pysirix.sync_client import SyncClient
 
-from .utils import handle_async
+from pysirix.utils import handle_async
 
 
 class Sirix:
@@ -18,60 +17,42 @@ class Sirix:
         self,
         username: str,
         password: str,
-        sirix_uri: str = "https://localhost:9443",
+        client: Union[httpx.Client, httpx.AsyncClient],
         client_id: str = None,
         client_secret: str = None,
-        keycloak_uri: str = "http://localhost:8080",
-        asynchronous: bool = False,
-        allow_self_signed: bool = False,
     ):
         """
         :param username: the username registered with keycloak for this application
         :param password: the password registered with keycloak for this application
-        :param sirix_uri: the uri of the sirix instance
         :param client_id: optional parameter, for authenticating directly with
                 keycloak (also requires the ``client_secret`` and optional ``keycloak_uri`` params).
                 This option is not recommended.
         :param client_secret: optional parameter, for authenticating directly with
                 keycloak (also requires the ``client_id`` and optional ``keycloak_uri`` params).
                 This option is not recommended.
-        :param keycloak_uri: optional parameter, for authenticating directly with
-                keycloak (also requires the ``client_id`` and optional ``client_secret`` params).
-                This option is not recommended.
-        :param allow_self_signed: whether to accept self signed certificates. Not recommended.
         """
-        self._asynchronous = asynchronous
-        self._auth_data = AuthData(
-            username, password, keycloak_uri, client_id, client_secret
-        )
-        self._instance_data = InstanceData(sirix_uri)
-        if asynchronous:
-            self._session = ClientSession()
-            # we can't pass a global allow_self_signed setting to the async
-            # ClientSession, so we have to store it and handle it manually
-            self._allow_self_signed = allow_self_signed
+        if isinstance(client, httpx.Client):
+            self._asynchronous = False
         else:
-            self._session = Session()
-            if allow_self_signed:
-                self._allow_self_signed = allow_self_signed
-                self._session.verify = False
-        self._auth = Auth(self._auth_data, self._instance_data, self._session, self._asynchronous, allow_self_signed)
+            self._asynchronous = True
+        if self._asynchronous:
+            self._client = AsyncClient(client)
+        else:
+            self._client = SyncClient(client)
+        self._auth = Auth(
+            AuthData(username, password, client_id, client_secret),
+            client,
+            self._asynchronous,
+        )
 
-    def _init(self):
+    def authenticate(self):
         """
-        Initialize the instance. In async mode, these calls need to be awaited,
-        so we can't put this code in ``__init__`` 
+        Call the authenticate endpoint. Must be called before any other calls are made.
         """
-        self._auth.authenticate()
-        self.get_info(False)
-
-    async def _async_init(self):
-        """
-        Initialize the instance. We are making async function calls,
-        so we can't put this code in ``__init__``
-        """
-        await self._auth.authenticate()
-        await self.get_info()
+        if self._asynchronous:
+            return handle_async(self._auth.authenticate)
+        else:
+            self._auth.authenticate()
 
     def database(self, database_name: str, database_type: str = None):
         """Returns a database instance
@@ -92,17 +73,19 @@ class Sirix:
         db._init()
         return db
 
-    def get_info(self, ret: bool = True) -> Union[None, List[Dict[str, str]]]:
+    def get_info(
+        self, ret: bool = True
+    ) -> Union[Coroutine[List[Dict[str, str]]], List[Dict[str, str]]]:
         """
         :param ret: whether or not to return the info from the function
         """
         if self._asynchronous:
-            return handle_async(async_get_info, self, ret)
+            return handle_async(self._client.global_info, ret)
         else:
-            return get_info(self, ret)
+            return self._client.global_info(ret)
 
-    def delete(self) -> bool:
+    def delete(self) -> None:
         if self._asynchronous:
-            return handle_async(async_delete, self, None)
+            return handle_async(self._client.delete_all)
         else:
-            return delete(self, None)
+            return self._client.delete_all()

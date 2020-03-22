@@ -1,4 +1,6 @@
-from asyncio import Future, sleep
+from asyncio import Future, ensure_future, sleep
+from threading import Timer
+
 import httpx
 
 from typing import Union
@@ -35,6 +37,7 @@ class Auth:
         )
         resp.raise_for_status()
         self._token_data = TokenData(**resp.json())
+        self._timer = Timer(self._token_data.expires_in - 5, self._refresh)
 
     async def _async_authenticate(self, fut: Future):
         resp = await self._client.post(
@@ -47,14 +50,20 @@ class Auth:
         )
         resp.raise_for_status()
         self._token_data = TokenData(**resp.json())
+        self._timer = ensure_future(self._async_refresh())
         fut.set_result(None)
 
+    def _refresh(self):
+        resp = await self._client.post(
+            "/token", json={"refresh_token": self._token_data.refresh_token}
+        )
+        self._token_data = TokenData(**resp.json())
+        self._timer = Timer(self._token_data.expires_in - 5, self._refresh)
 
-"""
     async def _async_refresh(self):
         await sleep(self._token_data.expires_in - 5)
         resp = await self._client.post(
             "/token", json={"refresh_token": self._token_data.refresh_token}
         )
         self._token_data = TokenData(**resp.json())
-"""
+        self._timer = ensure_future(self._async_refresh())

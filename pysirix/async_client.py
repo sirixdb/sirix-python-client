@@ -1,6 +1,6 @@
 from httpx import AsyncClient as Client
 
-from typing import Dict, Union
+from typing import Dict, Union, List
 from asyncio import Future
 
 from pysirix.constants import DBType, Insert
@@ -16,7 +16,7 @@ class AsyncClient:
             params["withResources"] = "true"
         resp = await self.client.get("/", params=params)
         resp.raise_for_status()
-        fut.set_result(resp.text)
+        fut.set_result(resp.json()["databases"])
 
     async def delete_all(self, fut: Future):
         resp = await self.client.delete("/")
@@ -31,7 +31,7 @@ class AsyncClient:
     async def get_database_info(self, fut: Future, name: str):
         resp = await self.client.get(name)
         resp.raise_for_status()
-        fut.set_result(resp.text)
+        fut.set_result(resp.json())
 
     async def delete_database(self, fut: Future, name: str):
         resp = await self.client.delete(name)
