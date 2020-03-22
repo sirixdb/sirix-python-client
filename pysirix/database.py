@@ -37,34 +37,24 @@ class Database:
         database_list = [
             db
             for db in self._instance_data.database_info
-            if db["name"] == database_name
+            if db["name"] == self.database_name
         ]
         if len(database_list) != 0:
             self.database_type: str = database_list[0]["type"]
         elif self.database_type:
             self.database_type: str = self.database_type.lower()
-            self._create()
+            if self._asynchronous:
+                return handle_async(
+                    async_create_database, self, self.database_name, self.database_type
+                )
+            else:
+                return create_database(self, self.database_name, self.database_type)
         else:
             raise Exception(
                 "No database type specified, and database does not already exist"
             )
 
-    def _create(self):
-        """Creates the database. Should be called if the database does not yet exist"""
-        if self._asynchronous:
-            return handle_async(
-                async_create_database, self, self.database_name, self.database_type
-            )
-        else:
-            return create_database(self, self.database_type, self.database_type)
-
-    def __getitem__(self, key: str):
-        """
-        Returns a resource instance. See :meth:`_get_resource` for further information
-        """
-        return self._get_resource(key)
-
-    def _get_resource(self, resource_name: str, data: Union[str, ET.Element, Dict] = None):
+    def resource(self, resource_name: str, data: Union[str, ET.Element, Dict] = None):
         """Returns a resource instance
 
         If a resource with the given name and type does not exist,
@@ -72,17 +62,16 @@ class Database:
 
         If the resource does not yet exist, it is created
 
-        :param database_name: the name of the database to access
-        :param database_type: the type of the database to access
         :param resource_name: the name of the resource to aceess
         :param data: data to initialize resource with if it does
                 yet exist
-
-        You shouldn't use this method directly, rather, you should use index access, as follows:
-            >>> sirix = Sirix(params)
-            >>> sirix[(database_name, database_type)]
         """
-        return Resource(resource_name, parent=self)
+        resource = Resource(resource_name, parent=self)
+        if self._asynchronous:
+            return handle_async(resource._async_init(), data)
+        else:
+            resource._init(data)
+        return resource
 
     def delete(self) -> bool:
         if self._asynchronous:

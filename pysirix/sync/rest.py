@@ -115,7 +115,10 @@ def update_resource(self, node_id: int, data: str, insert: str) -> bool:
     response = self._session.head(
         f"{self._instance_data.sirix_uri}/{self.database_name}/{self.resource_name}",
         params=params,
-        headers={"Authorization": f"Bearer {self._auth_data.access_token}"},
+        headers={
+            "Authorization": f"Bearer {self._auth_data.access_token}",
+            "Accept": data_type,
+        },
     )
     etag = response.headers.get("ETag")
     # prepare to update
@@ -127,10 +130,12 @@ def update_resource(self, node_id: int, data: str, insert: str) -> bool:
         headers={
             "Authorization": f"Bearer {self._auth_data.access_token}",
             "Content-Type": data_type,
+            "ETag": etag,
         },
         data=data,
     )
-    if response.status_code == 201:
+    print(response)
+    if response.status_code == 200:
         return True
     return False
 

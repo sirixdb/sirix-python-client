@@ -1,5 +1,4 @@
-from typing import Tuple, Dict, List, Union
-import asyncio
+from typing import Dict, List, Union
 
 from requests import Session
 from aiohttp import ClientSession
@@ -54,6 +53,7 @@ class SirixClient:
         else:
             self._session = Session()
             if allow_self_signed:
+                self._allow_self_signed = allow_self_signed
                 self._session.verify = False
         self._auth = Auth(self._auth_data, self._instance_data, self._session, self._asynchronous, allow_self_signed)
 
@@ -73,15 +73,7 @@ class SirixClient:
         await self._auth.authenticate()
         await self.get_info()
 
-    def __getitem__(self, key: Union[Tuple[str], str]):
-        """
-        Returns a database instance. See :meth:`_get_database` for further information
-        """
-        if type(key) == tuple:
-            return self._get_database(*key)
-        return self._get_database(key)
-
-    def _get_database(self, database_name: str, database_type: str = None):
+    def database(self, database_name: str, database_type: str = None):
         """Returns a database instance
 
         If a database with the given name and type does not exist,
@@ -95,10 +87,6 @@ class SirixClient:
 
         :param database_name: the name of the database to access
         :param database_type: the type of the database to access
-
-        You shouldn't use this method directly, rather, you should use index access, as follows:
-            >>> sirix = Sirix(*params)
-            >>> sirix[(database_name, database_type)]
         """
         db = Database(database_name, database_type, parent=self)
         db._init()

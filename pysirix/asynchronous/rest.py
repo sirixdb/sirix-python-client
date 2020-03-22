@@ -131,6 +131,7 @@ async def async_update_resource(
         headers={
             "Authorization": f"Bearer {self._auth_data.access_token}",
             "Content-Type": data_type,
+            "ETag": etag,
         },
         ssl=False if self._allow_self_signed else True,
         data=data,

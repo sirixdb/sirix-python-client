@@ -1,6 +1,7 @@
 from .client import SirixClient
 from .database import Database
 from .resource import Resource
+from .constants import Insert
 
 
 def Sirix(
