@@ -12,7 +12,7 @@ class SyncClient:
     def global_info(self, resources=True) -> str:
         params = {}
         if resources:
-            params = {"withResources": "true"}
+            params["withResources"] = "true"
         resp = self.client.get("/", params=params)
         resp.raise_for_status()
         return resp.text
@@ -22,8 +22,7 @@ class SyncClient:
         resp.raise_for_status()
 
     def create_database(self, name: str, db_type: DBType) -> None:
-        headers = {"Content-Type": db_type.value}
-        resp = self.client.put(name, headers=headers)
+        resp = self.client.put(name, headers={"Content-Type": db_type.value})
         resp.raise_for_status()
 
     def get_database_info(self, name: str) -> str:
@@ -36,17 +35,17 @@ class SyncClient:
         resp.raise_for_status()
 
     def resource_exists(self, db_name: str, db_type: DBType, name: str) -> bool:
-        headers = {"Accept": db_type.value}
-        resp = self.client.head(f"{db_name}/{name}", headers=headers)
+        resp = self.client.head(f"{db_name}/{name}", headers={"Accept": db_type.value})
         if resp.status_code == 200:
             return True
         return False
 
     def create_resource(
-        self, db_name: str, db_type: DBType, name: str, creation_data: str
+        self, db_name: str, db_type: DBType, name: str, data: str
     ) -> str:
-        headers = {"Content-Type": db_type.value}
-        resp = self.client.put(f"{db_name}/{name}", headers=headers, data=creation_data)
+        resp = self.client.put(
+            f"{db_name}/{name}", headers={"Content-Type": db_type.value}, data=data,
+        )
         resp.raise_for_status()
         return resp.text
 
@@ -57,8 +56,9 @@ class SyncClient:
         name: str,
         params: Dict[str, Union[str, int]],
     ) -> str:
-        headers = {"Accept": db_type.value}
-        resp = self.client.get(f"{db_name}/{name}", params=params, headers=headers)
+        resp = self.client.get(
+            f"{db_name}/{name}", params=params, headers={"Accept": db_type.value}
+        )
         resp.raise_for_status()
         return resp.text
 
@@ -70,7 +70,9 @@ class SyncClient:
     def get_etag(
         self, db_name: str, db_type: DBType, name: str, params: Dict[str, str]
     ) -> str:
-        resp = self.client.head(f"{db_name}/{name}", headers={"Accept": db_type.value})
+        resp = self.client.head(
+            f"{db_name}/{name}", params=params, headers={"Accept": db_type.value}
+        )
         resp.raise_for_status()
         return resp.headers["etag"]
 
@@ -88,6 +90,7 @@ class SyncClient:
             f"{db_name}/{name}",
             params={"nodeId": node_id, "insert": insert.value},
             headers={"ETag": etag, "Content-Type": db_type.value},
+            data=data,
         )
         resp.raise_for_status()
         return resp.text
@@ -99,7 +102,7 @@ class SyncClient:
         name: str,
         node_id: Union[int, None],
         etag: Union[str, None],
-    ):
+    ) -> None:
         headers = {"Content-Type": db_type.value}
         if etag:
             headers.update({"ETag": etag})
