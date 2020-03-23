@@ -35,31 +35,17 @@ class Sirix:
     def authenticate(self):
         """
         Call the authenticate endpoint. Must be called before any other calls are made.
-
-        Should be called internally by :py:func:`sirix_sync` or by :py:func:`sirix_async`.
+        This is done internally by :py:func:`sirix_sync` or by :py:func:`sirix_async`.
         """
-        if self._asynchronous:
-            return self._auth.authenticate()
-        else:
-            self._auth.authenticate()
+        return self._auth.authenticate()
 
     def database(self, database_name: str, database_type: DBType):
         """Returns a database instance
 
-        If a database with the given name and type does not exist,
-        it is created.
-        
-        If ``database_type`` conflicts with the actual database type,
-        the value of ``database_type`` is ignored.
-
-        if ``database_type`` is not provided, and the database does not yet exist,
-        an error is raised.
-
         :param database_name: the name of the database to access
         :param database_type: the type of the database to access
         """
-        db = Database(database_name, database_type, self._client)
-        return db
+        return Database(database_name, database_type, self._client)
 
     def get_info(
         self, resources: bool = True
@@ -70,10 +56,7 @@ class Sirix:
         :return:
         :raises:
         """
-        if self._asynchronous:
-            return self._client.global_info(resources)
-        else:
-            return self._client.global_info(resources)
+        return self._client.global_info(resources)
 
     def delete_all(self) -> None:
         """
@@ -82,7 +65,4 @@ class Sirix:
         :return: ``None``
         :raises:
         """
-        if self._asynchronous:
-            return self._client.delete_all()
-        else:
-            return self._client.delete_all()
+        return self._client.delete_all()

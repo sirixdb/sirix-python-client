@@ -4,7 +4,6 @@ import xml.etree.ElementTree as ET
 from typing import Union, Dict, Tuple
 
 from .constants import Insert, Revision
-from .utils import handle_async
 
 
 class Resource:

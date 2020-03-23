@@ -1,4 +1,4 @@
-from typing import Union, Optional, Coroutine
+from typing import Union, Optional, Coroutine, Dict, List
 
 from pysirix.constants import DBType
 from pysirix.sync_client import SyncClient
@@ -33,16 +33,10 @@ class Database:
         self.database_type = database_type
 
     def create(self):
-        if self._asynchronous:
-            return self._client.create_database(self.database_name, self.database_type)
-        else:
-            self._client.create_database(self.database_name, self.database_type)
+        return self._client.create_database(self.database_name, self.database_type)
 
-    def get_database_info(self):
-        if self._asynchronous:
-            return self._client.get_database_info(self.database_name)
-        else:
-            return self._client.get_database_info(self.database_name)
+    def get_database_info(self) -> Union[Coroutine, List[Dict]]:
+        return self._client.get_database_info(self.database_name)
 
     def resource(self, resource_name: str):
         """Returns a resource instance
@@ -63,7 +57,4 @@ class Database:
         :return:
         :raises:
         """
-        if self._asynchronous:
-            return self._client.delete_database(self.database_name)
-        else:
-            self._client.delete_database(self.database_name)
+        return self._client.delete_database(self.database_name)
