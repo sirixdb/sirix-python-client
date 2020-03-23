@@ -8,7 +8,6 @@ from pysirix.auth import Auth
 from pysirix.database import Database
 
 from pysirix.constants import DBType
-from pysirix.utils import handle_async
 
 
 class Sirix:
@@ -40,7 +39,7 @@ class Sirix:
         Should be called internally by :py:func:`sirix_sync` or by :py:func:`sirix_async`.
         """
         if self._asynchronous:
-            return handle_async(self._auth.authenticate)
+            return self._auth.authenticate()
         else:
             self._auth.authenticate()
 
@@ -72,7 +71,7 @@ class Sirix:
         :raises:
         """
         if self._asynchronous:
-            return handle_async(self._client.global_info, resources)
+            return self._client.global_info(resources)
         else:
             return self._client.global_info(resources)
 
@@ -84,6 +83,6 @@ class Sirix:
         :raises:
         """
         if self._asynchronous:
-            return handle_async(self._client.delete_all)
+            return self._client.delete_all()
         else:
             return self._client.delete_all()

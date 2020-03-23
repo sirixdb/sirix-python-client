@@ -5,8 +5,6 @@ from pysirix.sync_client import SyncClient
 from pysirix.async_client import AsyncClient
 from pysirix.resource import Resource
 
-from .utils import handle_async
-
 
 class Database:
     def __init__(
@@ -36,15 +34,13 @@ class Database:
 
     def create(self):
         if self._asynchronous:
-            handle_async(
-                self._client.create_database, self.database_name, self.database_type
-            )
+            return self._client.create_database(self.database_name, self.database_type)
         else:
             self._client.create_database(self.database_name, self.database_type)
 
     def get_database_info(self):
         if self._asynchronous:
-            return handle_async(self._client.get_database_info, self.database_name)
+            return self._client.get_database_info(self.database_name)
         else:
             return self._client.get_database_info(self.database_name)
 
@@ -68,6 +64,6 @@ class Database:
         :raises:
         """
         if self._asynchronous:
-            handle_async(self._client.delete_database, self.database_name)
-        else:
             return self._client.delete_database(self.database_name)
+        else:
+            self._client.delete_database(self.database_name)

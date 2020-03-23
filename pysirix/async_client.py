@@ -10,33 +10,30 @@ class AsyncClient:
     def __init__(self, client: Client):
         self.client = client
 
-    async def global_info(self, fut: Future, resources=True):
+    async def global_info(self, resources=True):
         params = {}
         if resources:
             params["withResources"] = True
         resp = await self.client.get("/", params=params)
         resp.raise_for_status()
-        fut.set_result(resp.json()["databases"])
+        return resp.json()["databases"]
 
-    async def delete_all(self, fut: Future):
+    async def delete_all(self):
         resp = await self.client.delete("/")
         resp.raise_for_status()
-        fut.set_result(None)
 
-    async def create_database(self, fut: Future, name: str, db_type: DBType):
+    async def create_database(self, name: str, db_type: DBType):
         resp = await self.client.put(name, headers={"Content-Type": db_type.value})
         resp.raise_for_status()
-        fut.set_result(None)
 
-    async def get_database_info(self, fut: Future, name: str):
+    async def get_database_info(self, name: str):
         resp = await self.client.get(name)
         resp.raise_for_status()
-        fut.set_result(resp.json())
+        return resp.json()
 
-    async def delete_database(self, fut: Future, name: str):
+    async def delete_database(self, name: str):
         resp = await self.client.delete(name)
         resp.raise_for_status()
-        fut.set_result(None)
 
     async def resource_exists(
         self, fut: Future, db_name: str, db_type: DBType, name: str
