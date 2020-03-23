@@ -2,14 +2,6 @@ from dataclasses import dataclass
 
 
 @dataclass
-class AuthData:
-    username: str
-    password: str
-    client_id: str = None
-    client_secret: str = None
-
-
-@dataclass
 class TokenData:
     access_token: str
     expires_in: int

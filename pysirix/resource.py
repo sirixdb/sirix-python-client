@@ -2,7 +2,6 @@ import json
 import xml.etree.ElementTree as ET
 
 from typing import Union, Dict, Tuple
-from .info import AuthData  # for type support
 
 from .constants import Insert, Revision
 from .utils import handle_async
@@ -19,7 +18,6 @@ class Resource:
         """
         self._session = parent._session
         self._instance_data = parent._instance_data
-        self._auth_data: AuthData = parent._auth_data
         self._asynchronous = parent._asynchronous
 
         self.database_name = parent.database_name

@@ -3,7 +3,6 @@ from typing import Dict, List, Union, Coroutine
 import httpx
 
 from pysirix.async_client import AsyncClient
-from pysirix.info import AuthData
 from pysirix.auth import Auth
 from pysirix.database import Database
 
@@ -22,6 +21,7 @@ class Sirix:
         """
         :param username: the username registered with keycloak for this application
         :param password: the password registered with keycloak for this application
+        :param client: the ``httpx`` ``Client`` or ``AsyncClient`` to use
         """
         if isinstance(client, httpx.Client):
             self._asynchronous = False
@@ -31,15 +31,14 @@ class Sirix:
             self._client = AsyncClient(client)
         else:
             self._client = SyncClient(client)
-        self._auth = Auth(
-            AuthData(username, password),
-            client,
-            self._asynchronous,
-        )
+        self._auth = Auth(username, password, client, self._asynchronous)
 
     def authenticate(self):
         """
         Call the authenticate endpoint. Must be called before any other calls are made.
+
+        Should be called internally by the :py:func:`sirix_sync` function or by the
+        :py:func:`sirix_async` function.
         """
         if self._asynchronous:
             return handle_async(self._auth.authenticate)
@@ -66,15 +65,15 @@ class Sirix:
         return db
 
     def get_info(
-        self, ret: bool = True
+        self, resources: bool = True
     ) -> Union[Coroutine[List[Dict[str, str]], str, int], List[Dict[str, str]]]:
-        """
-        :param ret: whether or not to return the info from the function
+        """returns a list of database names and types, and (optionally) a list their resources as well
+        :param resources: whether or not to include resource information
         """
         if self._asynchronous:
-            return handle_async(self._client.global_info, ret)
+            return handle_async(self._client.global_info, resources)
         else:
-            return self._client.global_info(ret)
+            return self._client.global_info(resources)
 
     def delete(self) -> None:
         if self._asynchronous:

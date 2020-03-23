@@ -7,8 +7,6 @@ from .resource import Resource
 
 from .utils import handle_async
 
-from .info import AuthData  # for type support
-
 
 class Database:
     def __init__(self, database_name: str, database_type: str, parent):
@@ -23,13 +21,10 @@ class Database:
         """
         self._session = parent._session
         self._instance_data = parent._instance_data
-        self._auth_data: AuthData = parent._auth_data
         self._asynchronous = parent._asynchronous
 
         self.database_name = database_name
         self.database_type = database_type
-
-        self._allow_self_signed = parent._allow_self_signed
 
     def _init(self):
         database_list = [
@@ -37,6 +32,7 @@ class Database:
             for db in self._instance_data.database_info
             if db["name"] == self.database_name
         ]
+        """
         if len(database_list) != 0:
             self.database_type: str = database_list[0]["type"]
         elif self.database_type:
@@ -51,6 +47,7 @@ class Database:
             raise Exception(
                 "No database type specified, and database does not already exist"
             )
+        """
 
     def resource(self, resource_name: str, data: Union[str, ET.Element, Dict] = None):
         """Returns a resource instance

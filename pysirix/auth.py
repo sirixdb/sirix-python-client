@@ -5,18 +5,20 @@ import httpx
 
 from typing import Union
 
-from pysirix.info import AuthData, TokenData
+from pysirix.info import TokenData
 from pysirix.utils import handle_async
 
 
 class Auth:
     def __init__(
         self,
-        auth_data: AuthData,
+        username: str,
+        password: str,
         client: Union[httpx.Client, httpx.AsyncClient],
         asynchronous: bool,
     ):
-        self._auth_data = auth_data
+        self._username = username
+        self._password = password
         self._asynchronous = asynchronous
         self._client = client
 
@@ -30,8 +32,8 @@ class Auth:
         resp = self._client.post(
             "/token",
             json={
-                "username": self._auth_data.username,
-                "password": self._auth_data.password,
+                "username": self._username,
+                "password": self._password,
                 "grant_type": "password",
             },
         )

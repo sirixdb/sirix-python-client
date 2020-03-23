@@ -13,18 +13,10 @@ Module contents
 Submodules
 ----------
 
-pysirix.auth module
--------------------
+pysirix.sirix module
+--------------------
 
-.. automodule:: pysirix.auth
-   :members:
-   :private-members:
-   :undoc-members:
-
-pysirix.client module
----------------------
-
-.. automodule:: pysirix.client
+.. automodule:: pysirix.sirix
    :members:
    :private-members:
    :undoc-members:
@@ -33,6 +25,46 @@ pysirix.database module
 -----------------------
 
 .. automodule:: pysirix.database
+   :members:
+   :private-members:
+   :undoc-members:
+
+pysirix.resource module
+-----------------------
+
+.. automodule:: pysirix.resource
+   :members:
+   :private-members:
+   :undoc-members:
+
+pysirix.auth module
+-------------------
+
+.. automodule:: pysirix.auth
+   :members:
+   :private-members:
+   :undoc-members:
+
+pysirix.sync_client module
+--------------------------
+
+.. automodule:: pysirix.sync_client
+   :members:
+   :private-members:
+   :undoc-members:
+
+pysirix.async_client module
+---------------------------
+
+.. automodule:: pysirix.async_client
+   :members:
+   :private-members:
+   :undoc-members:
+
+pysirix.utils module
+--------------------
+
+.. automodule:: pysirix.utils
    :members:
    :private-members:
    :undoc-members:
