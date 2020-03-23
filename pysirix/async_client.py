@@ -36,27 +36,26 @@ class AsyncClient:
         resp.raise_for_status()
 
     async def resource_exists(
-        self, fut: Future, db_name: str, db_type: DBType, name: str
+        self, db_name: str, db_type: DBType, name: str
     ):
         resp = await self.client.head(
             f"{db_name}/{name}", headers={"Accept": db_type.value}
         )
         if resp.status_code == 200:
-            fut.set_result(True)
-        fut.set_result(False)
+            return True
+        return False
 
     async def create_resource(
-        self, fut: Future, db_name: str, db_type: DBType, name: str, data: str
+        self, db_name: str, db_type: DBType, name: str, data: str
     ):
         resp = await self.client.put(
             f"{db_name}/{name}", headers={"Content-Type": db_type.value}, data=data,
         )
         resp.raise_for_status()
-        fut.set_result(resp.text)
+        return resp.text
 
     async def read_resource(
         self,
-        fut: Future,
         db_name: str,
         db_type: DBType,
         name: str,
@@ -66,16 +65,15 @@ class AsyncClient:
             f"{db_name}/{name}", params=params, headers={"Accept": db_type.value}
         )
         resp.raise_for_status()
-        fut.set_result(resp.text)
+        return resp.text
 
-    async def post_query(self, fut: Future, query: str):
+    async def post_query(self, query: str):
         resp = await self.client.post("/", data=query)
         resp.raise_for_status()
-        fut.set_result(resp.text)
+        return resp.text
 
     async def get_etag(
         self,
-        fut: Future,
         db_name: str,
         db_type: DBType,
         name: str,
@@ -85,11 +83,10 @@ class AsyncClient:
             f"{db_name}/{name}", params=params, headers={"Accept": db_type.value}
         )
         resp.raise_for_status()
-        fut.set_result(resp.headers["etag"])
+        return resp.headers["etag"]
 
     async def update(
         self,
-        fut: Future,
         db_name: str,
         db_type: DBType,
         name: str,
@@ -105,11 +102,10 @@ class AsyncClient:
             data=data,
         )
         resp.raise_for_status()
-        fut.set_result(resp.text)
+        return resp.text
 
     async def resource_delete(
         self,
-        fut: Future,
         db_name: str,
         db_type: DBType,
         name: str,
@@ -126,4 +122,3 @@ class AsyncClient:
             f"{db_name}/{name}", params=params, headers=headers
         )
         resp.raise_for_status()
-        fut.set_result(None)

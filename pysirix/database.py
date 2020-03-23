@@ -23,10 +23,6 @@ class Database:
         :param client: the :py:class:`SyncClient` or :py:class:`AsyncClient`
                 instance to use for network requests
         """
-        if isinstance(client, SyncClient):
-            self._asynchronous = False
-        else:
-            self._asynchronous = True
         self._client = client
 
         self.database_name = database_name
@@ -48,8 +44,9 @@ class Database:
 
         :param resource_name: the name of the resource to access
         """
-        resource = Resource(resource_name, parent=self)
-        return resource
+        return Resource(
+            self.database_name, self.database_type, resource_name, self._client
+        )
 
     def delete(self) -> Optional[Coroutine]:
         """

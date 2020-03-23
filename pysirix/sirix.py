@@ -23,14 +23,11 @@ class Sirix:
         :param client: the ``httpx`` ``Client`` or ``AsyncClient`` to use
         """
         if isinstance(client, httpx.Client):
-            self._asynchronous = False
-        else:
-            self._asynchronous = True
-        if self._asynchronous:
-            self._client = AsyncClient(client)
-        else:
             self._client = SyncClient(client)
-        self._auth = Auth(username, password, client, self._asynchronous)
+            self._auth = Auth(username, password, client, False)
+        else:
+            self._client = AsyncClient(client)
+            self._auth = Auth(username, password, client, True)
 
     def authenticate(self):
         """

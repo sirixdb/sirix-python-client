@@ -1,56 +1,42 @@
 import json
 import xml.etree.ElementTree as ET
+from datetime import datetime
 
 from typing import Union, Dict, Tuple
 
-from .constants import Insert, Revision
+from pysirix.constants import Insert, Revision, DBType
+
+from pysirix.sync_client import SyncClient
+from pysirix.async_client import AsyncClient
 
 
 class Resource:
-    def __init__(self, resource_name: str, parent):
+    def __init__(
+        self,
+        db_name: str,
+        db_type: DBType,
+        resource_name: str,
+        client: Union[SyncClient, AsyncClient],
+    ):
         """database access class
-        this class allows for manipulation of a database 
+        this class allows for manipulation of a database
 
+        :param db_name: the name of the database this resource belongs to.
+        :param db_type: the type of data the database can hold.
         :param resource_name: the name of the resource being accessed, or to
                 be created if the resource does not yet exist
-        :param parent: the ``SirixClient`` instance which created this instance
+        :param client: the :py:class:`SyncClient` or :py:class:`AsyncClient`
+                instance to use for network requests
         """
-        self._session = parent._session
-        self._instance_data = parent._instance_data
-        self._asynchronous = parent._asynchronous
-
-        self.database_name = parent.database_name
-        self.database_type = parent.database_type
+        self.db_name = db_name
+        self.db_type = db_type
         self.resource_name = resource_name
+        self._client = client
 
-        self._allow_self_signed = parent._allow_self_signed
-
-    def _init(self, data: Union[str, Dict, ET.Element, None]):
+    def create(self, data: Union[str, Dict, ET.Element, None]):
         """
         :param data: the data to initialize the resource with
         """
-        database_info = next(
-            (db
-            for db in self._instance_data.database_info
-            if db["name"] == self.database_name)
-        )
-        if self.resource_name not in database_info.get("resources"):
-            if not isinstance(data, str):
-                data = (
-                    json.dumps(data)
-                    if self.database_type == "json"
-                    else ET.tostring(data)
-                )
-            # return create_resource(self, data)
-
-    def _async_init(self, data: Union[str, Dict, ET.Element]):
-        database_info = [
-            db
-            for db in self._instance_data.database_info
-            if db["name"] == self.database_name
-        ][0]
-        # if self.resource_name not in database_info.get("resources"):
-            # return handle_async(async_create_resource, self, data,)
 
     def read(
         self,
@@ -58,11 +44,27 @@ class Resource:
         revision: Union[Revision, Tuple[Revision, Revision], None] = None,
         max_level: Union[int, None] = None,
     ):
-        pass
-        # if self._asynchronous:
-            # return handle_async(async_read_resource, self, revision, node_id, max_level)
-        # else:
-            # return read_resource(self, revision, node_id, max_level)
+        params = {}
+        if node_id:
+            params["nodeId"] = node_id
+        if max_level:
+            params["maxLevel"] = max_level
+        if revision:
+            if type(revision) == int:
+                params["revision"] = revision
+            elif type(revision) == datetime:
+                params["revision-timestamp"] = revision.isoformat()
+            if type(revision) == tuple:
+                if type(revision[0]) == datetime:
+                    params["start-revision-timestamp"] = revision[0].isoformat()
+                    params["end-revision-timestamp"] = revision[1].isoformat()
+                else:
+                    params["start-revision"] = revision[0]
+                    params["end-revision"] = revision[1]
+
+        return self._client.read_resource(
+            self.db_name, self.db_type, self.resource_name, params
+        )
 
     def update(
         self,
@@ -94,13 +96,13 @@ class Resource:
         else:
             print(insert.value)
             # if self._asynchronous:
-                # return async_update_resource(self, nodeId, data, insert)
+            # return async_update_resource(self, nodeId, data, insert)
             # else:
-                # return update_resource(self, nodeId, data, insert.value)
+            # return update_resource(self, nodeId, data, insert.value)
 
     def delete(self, nodeId: Union[int, None]) -> bool:
         pass
         # if self._asynchronous:
-            # return handle_async(async_delete, self, nodeId)
+        # return handle_async(async_delete, self, nodeId)
         # else:
-            # return delete(self, nodeId)
+        # return delete(self, nodeId)
