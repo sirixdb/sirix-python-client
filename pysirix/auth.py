@@ -36,9 +36,7 @@ class Auth:
             },
         )
         resp.raise_for_status()
-        data = {k.replace("-", "_"): v for k, v in resp.json().items()}
-        self._token_data = TokenData(**data)
-        self._timer = Timer(self._token_data.expires_in - 5, self._refresh)
+        self._handle_data(resp)
 
     async def _async_authenticate(self, fut: Future):
         resp = await self._client.post(
@@ -50,24 +48,30 @@ class Auth:
             },
         )
         resp.raise_for_status()
-        data = {k.replace("-", "_"): v for k, v in resp.json().items()}
-        self._token_data = TokenData(**data)
-        self._timer = ensure_future(self._async_refresh())
+        await self._async_handle_data(resp)
         fut.set_result(None)
 
     def _refresh(self):
         resp = self._client.post(
             "/token", json={"refresh_token": self._token_data.refresh_token}
         )
-        data = {k.replace("-", "_"): v for k, v in resp.json().items()}
-        self._token_data = TokenData(**data)
-        self._timer = Timer(self._token_data.expires_in - 5, self._refresh)
+        self._handle_data(resp)
 
     async def _async_refresh(self):
         await sleep(self._token_data.expires_in - 5)
         resp = await self._client.post(
             "/token", json={"refresh_token": self._token_data.refresh_token}
         )
+        await self._async_handle_data(resp)
+
+    def _handle_data(self, resp):
         data = {k.replace("-", "_"): v for k, v in resp.json().items()}
         self._token_data = TokenData(**data)
+        self._client.headers["Authorization"] = f"{self._token_data.token_type} {self._token_data.access_token}"
+        self._timer = Timer(self._token_data.expires_in - 5, self._refresh)
+
+    async def _async_handle_data(self, resp):
+        data = {k.replace("-", "_"): v for k, v in resp.json().items()}
+        self._token_data = TokenData(**data)
+        self._client.headers["Authorization"] = f"{self._token_data.token_type} {self._token_data.access_token}"
         self._timer = ensure_future(self._async_refresh())

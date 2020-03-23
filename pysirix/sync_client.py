@@ -12,7 +12,7 @@ class SyncClient:
     def global_info(self, resources=True) -> List[Dict]:
         params = {}
         if resources:
-            params["withResources"] = "true"
+            params["withResources"] = True
         resp = self.client.get("/", params=params)
         resp.raise_for_status()
         return resp.json()["databases"]

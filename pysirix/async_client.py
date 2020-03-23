@@ -13,7 +13,7 @@ class AsyncClient:
     async def global_info(self, fut: Future, resources=True):
         params = {}
         if resources:
-            params["withResources"] = "true"
+            params["withResources"] = True
         resp = await self.client.get("/", params=params)
         resp.raise_for_status()
         fut.set_result(resp.json()["databases"])
