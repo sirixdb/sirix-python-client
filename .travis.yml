@@ -1,3 +1,7 @@
+services:
+  - docker
+before_install:
+  - ./wait.sh
 language: python
 python:
   - "3.7"
@@ -5,4 +9,4 @@ python:
 install:
   - pip install -r requirements-all.txt
 script:
-  - python -m pytest --cov=pysirix
+  - cd tests && python -m pytest --cov=pysirix
