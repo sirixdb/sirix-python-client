@@ -1,15 +1,20 @@
-import json
-import xml.etree.ElementTree as ET
+from typing import Union, Optional, Coroutine
 
-from typing import Union, Dict, Tuple
-
-from .resource import Resource
+from pysirix.constants import DBType
+from pysirix.sync_client import SyncClient
+from pysirix.async_client import AsyncClient
+from pysirix.resource import Resource
 
 from .utils import handle_async
 
 
 class Database:
-    def __init__(self, database_name: str, database_type: str, parent):
+    def __init__(
+        self,
+        database_name: str,
+        database_type: DBType,
+        client: Union[SyncClient, AsyncClient],
+    ):
         """database access class
         this class allows for manipulation of a database 
 
@@ -17,39 +22,33 @@ class Database:
                 if it does not yet exist
         :param database_type: the type of the database being accessed, or to
                 be created if the database does not yet exist
-        :param parent: the ``SirixClient`` instance which created this instance
+        :param client: the :py:class:`SyncClient` or :py:class:`AsyncClient`
+                instance to use for network requests
         """
-        self._session = parent._session
-        self._instance_data = parent._instance_data
-        self._asynchronous = parent._asynchronous
+        if isinstance(client, SyncClient):
+            self._asynchronous = False
+        else:
+            self._asynchronous = True
+        self._client = client
 
         self.database_name = database_name
         self.database_type = database_type
 
-    def _init(self):
-        database_list = [
-            db
-            for db in self._instance_data.database_info
-            if db["name"] == self.database_name
-        ]
-        """
-        if len(database_list) != 0:
-            self.database_type: str = database_list[0]["type"]
-        elif self.database_type:
-            self.database_type: str = self.database_type.lower()
-            if self._asynchronous:
-                return handle_async(
-                    async_create_database, self, self.database_name, self.database_type
-                )
-            else:
-                return create_database(self, self.database_name, self.database_type)
-        else:
-            raise Exception(
-                "No database type specified, and database does not already exist"
+    def create(self):
+        if self._asynchronous:
+            handle_async(
+                self._client.create_database, self.database_name, self.database_type
             )
-        """
+        else:
+            self._client.create_database(self.database_name, self.database_type)
 
-    def resource(self, resource_name: str, data: Union[str, ET.Element, Dict] = None):
+    def get_database_info(self):
+        if self._asynchronous:
+            return handle_async(self._client.get_database_info, self.database_name)
+        else:
+            return self._client.get_database_info(self.database_name)
+
+    def resource(self, resource_name: str):
         """Returns a resource instance
 
         If a resource with the given name and type does not exist,
@@ -57,16 +56,18 @@ class Database:
 
         If the resource does not yet exist, it is created
 
-        :param resource_name: the name of the resource to aceess
-        :param data: data to initialize resource with if it does
-                yet exist
+        :param resource_name: the name of the resource to access
         """
         resource = Resource(resource_name, parent=self)
-        if self._asynchronous:
-            return handle_async(resource._async_init(), data)
-        else:
-            resource._init(data)
         return resource
 
-    def delete(self) -> bool:
-        pass
+    def delete(self) -> Optional[Coroutine]:
+        """
+
+        :return:
+        :raises:
+        """
+        if self._asynchronous:
+            handle_async(self._client.delete_database, self.database_name)
+        else:
+            return self._client.delete_database(self.database_name)

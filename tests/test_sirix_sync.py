@@ -1,7 +1,9 @@
 import pytest
 import httpx
+from httpx import HTTPError
 
 import pysirix
+from pysirix import DBType
 
 base_url = "https://localhost:9444"
 verify = "./resources/cert.pem"
@@ -33,3 +35,24 @@ def test_get_info():
     data = sirix.get_info()
     assert data == []
     client.close()
+
+
+class TestDatabaseClass:
+    client = httpx.Client(base_url=base_url, verify=verify)
+    sirix = pysirix.sirix_sync("admin", "admin", client)
+
+    def test_create(self):
+        db = self.sirix.database("First", DBType.JSON)
+        db.create()
+        info = db.get_database_info()
+        assert info["resources"] == []
+
+    def test_delete(self):
+        db = self.sirix.database("First", DBType.JSON)
+        db.delete()
+        with pytest.raises(HTTPError):
+            db.get_database_info()
+
+    @classmethod
+    def teardown_class(cls):
+        cls.client.close()
