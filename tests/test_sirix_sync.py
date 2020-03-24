@@ -55,3 +55,45 @@ def test_delete():
     with pytest.raises(HTTPError):
         db.get_database_info()
     client.close()
+
+
+def test_exists():
+    client = httpx.Client(base_url=base_url, verify=verify)
+    sirix = pysirix.sirix_sync("admin", "admin", client)
+    db = sirix.database("First", DBType.JSON)
+    resource = db.resource("test_resource")
+    assert resource.exists() is False
+    client.close()
+
+
+def test_create_resource():
+    client = httpx.Client(base_url=base_url, verify=verify)
+    sirix = pysirix.sirix_sync("admin", "admin", client)
+    db = sirix.database("First", DBType.JSON)
+    resource = db.resource("test_resource")
+    assert resource.create([]) == "[]"
+    assert resource.exists() is True
+    client.close()
+
+
+def test_delete_resource():
+    client = httpx.Client(base_url=base_url, verify=verify)
+    sirix = pysirix.sirix_sync("admin", "admin", client)
+    db = sirix.database("First", DBType.JSON)
+    resource = db.resource("test_resource")
+    resource.delete(None, None)
+    assert resource.exists() is False
+    client.close()
+
+
+"""
+def test_delete_nonexistent_resource():
+    client = httpx.Client(base_url=base_url, verify=verify)
+    sirix = pysirix.sirix_sync("admin", "admin", client)
+    db = sirix.database("First", DBType.JSON)
+    resource = db.resource("test_resource")
+    assert resource.exists() is False
+    with pytest.raises(HTTPError):
+        resource.delete(None, None)
+    client.close()
+"""

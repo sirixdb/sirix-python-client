@@ -7,5 +7,5 @@ python:
 install:
   - pip install -r requirements-all.txt
 script:
-  - bash ./test.sh
+  - bash ./test.sh && docker ps -a
   - cd tests && python -m pytest --cov=pysirix

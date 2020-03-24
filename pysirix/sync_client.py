@@ -68,7 +68,11 @@ class SyncClient:
         return resp.text
 
     def get_etag(
-        self, db_name: str, db_type: DBType, name: str, params: Dict[str, str]
+        self,
+        db_name: str,
+        db_type: DBType,
+        name: str,
+        params: Dict[str, Union[str, int]],
     ) -> str:
         resp = self.client.head(
             f"{db_name}/{name}", params=params, headers={"Accept": db_type.value}
@@ -86,6 +90,8 @@ class SyncClient:
         insert: Insert,
         etag: str,
     ) -> str:
+        if not etag:
+            etag = self.get_etag(db_name, db_type, name, {"nodeId": node_id})
         resp = self.client.post(
             f"{db_name}/{name}",
             params={"nodeId": node_id, "insert": insert.value},

@@ -36,6 +36,7 @@ async def test_auth_refresh():
 async def test_get_info():
     client = httpx.AsyncClient(base_url=base_url, verify=verify)
     sirix = await pysirix.sirix_async("admin", "admin", client)
+    await sirix.delete_all()
     data = await sirix.get_info()
     assert data == []
     await client.aclose()

@@ -2,7 +2,7 @@ import json
 import xml.etree.ElementTree as ET
 from datetime import datetime
 
-from typing import Union, Dict, Tuple
+from typing import Union, Dict, Tuple, Coroutine
 
 from pysirix.constants import Insert, Revision, DBType
 
@@ -33,10 +33,28 @@ class Resource:
         self.resource_name = resource_name
         self._client = client
 
-    def create(self, data: Union[str, Dict, ET.Element, None]):
+    def create(self, data: Union[str, Dict, ET.Element]):
         """
-        :param data: the data to initialize the resource with
+        :param data: the data with which to initialize the resource.
+                May be an instance of ``dict``, or an instance of
+                ``xml.etree.ElementTree.Element``, or a ``str`` of properly
+                formed json or xml.
         """
+        data = (
+            data
+            if type(data) is str
+            else json.dumps(data)
+            if self.db_type == DBType.JSON
+            else ET.tostring(data)
+        )
+        return self._client.create_resource(
+            self.db_name, self.db_type, self.resource_name, data
+        )
+
+    def exists(self):
+        return self._client.resource_exists(
+            self.db_name, self.db_type, self.resource_name
+        )
 
     def read(
         self,
@@ -66,43 +84,53 @@ class Resource:
             self.db_name, self.db_type, self.resource_name, params
         )
 
+    def get_etag(self, node_id: int, revision: Revision = None):
+        params = {"nodeId": node_id}
+        if revision:
+            if type(revision) == int:
+                params["revision"] = revision
+            else:
+                params["revision-timestamp"] = revision.isoformat()
+        return self._client.get_etag(
+            self.db_name, self.db_type, self.resource_name, params
+        )
+
     def update(
         self,
-        nodeId: int,
+        node_id: int,
         data: Union[str, ET.Element, Dict],
         insert: Insert = Insert.CHILD,
+        etag: str = None,
     ):
         """Update a resource
 
+        :param node_id:
         :param data: the updated data, can be of type ``str``, ``dict``, or
                 ``xml.etree.ElementTree.Element``
+        :param insert:
+        :param etag:
         """
         data = (
             data
             if type(data) is str
             else json.dumps(data)
-            if self.database_type == "json"
+            if self.db_type == DBType.JSON
             else ET.tostring(data)
         )
-        if (
-            self.resource_name
-            not in next(
-                db
-                for db in self._instance_data.database_info
-                if db["name"] == self.database_name
-            )["resources"]
-        ):
-            return self._create(data)
-        else:
-            print(insert.value)
-            # if self._asynchronous:
-            # return async_update_resource(self, nodeId, data, insert)
-            # else:
-            # return update_resource(self, nodeId, data, insert.value)
+        return self._client.update(
+            self.db_name, self.db_type, self.resource_name, node_id, data, insert, etag
+        )
 
-    def delete(self, nodeId: Union[int, None]) -> bool:
-        pass
-        # if self._asynchronous:
-        # return handle_async(async_delete, self, nodeId)
-        # else:
-        # return delete(self, nodeId)
+    def delete(
+        self, node_id: Union[int, None], etag: Union[str, None]
+    ) -> Union[bool, Coroutine]:
+        """delete a node in a resource, or the entire resource, if ``node_id``
+                is specified as ``None``
+
+        :param node_id:
+        :param etag:
+        :return:
+        """
+        return self._client.resource_delete(
+            self.db_name, self.db_type, self.resource_name, node_id, etag
+        )
