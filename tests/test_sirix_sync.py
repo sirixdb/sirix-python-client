@@ -37,22 +37,21 @@ def test_get_info():
     client.close()
 
 
-class TestDatabaseClass:
+def test_create():
     client = httpx.Client(base_url=base_url, verify=verify)
     sirix = pysirix.sirix_sync("admin", "admin", client)
+    db = sirix.database("First", DBType.JSON)
+    db.create()
+    info = db.get_database_info()
+    assert info["resources"] == []
+    client.close()
 
-    def test_create(self):
-        db = self.sirix.database("First", DBType.JSON)
-        db.create()
-        info = db.get_database_info()
-        assert info["resources"] == []
 
-    def test_delete(self):
-        db = self.sirix.database("First", DBType.JSON)
-        db.delete()
-        with pytest.raises(HTTPError):
-            db.get_database_info()
-
-    @classmethod
-    def teardown_class(cls):
-        cls.client.close()
+def test_delete():
+    client = httpx.Client(base_url=base_url, verify=verify)
+    sirix = pysirix.sirix_sync("admin", "admin", client)
+    db = sirix.database("First", DBType.JSON)
+    db.delete()
+    with pytest.raises(HTTPError):
+        db.get_database_info()
+    client.close()
