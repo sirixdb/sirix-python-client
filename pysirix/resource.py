@@ -121,6 +121,22 @@ class Resource:
             self.db_name, self.db_type, self.resource_name, node_id, data, insert, etag
         )
 
+    def query(
+        self,
+        query: str,
+        start_result_seq_index: int = None,
+        end_result_seq_index: int = None,
+    ):
+        params = {
+            "query": query,
+            "startResultSeqIndex": start_result_seq_index,
+            "endResultSeqIndex": end_result_seq_index,
+        }
+        params = {k: v for k, v in params.items() if v}
+        return self._client.read_resource(
+            self.db_name, self.db_type, self.resource_name, params
+        )
+
     def delete(
         self, node_id: Union[int, None], etag: Union[str, None]
     ) -> Union[bool, Coroutine]:

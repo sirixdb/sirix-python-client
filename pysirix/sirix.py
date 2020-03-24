@@ -55,7 +55,21 @@ class Sirix:
         """
         return self._client.global_info(resources)
 
-    def delete_all(self) -> None:
+    def query(
+        self,
+        query: str,
+        start_result_seq_index: int = None,
+        end_result_seq_index: int = None,
+    ):
+        query_obj = {
+            "query": query,
+            "startResultSeqIndex": start_result_seq_index,
+            "endResultSeqIndex": end_result_seq_index,
+        }
+        query_obj = {k: v for k, v in query_obj.items() if v}
+        return self._client.post_query(query_obj)
+
+    def delete_all(self) -> Union[Coroutine, None]:
         """
         Deletes all databases and resources in the sirix database.
 

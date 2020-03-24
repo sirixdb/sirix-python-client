@@ -66,7 +66,7 @@ class SyncClient:
         else:
             return ET.fromstring(resp.text)
 
-    def post_query(self, query: str) -> str:
+    def post_query(self, query: Dict[str, Union[int, str]]) -> str:
         resp = self.client.post("/", data=query)
         resp.raise_for_status()
         return resp.text
