@@ -5,7 +5,7 @@ from httpx import HTTPError
 import pysirix
 from pysirix import DBType
 
-base_url = "https://localhost:9444"
+base_url = "https://localhost:9443"
 verify = "./resources/cert.pem"
 
 

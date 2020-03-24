@@ -1,7 +1,7 @@
 from httpx import AsyncClient as Client
 
 import xml.etree.ElementTree as ET
-from typing import Dict, Union
+from typing import Dict, Union, List
 
 from pysirix.constants import DBType, Insert
 
@@ -10,7 +10,7 @@ class AsyncClient:
     def __init__(self, client: Client):
         self.client = client
 
-    async def global_info(self, resources=True):
+    async def global_info(self, resources=True) -> List[Dict]:
         params = {}
         if resources:
             params["withResources"] = True
@@ -18,24 +18,24 @@ class AsyncClient:
         resp.raise_for_status()
         return resp.json()["databases"]
 
-    async def delete_all(self):
+    async def delete_all(self) -> None:
         resp = await self.client.delete("/")
         resp.raise_for_status()
 
-    async def create_database(self, name: str, db_type: DBType):
+    async def create_database(self, name: str, db_type: DBType) -> None:
         resp = await self.client.put(name, headers={"Content-Type": db_type.value})
         resp.raise_for_status()
 
-    async def get_database_info(self, name: str):
+    async def get_database_info(self, name: str) -> Dict:
         resp = await self.client.get(name)
         resp.raise_for_status()
         return resp.json()
 
-    async def delete_database(self, name: str):
+    async def delete_database(self, name: str) -> None:
         resp = await self.client.delete(name)
         resp.raise_for_status()
 
-    async def resource_exists(self, db_name: str, db_type: DBType, name: str):
+    async def resource_exists(self, db_name: str, db_type: DBType, name: str) -> bool:
         resp = await self.client.head(
             f"{db_name}/{name}", headers={"Accept": db_type.value}
         )
@@ -45,7 +45,7 @@ class AsyncClient:
 
     async def create_resource(
         self, db_name: str, db_type: DBType, name: str, data: str
-    ):
+    ) -> str:
         resp = await self.client.put(
             f"{db_name}/{name}", headers={"Content-Type": db_type.value}, data=data,
         )
@@ -79,7 +79,7 @@ class AsyncClient:
         db_type: DBType,
         name: str,
         params: Dict[str, Union[str, int]],
-    ):
+    ) -> str:
         resp = await self.client.head(
             f"{db_name}/{name}", params=params, headers={"Accept": db_type.value}
         )
@@ -95,7 +95,7 @@ class AsyncClient:
         data: str,
         insert: Insert,
         etag: str,
-    ):
+    ) -> str:
         if not etag:
             etag = await self.get_etag(db_name, db_type, name, {"nodeId": node_id})
         resp = await self.client.post(
@@ -114,7 +114,7 @@ class AsyncClient:
         name: str,
         node_id: Union[int, None],
         etag: Union[str, None],
-    ):
+    ) -> None:
         if node_id and not etag:
             etag = await self.get_etag(db_name, db_type, name, {"nodeId": node_id})
         headers = {"Content-Type": db_type.value}

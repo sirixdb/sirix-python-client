@@ -19,7 +19,7 @@ services:
   server:
     image: sirixdb/sirix
     ports:
-      - "9444:9444"
+      - 9443:9443
     restart: always
     volumes:
       - /opt/sirix
