@@ -1,7 +1,7 @@
 from httpx import AsyncClient as Client
 
-from typing import Dict, Union, List
-from asyncio import Future
+import xml.etree.ElementTree as ET
+from typing import Dict, Union
 
 from pysirix.constants import DBType, Insert
 
@@ -35,9 +35,7 @@ class AsyncClient:
         resp = await self.client.delete(name)
         resp.raise_for_status()
 
-    async def resource_exists(
-        self, db_name: str, db_type: DBType, name: str
-    ):
+    async def resource_exists(self, db_name: str, db_type: DBType, name: str):
         resp = await self.client.head(
             f"{db_name}/{name}", headers={"Accept": db_type.value}
         )
@@ -60,12 +58,15 @@ class AsyncClient:
         db_type: DBType,
         name: str,
         params: Dict[str, Union[str, int]],
-    ):
+    ) -> Union[Dict, ET.Element]:
         resp = await self.client.get(
             f"{db_name}/{name}", params=params, headers={"Accept": db_type.value}
         )
         resp.raise_for_status()
-        return resp.text
+        if db_type == DBType.JSON:
+            return resp.json()
+        else:
+            return ET.fromstring(resp.text)
 
     async def post_query(self, query: str):
         resp = await self.client.post("/", data=query)
@@ -77,7 +78,7 @@ class AsyncClient:
         db_name: str,
         db_type: DBType,
         name: str,
-        params: Dict[str, str],
+        params: Dict[str, Union[str, int]],
     ):
         resp = await self.client.head(
             f"{db_name}/{name}", params=params, headers={"Accept": db_type.value}
@@ -95,6 +96,8 @@ class AsyncClient:
         insert: Insert,
         etag: str,
     ):
+        if not etag:
+            etag = await self.get_etag(db_name, db_type, name, {"nodeId": node_id})
         resp = await self.client.post(
             f"{db_name}/{name}",
             params={"nodeId": node_id, "insert": insert.value},
@@ -112,6 +115,8 @@ class AsyncClient:
         node_id: Union[int, None],
         etag: Union[str, None],
     ):
+        if node_id and not etag:
+            etag = await self.get_etag(db_name, db_type, name, {"nodeId": node_id})
         headers = {"Content-Type": db_type.value}
         if etag:
             headers.update({"ETag": etag})

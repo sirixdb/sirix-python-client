@@ -1,5 +1,6 @@
 from httpx import Client
 
+import xml.etree.ElementTree as ET
 from typing import Dict, Union, List
 
 from pysirix.constants import DBType, Insert
@@ -55,12 +56,15 @@ class SyncClient:
         db_type: DBType,
         name: str,
         params: Dict[str, Union[str, int]],
-    ) -> str:
+    ) -> Union[Dict, ET.Element]:
         resp = self.client.get(
             f"{db_name}/{name}", params=params, headers={"Accept": db_type.value}
         )
         resp.raise_for_status()
-        return resp.text
+        if db_type == DBType.JSON:
+            return resp.json()
+        else:
+            return ET.fromstring(resp.text)
 
     def post_query(self, query: str) -> str:
         resp = self.client.post("/", data=query)
@@ -109,6 +113,8 @@ class SyncClient:
         node_id: Union[int, None],
         etag: Union[str, None],
     ) -> None:
+        if node_id and not etag:
+            etag = self.get_etag(db_name, db_type, name, {"nodeId": node_id})
         headers = {"Content-Type": db_type.value}
         if etag:
             headers.update({"ETag": etag})
