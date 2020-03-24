@@ -5,7 +5,7 @@ from httpx import HTTPError
 import pysirix
 from pysirix import DBType
 
-from .data import data_for_query, query
+from .data import data_for_query, post_query, resource_query
 
 base_url = "https://localhost:9443"
 verify = "tests/resources/cert.pem"
@@ -212,10 +212,10 @@ async def test_update_nonexistent_node():
 async def test_sirix_query():
     client = httpx.AsyncClient(base_url=base_url, verify=verify)
     sirix = await pysirix.sirix_async("admin", "admin", client)
-    db = sirix.database("Query1", DBType.JSON)
+    db = sirix.database("Query", DBType.JSON)
     resource = db.resource("query_resource")
     await resource.create(data_for_query)
-    assert await sirix.query(query) == '{"rest": [6]}'
+    assert await sirix.query(post_query) == '{"rest": [6]}'
     await sirix.delete_all()
     await client.aclose()
 
@@ -223,10 +223,10 @@ async def test_sirix_query():
 async def test_resource_query():
     client = httpx.AsyncClient(base_url=base_url, verify=verify)
     sirix = await pysirix.sirix_async("admin", "admin", client)
-    db = sirix.database("Query2", DBType.JSON)
+    db = sirix.database("Query", DBType.JSON)
     resource = db.resource("query_resource")
     await resource.create(data_for_query)
-    assert await resource.query(query) == {"rest": [6]}
+    assert await resource.query(resource_query) == {"rest": [6]}
     await sirix.delete_all()
     await client.aclose()
 
