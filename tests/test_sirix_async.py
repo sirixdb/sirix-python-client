@@ -5,8 +5,10 @@ from httpx import HTTPError
 import pysirix
 from pysirix import DBType
 
+from .data import data_for_query, query
+
 base_url = "https://localhost:9443"
-verify = "./resources/cert.pem"
+verify = "tests/resources/cert.pem"
 
 pytestmark = pytest.mark.asyncio
 
@@ -205,3 +207,26 @@ async def test_update_nonexistent_node():
         await resource.update(5, {})
     await sirix.delete_all()
     await client.aclose()
+
+
+async def test_sirix_query():
+    client = httpx.AsyncClient(base_url=base_url, verify=verify)
+    sirix = await pysirix.sirix_async("admin", "admin", client)
+    db = sirix.database("Query1", DBType.JSON)
+    resource = db.resource("query_resource")
+    await resource.create(data_for_query)
+    assert await sirix.query(query) == '{"rest": [6]}'
+    await sirix.delete_all()
+    await client.aclose()
+
+
+async def test_resource_query():
+    client = httpx.AsyncClient(base_url=base_url, verify=verify)
+    sirix = await pysirix.sirix_async("admin", "admin", client)
+    db = sirix.database("Query2", DBType.JSON)
+    resource = db.resource("query_resource")
+    await resource.create(data_for_query)
+    assert await resource.query(query) == {"rest": [6]}
+    await sirix.delete_all()
+    await client.aclose()
+

@@ -69,7 +69,7 @@ class AsyncClient:
             return ET.fromstring(resp.text)
 
     async def post_query(self, query: Dict[str, Union[int, str]]):
-        resp = await self.client.post("/", data=query)
+        resp = await self.client.post("/", json=query)
         resp.raise_for_status()
         return resp.text
 
