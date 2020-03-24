@@ -1,3 +1,4 @@
+dist: bionic
 services:
   - docker
 language: python
@@ -7,5 +8,5 @@ python:
 install:
   - pip install -r requirements-all.txt
 script:
-  - bash ./test.sh && docker-compose -f ./tests/resources/docker-compose.yml logs
+  - bash ./test.sh
   - cd tests && python -m pytest --cov=pysirix
