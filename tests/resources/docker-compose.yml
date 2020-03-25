@@ -1,4 +1,4 @@
-version: '3'
+version: '3.4'
 services:
   keycloak:
     image: jboss/keycloak:7.0.1
@@ -16,10 +16,12 @@ services:
     command:
       - "-b 0.0.0.0"
       - "-bmanagement 0.0.0.0"
+    network_mode: host
   server:
     image: sirixdb/sirix
     ports:
       - 9443:9443
+    network_mode: host
     restart: always
     volumes:
       - /opt/sirix

@@ -81,3 +81,4 @@ class Auth:
 
     async def _sleep_then_refresh(self):
         await sleep(self._token_data.expires_in - 5)
+        await self._async_refresh()
