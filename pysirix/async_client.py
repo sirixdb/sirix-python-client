@@ -4,6 +4,7 @@ import xml.etree.ElementTree as ET
 from typing import Dict, Union, List
 
 from pysirix.constants import DBType, Insert
+from pysirix.utils import include_response_text_in_errors
 
 
 class AsyncClient:
@@ -15,25 +16,30 @@ class AsyncClient:
         if resources:
             params["withResources"] = True
         resp = await self.client.get("/", params=params)
-        resp.raise_for_status()
+        with include_response_text_in_errors():
+            resp.raise_for_status()
         return resp.json()["databases"]
 
     async def delete_all(self) -> None:
         resp = await self.client.delete("/")
-        resp.raise_for_status()
+        with include_response_text_in_errors():
+            resp.raise_for_status()
 
     async def create_database(self, name: str, db_type: DBType) -> None:
         resp = await self.client.put(name, headers={"Content-Type": db_type.value})
-        resp.raise_for_status()
+        with include_response_text_in_errors():
+            resp.raise_for_status()
 
     async def get_database_info(self, name: str) -> Dict:
         resp = await self.client.get(name)
-        resp.raise_for_status()
+        with include_response_text_in_errors():
+            resp.raise_for_status()
         return resp.json()
 
     async def delete_database(self, name: str) -> None:
         resp = await self.client.delete(name)
-        resp.raise_for_status()
+        with include_response_text_in_errors():
+            resp.raise_for_status()
 
     async def resource_exists(self, db_name: str, db_type: DBType, name: str) -> bool:
         resp = await self.client.head(
@@ -49,7 +55,8 @@ class AsyncClient:
         resp = await self.client.put(
             f"{db_name}/{name}", headers={"Content-Type": db_type.value}, data=data,
         )
-        resp.raise_for_status()
+        with include_response_text_in_errors():
+            resp.raise_for_status()
         return resp.text
 
     async def read_resource(
@@ -62,7 +69,8 @@ class AsyncClient:
         resp = await self.client.get(
             f"{db_name}/{name}", params=params, headers={"Accept": db_type.value}
         )
-        resp.raise_for_status()
+        with include_response_text_in_errors():
+            resp.raise_for_status()
         if db_type == DBType.JSON:
             return resp.json()
         else:
@@ -70,7 +78,8 @@ class AsyncClient:
 
     async def post_query(self, query: Dict[str, Union[int, str]]):
         resp = await self.client.post("/", json=query)
-        resp.raise_for_status()
+        with include_response_text_in_errors():
+            resp.raise_for_status()
         return resp.text
 
     async def get_etag(
@@ -83,7 +92,8 @@ class AsyncClient:
         resp = await self.client.head(
             f"{db_name}/{name}", params=params, headers={"Accept": db_type.value}
         )
-        resp.raise_for_status()
+        with include_response_text_in_errors():
+            resp.raise_for_status()
         return resp.headers["etag"]
 
     async def update(
@@ -104,7 +114,8 @@ class AsyncClient:
             headers={"ETag": etag, "Content-Type": db_type.value},
             data=data,
         )
-        resp.raise_for_status()
+        with include_response_text_in_errors():
+            resp.raise_for_status()
         return resp.text
 
     async def resource_delete(
@@ -126,4 +137,5 @@ class AsyncClient:
         resp = await self.client.delete(
             f"{db_name}/{name}", params=params, headers=headers
         )
-        resp.raise_for_status()
+        with include_response_text_in_errors():
+            resp.raise_for_status()

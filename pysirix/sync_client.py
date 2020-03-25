@@ -4,6 +4,7 @@ import xml.etree.ElementTree as ET
 from typing import Dict, Union, List
 
 from pysirix.constants import DBType, Insert
+from pysirix.utils import include_response_text_in_errors
 
 
 class SyncClient:
@@ -15,25 +16,30 @@ class SyncClient:
         if resources:
             params["withResources"] = True
         resp = self.client.get("/", params=params)
-        resp.raise_for_status()
+        with include_response_text_in_errors():
+            resp.raise_for_status()
         return resp.json()["databases"]
 
     def delete_all(self) -> None:
         resp = self.client.delete("/")
-        resp.raise_for_status()
+        with include_response_text_in_errors():
+            resp.raise_for_status()
 
     def create_database(self, name: str, db_type: DBType) -> None:
         resp = self.client.put(name, headers={"Content-Type": db_type.value})
-        resp.raise_for_status()
+        with include_response_text_in_errors():
+            resp.raise_for_status()
 
     def get_database_info(self, name: str) -> Dict:
         resp = self.client.get(name, headers={"Accept": "application/json"})
-        resp.raise_for_status()
+        with include_response_text_in_errors():
+            resp.raise_for_status()
         return resp.json()
 
     def delete_database(self, name: str) -> None:
         resp = self.client.delete(name)
-        resp.raise_for_status()
+        with include_response_text_in_errors():
+            resp.raise_for_status()
 
     def resource_exists(self, db_name: str, db_type: DBType, name: str) -> bool:
         resp = self.client.head(f"{db_name}/{name}", headers={"Accept": db_type.value})
@@ -47,7 +53,8 @@ class SyncClient:
         resp = self.client.put(
             f"{db_name}/{name}", headers={"Content-Type": db_type.value}, data=data,
         )
-        resp.raise_for_status()
+        with include_response_text_in_errors():
+            resp.raise_for_status()
         return resp.text
 
     def read_resource(
@@ -60,7 +67,8 @@ class SyncClient:
         resp = self.client.get(
             f"{db_name}/{name}", params=params, headers={"Accept": db_type.value}
         )
-        resp.raise_for_status()
+        with include_response_text_in_errors():
+            resp.raise_for_status()
         if db_type == DBType.JSON:
             return resp.json()
         else:
@@ -68,7 +76,8 @@ class SyncClient:
 
     def post_query(self, query: Dict[str, Union[int, str]]) -> str:
         resp = self.client.post("/", json=query)
-        resp.raise_for_status()
+        with include_response_text_in_errors():
+            resp.raise_for_status()
         return resp.text
 
     def get_etag(
@@ -81,7 +90,8 @@ class SyncClient:
         resp = self.client.head(
             f"{db_name}/{name}", params=params, headers={"Accept": db_type.value}
         )
-        resp.raise_for_status()
+        with include_response_text_in_errors():
+            resp.raise_for_status()
         return resp.headers["etag"]
 
     def update(
@@ -102,7 +112,8 @@ class SyncClient:
             headers={"ETag": etag, "Content-Type": db_type.value},
             data=data,
         )
-        resp.raise_for_status()
+        with include_response_text_in_errors():
+            resp.raise_for_status()
         return resp.text
 
     def resource_delete(
@@ -122,4 +133,5 @@ class SyncClient:
         if node_id:
             params["nodeId"] = node_id
         resp = self.client.delete(f"{db_name}/{name}", params=params, headers=headers)
-        resp.raise_for_status()
+        with include_response_text_in_errors():
+            resp.raise_for_status()
