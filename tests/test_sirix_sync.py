@@ -204,6 +204,19 @@ def test_update_nonexistent_node():
     client.close()
 
 
+def test_history():
+    client = httpx.Client(base_url=base_url, verify=verify)
+    sirix = pysirix.sirix_sync("admin", "admin", client)
+    db = sirix.database("First", DBType.JSON)
+    resource = db.resource("test_resource")
+    resource.create([])
+    resource.update(1, {})
+    resource.delete(2, None)
+    assert len(resource.history()) == 3
+    sirix.delete_all()
+    client.close()
+
+
 # needs to be fixed on the server
 """
 def test_sirix_query():

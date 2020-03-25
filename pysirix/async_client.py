@@ -76,6 +76,14 @@ class AsyncClient:
         else:
             return ET.fromstring(resp.text)
 
+    async def history(self, db_name: str, db_type: DBType, name: str):
+        resp = await self.client.get(
+            f"{db_name}/{name}/history", headers={"Accept": db_type.value}
+        )
+        with include_response_text_in_errors():
+            resp.raise_for_status()
+        return resp.json()["history"]
+
     async def post_query(self, query: Dict[str, Union[int, str]]):
         resp = await self.client.post("/", json=query)
         with include_response_text_in_errors():

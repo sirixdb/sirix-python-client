@@ -84,6 +84,9 @@ class Resource:
             self.db_name, self.db_type, self.resource_name, params
         )
 
+    def history(self):
+        return self._client.history(self.db_name, self.db_type, self.resource_name)
+
     def get_etag(self, node_id: int, revision: Revision = None):
         params = {"nodeId": node_id}
         if revision:
