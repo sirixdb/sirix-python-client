@@ -1,5 +1,6 @@
 from typing import Union, Optional, Coroutine, Dict, List
 
+from pysirix.auth import Auth
 from pysirix.constants import DBType
 from pysirix.sync_client import SyncClient
 from pysirix.async_client import AsyncClient
@@ -12,9 +13,10 @@ class Database:
         database_name: str,
         database_type: DBType,
         client: Union[SyncClient, AsyncClient],
+        auth: Auth,
     ):
         """database access class
-        this class allows for manipulation of a database 
+        this class allows for manipulation of a database
 
         :param database_name: the name of the database to access, or create
                 if it does not yet exist
@@ -24,6 +26,7 @@ class Database:
                 instance to use for network requests
         """
         self._client = client
+        self._auth = auth
 
         self.database_name = database_name
         self.database_type = database_type
@@ -45,7 +48,11 @@ class Database:
         :param resource_name: the name of the resource to access
         """
         return Resource(
-            self.database_name, self.database_type, resource_name, self._client
+            self.database_name,
+            self.database_type,
+            resource_name,
+            self._client,
+            self._auth,
         )
 
     def delete(self) -> Optional[Coroutine]:

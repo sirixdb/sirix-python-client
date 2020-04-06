@@ -4,6 +4,7 @@ from datetime import datetime
 
 from typing import Union, Dict, Tuple, Coroutine
 
+from pysirix.auth import Auth
 from pysirix.constants import Insert, Revision, DBType
 
 from pysirix.sync_client import SyncClient
@@ -17,6 +18,7 @@ class Resource:
         db_type: DBType,
         resource_name: str,
         client: Union[SyncClient, AsyncClient],
+        auth: Auth
     ):
         """database access class
         this class allows for manipulation of a database
@@ -32,6 +34,7 @@ class Resource:
         self.db_type = db_type
         self.resource_name = resource_name
         self._client = client
+        self._auth = auth
 
     def create(self, data: Union[str, Dict, ET.Element]):
         """

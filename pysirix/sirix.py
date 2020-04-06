@@ -42,7 +42,7 @@ class Sirix:
         :param database_name: the name of the database to access
         :param database_type: the type of the database to access
         """
-        return Database(database_name, database_type, self._client)
+        return Database(database_name, database_type, self._client, self._auth)
 
     def get_info(
         self, resources: bool = True
