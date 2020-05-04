@@ -8,4 +8,5 @@ try:
 
 
 except ImportError:
+    from typing import Dict
     QueryResult = Dict
