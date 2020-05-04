@@ -8,10 +8,6 @@ from pysirix import DBType
 base_url = "https://localhost:9443"
 verify = "tests/resources/cert.pem"
 
-client = None
-sirix = None
-resource = None
-
 
 def setup_function():
     global client

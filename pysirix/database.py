@@ -58,7 +58,7 @@ class Database:
             self._auth,
         )
 
-    def store(self, name: str):
+    def json_store(self, name: str):
         """Returns a :py:class:`store` instance
         :param name:
         :return:
