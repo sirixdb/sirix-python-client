@@ -1,7 +1,7 @@
 from typing import Union, Dict, List, Coroutine, cast, Any
 from json import dumps
 
-from pysirix.constants import DBType
+from pysirix.constants import DBType, Insert
 from pysirix.async_client import AsyncClient
 from pysirix.auth import Auth
 from pysirix.sync_client import SyncClient
@@ -24,20 +24,20 @@ class JsonStore:
 
     def create(self):
         return self._client.create_resource(
-            self.db_name,
-            self.db_type,
-            self.name,
-            '[{"key": "hey", "value": false}, {"key": 0, "value": true}]',
+            self.db_name, self.db_type, self.name, "[]",
         )
 
-    def insert_one(self, insert_dict):
-        query_string = f"insert nodes {dumps(insert_dict)} into ."
-        params = {"query": query_string}
-        return self._client.read_resource(self.db_name, self.db_type, self.name, params)
+    def insert_one(self, insert_dict: Union[str, Dict]):
+        if not isinstance(insert_dict, str):
+            insert_dict = dumps(insert_dict)
+        return self._client.update(self.db_name, self.db_type, self.name, 1, insert_dict, Insert.CHILD, etag=None)
 
     def find_all(
         self, query_dict: Dict, projection: List[Any] = None
-    ) -> Union[List[QueryResult], Coroutine[None, None, List[QueryResult]]]:
+    ) -> Union[
+        Dict[str, List[QueryResult]],
+        Coroutine[None, None, Dict[str, List[QueryResult]]],
+    ]:
         query_list = ["for $i in bit:array-values(.) where"]
         for k, v in query_dict.items():
             query_list.append(f"deep-equal($i=>{k}, {v}) and")
@@ -46,8 +46,10 @@ class JsonStore:
             projection_string = ",".join(projection)
             query_string = "".join([query_string, "{", projection_string, "}"])
         params = {"query": query_string}
-        print(query_string)
         return cast(
-            Union[List[QueryResult], Coroutine[None, None, List[QueryResult]]],
+            Union[
+                Dict[str, List[QueryResult]],
+                Coroutine[None, None, Dict[str, List[QueryResult]]],
+            ],
             self._client.read_resource(self.db_name, self.db_type, self.name, params),
         )
