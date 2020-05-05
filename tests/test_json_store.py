@@ -43,18 +43,23 @@ def test_insert_into_store():
 def test_find_all_store():
     store.create()
     store.insert_one({"city": "New York", "state": "NY"})
-    response = store.find_all({"city": "New York"})
+    response = store.find_all({"city": "New York"}, node_key=False)
     assert type(response["rest"]) is list and len(response["rest"]) == 1
-    assert response["rest"][0]["revision"] == {"city": "New York", "state": "NY"}
-    assert response["rest"][0]["revisionNumber"] == 2
+    assert response["rest"][0] == {"city": "New York", "state": "NY"}
+    response = store.find_all({"city": "New York"})
+    assert response["rest"][0] == {"city": "New York", "state": "NY", "nodeKey": 2}
 
 
-def test_find_all_complex_store():
+def test_find_all_projection():
     store.create()
     store.insert_one({"key": 1, "location": {"state": "NY", "city": "New York"}})
     store.insert_one({"key": 2, "location": {"state": "CA", "city": "Los Angeles"}})
-    response = store.find_all({"key": 2})
-    assert response["rest"][0]["revision"] == {
-        "key": 2,
+    response = store.find_all({"key": 2}, ["location"], node_key=False)
+    assert response["rest"][0] == {
         "location": {"state": "CA", "city": "Los Angeles"},
+    }
+    response = store.find_all({"key": 2}, ["location"])
+    assert response["rest"][0] == {
+        "location": {"state": "CA", "city": "Los Angeles"},
+        "nodeKey": 11,
     }

@@ -1,4 +1,4 @@
-from typing import Union, Dict, List, Coroutine, cast, Any
+from typing import Union, Dict, List, Coroutine, cast
 from json import dumps
 
 from pysirix.constants import DBType, Insert
@@ -46,10 +46,9 @@ class JsonStore:
         )
 
     def find_all(
-        self, query_dict: Dict, projection: List[Any] = None, node_key=True
+        self, query_dict: Dict, projection: List[str] = None, node_key=True
     ) -> Union[
-        Dict[str, List[QueryResult]],
-        Coroutine[None, None, Dict[str, List[QueryResult]]],
+        Dict[str, List[Dict]], Coroutine[None, None, Dict[str, List[Dict]]],
     ]:
         query_list = ["for $i in bit:array-values(.) where"]
         for k, v in query_dict.items():
@@ -64,10 +63,14 @@ class JsonStore:
         query_string = " ".join(
             [
                 " ".join(query_list)[:-4],
-                "return $i",
+                "return {$i, 'nodeKey': sdb:nodekey($i)}"
+                if node_key
+                else "return {$i}",
             ]
         )
         if projection is not None:
+            if node_key:
+                projection.append("nodeKey")
             projection_string = ",".join(projection)
             query_string = "".join([query_string, "{", projection_string, "}"])
         params = {"query": query_string}
