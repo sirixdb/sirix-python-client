@@ -9,6 +9,15 @@ from pysirix.types import QueryResult
 
 
 class JsonStore:
+    """
+    This class is a convenient abstraction over the resource entities exposed by SirixDB.
+    As such, there is no JsonStore on the SirixDB server, only the underlying resource is stored.
+
+    This class is for storing many distinct, json objects in a single resource,
+    where the objects storing data of similar type. As such, an object is an
+    abstraction similar to a row in a relational database. The entirety of the
+    store parallels a table in a relational database.
+    """
     def __init__(
         self,
         db_name: str,
@@ -23,16 +32,31 @@ class JsonStore:
         self._auth = auth
 
     def create(self) -> Union[str, Coroutine[None, None, str]]:
+        """
+        Creates the store, will overwrite the store if it already exists.
+
+        :return: will return the string "[]". If in async mode, an awaitable that resolves this string.
+        """
         return self._client.create_resource(
             self.db_name, self.db_type, self.name, "[]",
         )
 
     def exists(self) -> Union[bool, Coroutine[None, None, bool]]:
+        """
+        Sends a ``head`` request to determine whether or not this store/resource already exists.
+        :return: a ``bool`` corresponding to the existence of the store.
+        """
         return self._client.resource_exists(self.db_name, self.db_type, self.name)
 
     def insert_one(
         self, insert_dict: Union[str, Dict]
     ) -> Union[str, Coroutine[None, None, str]]:
+        """
+        Inserts a single record into the store. New records are added at the head of the store.
+
+        :param insert_dict: either a JSON string, or a ``dict`` that can be converted to JSON.
+        :return: a JSON string of the database.
+        """
         if not isinstance(insert_dict, str):
             insert_dict = dumps(insert_dict)
         return self._client.update(
@@ -50,6 +74,22 @@ class JsonStore:
     ) -> Union[
         Dict[str, List[Dict]], Coroutine[None, None, Dict[str, List[Dict]]],
     ]:
+        """
+        Finds and returns all records where the values of ``query_dict`` match the
+        corresponding values the record.
+
+        ``projection`` can optionally be used to retrieve only certain fields of the
+        matching records.
+
+        By default, the node_key of of each record is returned as a ``nodeKey`` field in the record.
+        The ``node_key`` parameter controls this behavior.
+
+        :param query_dict: a ``dict`` with which to query the records.
+        :param projection: a ``list`` of field names to return for the matching records.
+        :param node_key: a ``bool`` determining whether or not to return a ``nodeKey`` field containing
+                        the nodeKey of the record.
+        :return: a ``dict`` with a field ``rest``, containing a ``list`` of ``dict`` records matching the query.
+        """
         query_list = ["for $i in bit:array-values(.) where"]
         for k, v in query_dict.items():
             v = (

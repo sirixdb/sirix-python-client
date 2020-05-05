@@ -147,13 +147,16 @@ class Resource:
 
     def delete(
         self, node_id: Union[int, None], etag: Union[str, None]
-    ) -> Union[bool, Coroutine]:
-        """delete a node in a resource, or the entire resource, if ``node_id``
-                is specified as ``None``
+    ) -> Union[None, Coroutine]:
+        """
+        Delete a node in a resource, or, if ``node_id`` is specified as ``None``,
+        delete the entire resource.
 
-        :param node_id:
-        :param etag:
-        :return:
+        :param node_id: an ``int`` corresponding to the node to delete.
+                        Should be specified as none to delete the entire resource.
+        :param etag: the ``etag`` of the node to delete. This can be fetched using
+                        the py:method`get_etag` method. If ``etag`` is specified as
+                        ``None``, then the ``etag`` will be fetched and provided implicitly.
         """
         return self._client.resource_delete(
             self.db_name, self.db_type, self.resource_name, node_id, etag
