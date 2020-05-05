@@ -55,17 +55,19 @@ class JsonStore:
             v = (
                 "".join(['"', v, '"'])
                 if isinstance(v, str)
-                else dumps(v)
-                if isinstance(v, (dict, list))
+                else "true()"
+                if v is True
+                else "false()"
+                if v is False
+                else "jn:null()"
+                if v is None
                 else v
             )
             query_list.append(f"deep-equal($i=>{k}, {v}) and")
         query_string = " ".join(
             [
                 " ".join(query_list)[:-4],
-                "return {$i, 'nodeKey': sdb:nodekey($i)}"
-                if node_key
-                else "return {$i}",
+                "return {$i,'nodeKey': sdb:nodekey($i)}" if node_key else "return {$i}",
             ]
         )
         if projection is not None:
@@ -74,7 +76,6 @@ class JsonStore:
             projection_string = ",".join(projection)
             query_string = "".join([query_string, "{", projection_string, "}"])
         params = {"query": query_string}
-        print(query_string)
         return cast(
             Union[
                 Dict[str, List[QueryResult]],
