@@ -20,8 +20,8 @@ class Resource:
         client: Union[SyncClient, AsyncClient],
         auth: Auth
     ):
-        """database access class
-        this class allows for manipulation of a database
+        """Resource access class
+        this class allows for manipulation of a resource
 
         :param db_name: the name of the database this resource belongs to.
         :param db_type: the type of data the database can hold.
@@ -29,6 +29,8 @@ class Resource:
                 be created if the resource does not yet exist
         :param client: the :py:class:`SyncClient` or :py:class:`AsyncClient`
                 instance to use for network requests
+        :param auth: the :py:class:`Auth` that keeps the client authenticated.
+                It is referenced to ensure that it never goes out of scope
         """
         self.db_name = db_name
         self.db_type = db_type

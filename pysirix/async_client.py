@@ -112,7 +112,7 @@ class AsyncClient:
         node_id: int,
         data: str,
         insert: Insert,
-        etag: str,
+        etag: Union[str, None],
     ) -> str:
         if not etag:
             etag = await self.get_etag(db_name, db_type, name, {"nodeId": node_id})

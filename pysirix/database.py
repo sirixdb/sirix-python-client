@@ -2,6 +2,7 @@ from typing import Union, Optional, Coroutine, Dict, List
 
 from pysirix.auth import Auth
 from pysirix.constants import DBType
+from pysirix.json_store import JsonStore
 from pysirix.sync_client import SyncClient
 from pysirix.async_client import AsyncClient
 from pysirix.resource import Resource
@@ -15,7 +16,7 @@ class Database:
         client: Union[SyncClient, AsyncClient],
         auth: Auth,
     ):
-        """database access class
+        """Database access class
         this class allows for manipulation of a database
 
         :param database_name: the name of the database to access, or create
@@ -24,6 +25,8 @@ class Database:
                 be created if the database does not yet exist
         :param client: the :py:class:`SyncClient` or :py:class:`AsyncClient`
                 instance to use for network requests
+        :param auth: the :py:class:`Auth` that keeps the client authenticated.
+                It is referenced to ensure that it never goes out of scope
         """
         self._client = client
         self._auth = auth
@@ -38,7 +41,7 @@ class Database:
         return self._client.get_database_info(self.database_name)
 
     def resource(self, resource_name: str):
-        """Returns a resource instance
+        """Returns a :py:class:`resource` instance
 
         If a resource with the given name and type does not exist,
         it is created.
@@ -54,6 +57,13 @@ class Database:
             self._client,
             self._auth,
         )
+
+    def json_store(self, name: str):
+        """Returns a :py:class:`store` instance
+        :param name:
+        :return:
+        """
+        return JsonStore(self.database_name, name, self._client, self._auth)
 
     def delete(self) -> Optional[Coroutine]:
         """
