@@ -9,6 +9,12 @@ from pysirix.utils import include_response_text_in_errors
 
 class SyncClient:
     def __init__(self, client: Client):
+        """
+        The methods of this class call all SirixDB endpoints, with minimal handling.
+        This class is used for synchronous calls, the py:class`AsyncClient` handles asynchronous calls.
+        
+        :param client: an instance of ``httpx.Client``.
+        """
         self.client = client
 
     def global_info(self, resources=True) -> List[Dict]:

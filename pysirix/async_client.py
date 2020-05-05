@@ -9,9 +9,22 @@ from pysirix.utils import include_response_text_in_errors
 
 class AsyncClient:
     def __init__(self, client: Client):
+        """
+        The methods of this class call all SirixDB endpoints, with minimal handling.
+        This class is used for asynchronous calls, the py:class`SyncClient` handles synchronous calls.
+        
+        :param client: an instance of ``httpx.AsyncClient``.
+        """
         self.client = client
 
     async def global_info(self, resources=True) -> List[Dict]:
+        """
+        Retrieves a list of existing databases from the server.
+        Optionally, also includes information about the resources of the databases.
+        
+        :param resources: whether or not to include resource information.
+        :return:
+        """
         params = {}
         if resources:
             params["withResources"] = True
