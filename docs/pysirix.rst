@@ -37,6 +37,15 @@ pysirix.resource module
    :private-members:
    :undoc-members:
 
+pysirix.json_store module
+-------------------------
+
+.. automodule:: pysirix.json_store
+   :members:
+   :private-members:
+   :undoc-members:
+   :show-inheritance:
+
 pysirix.auth module
 -------------------
 
