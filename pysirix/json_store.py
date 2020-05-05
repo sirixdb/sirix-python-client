@@ -64,7 +64,7 @@ class JsonStore:
         query_string = " ".join(
             [
                 " ".join(query_list)[:-4],
-                "return {$i, nodekey: sdb:nodekey($i)}",
+                "return $i",
             ]
         )
         if projection is not None:
