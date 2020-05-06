@@ -89,8 +89,8 @@ try:
         metadata: Metadata
         key: str
         value: Union[
-            List[Union[Iterable["MetaNode"]]],
-            Union[Iterable["MetaNode"]],
+            List[Iterable["MetaNode"]],
+            Iterable["MetaNode"],
             str,
             int,
             float,
