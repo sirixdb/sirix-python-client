@@ -4,6 +4,7 @@ from httpx import HTTPError
 
 import pysirix
 from pysirix import DBType
+from pysirix.errors import SirixServerError
 
 from .data import data_for_query, post_query, resource_query
 
@@ -61,7 +62,7 @@ async def test_database_delete():
     db = sirix.database("First", DBType.JSON)
     await db.create()
     await db.delete()
-    with pytest.raises(HTTPError):
+    with pytest.raises(SirixServerError):
         await db.get_database_info()
     await client.aclose()
 
@@ -104,7 +105,7 @@ async def test_delete_nonexistent_resource():
     db = sirix.database("blah", DBType.JSON)
     resource = db.resource("blah")
     assert await resource.exists() is False
-    with pytest.raises(HTTPError):
+    with pytest.raises(SirixServerError):
         await resource.delete(None, None)
     await client.aclose()
 
@@ -139,7 +140,7 @@ async def test_get_etag_nonexistent():
     db = sirix.database("First", DBType.JSON)
     resource = db.resource("test_resource")
     await resource.create([])
-    with pytest.raises(HTTPError):
+    with pytest.raises(SirixServerError):
         await resource.get_etag(2)
     await sirix.delete_all()
     await client.aclose()
@@ -152,7 +153,7 @@ async def test_delete_by_node_id():
     resource = db.resource("test_resource")
     await resource.create({})
     await resource.delete(1, None)
-    with pytest.raises(HTTPError):
+    with pytest.raises(SirixServerError):
         await resource.delete(1, None)
     await sirix.delete_all()
     await client.aclose()
@@ -166,7 +167,7 @@ async def test_delete_by_etag():
     await resource.create({})
     etag = await resource.get_etag(1)
     await resource.delete(1, etag)
-    with pytest.raises(HTTPError):
+    with pytest.raises(SirixServerError):
         await resource.delete(1, None)
     await sirix.delete_all()
     await client.aclose()
@@ -203,7 +204,7 @@ async def test_update_nonexistent_node():
     db = sirix.database("First", DBType.JSON)
     resource = db.resource("test_resource")
     await resource.create([])
-    with pytest.raises(HTTPError):
+    with pytest.raises(SirixServerError):
         await resource.update(5, {})
     await sirix.delete_all()
     await client.aclose()

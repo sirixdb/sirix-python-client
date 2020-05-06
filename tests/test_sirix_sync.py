@@ -1,9 +1,9 @@
 import pytest
 import httpx
-from httpx import HTTPError
 
 import pysirix
 from pysirix import DBType
+from pysirix.errors import SirixServerError
 
 from .data import data_for_query, post_query, resource_query
 
@@ -56,7 +56,7 @@ def test_delete():
     db = sirix.database("First", DBType.JSON)
     db.create()
     db.delete()
-    with pytest.raises(HTTPError):
+    with pytest.raises(SirixServerError):
         db.get_database_info()
     client.close()
 

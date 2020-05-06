@@ -16,8 +16,10 @@ class Database:
         client: Union[SyncClient, AsyncClient],
         auth: Auth,
     ):
-        """Database access class
-        this class allows for manipulation of a database
+        """
+        Database access class
+
+        This class allows for manipulation of a database
 
         :param database_name: the name of the database to access, or create
                 if it does not yet exist
@@ -34,21 +36,28 @@ class Database:
         self.database_name = database_name
         self.database_type = database_type
 
-    def create(self):
+    def create(self) -> Union[None, Coroutine[None, None, None]]:
+        """
+        Create a database with the name and type of this :py:class:`Database` instance.
+        """
         return self._client.create_database(self.database_name, self.database_type)
 
-    def get_database_info(self) -> Union[Coroutine, List[Dict]]:
+    def get_database_info(self) -> Union[Coroutine[None, None, Dict], Dict]:
+        """
+        Get information about this database and its resources.
+        Raises a :py:class:`SirixServerError` error if the database does not exist.
+
+        :return: a ``dict`` with the name, type, and resources (as a ``list`` of ``str``) of this database.
+        :raises: :py:class:`SirixServerError`.
+        """
         return self._client.get_database_info(self.database_name)
 
     def resource(self, resource_name: str):
-        """Returns a :py:class:`resource` instance
-
-        If a resource with the given name and type does not exist,
-        it is created.
-
-        If the resource does not yet exist, it is created
+        """
+        Returns a :py:class:`resource` instance.
 
         :param resource_name: the name of the resource to access
+        :return: an instance of :py:class:`Resource`.
         """
         return Resource(
             self.database_name,
@@ -59,16 +68,16 @@ class Database:
         )
 
     def json_store(self, name: str):
-        """Returns a :py:class:`store` instance
-        :param name:
-        :return:
+        """
+        Returns a :py:class:`store` instance.
+
+        :param name: the resource name for the store.
+        :return: an instance of :py:class:`JsonStore`.
         """
         return JsonStore(self.database_name, name, self._client, self._auth)
 
     def delete(self) -> Optional[Coroutine]:
         """
-
-        :return:
-        :raises:
+        Delete the database with the name of this :py:class:`Database` instance.
         """
         return self._client.delete_database(self.database_name)

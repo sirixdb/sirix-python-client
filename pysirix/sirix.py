@@ -18,9 +18,12 @@ class Sirix:
         client: Union[httpx.Client, httpx.AsyncClient],
     ):
         """
-        :param username: the username registered with keycloak for this application
-        :param password: the password registered with keycloak for this application
-        :param client: the ``httpx`` ``Client`` or ``AsyncClient`` to use
+        SirixDB access class.
+        This class is the entrypoint for manipulating data with SirixDB.
+
+        :param username: the username registered with keycloak for this application.
+        :param password: the password registered with keycloak for this application.
+        :param client: the ``httpx`` ``Client`` or ``AsyncClient`` to use.
         """
         if isinstance(client, httpx.Client):
             self._client = SyncClient(client)
@@ -37,21 +40,23 @@ class Sirix:
         return self._auth.authenticate()
 
     def database(self, database_name: str, database_type: DBType):
-        """Returns a database instance
+        """
+        Returns a :py:class:`Database` instance.
 
-        :param database_name: the name of the database to access
-        :param database_type: the type of the database to access
+        :param database_name: the name of the database to access.
+        :param database_type: the type of the database to access.
         """
         return Database(database_name, database_type, self._client, self._auth)
 
     def get_info(
         self, resources: bool = True
     ) -> Union[Coroutine, List[Dict[str, str]]]:
-        """returns a list of database names and types, and (optionally) a list their resources as well
+        """
+        Returns a list of database names and types, and (optionally) a list their resources as well.
 
         :param resources: whether or not to include resource information
-        :return:
-        :raises:
+        :return: a ``list`` of ``dicts``, where each ``dict`` has a ``name`` field, a ``type`` field,
+                        and (if resources is ``True``) a ``resources`` field (containing a ``list`` of names).
         """
         return self._client.global_info(resources)
 
@@ -61,6 +66,17 @@ class Sirix:
         start_result_seq_index: int = None,
         end_result_seq_index: int = None,
     ):
+        """
+        Execute a custom query on SirixDB.
+        Unlike the query method on :py:class:`Resource`, queries executed with this method
+        potentially access the entirety of the SirixDB server.
+        The `start_result_seq_index`` and ``end_result_seq_index`` can be used for pagination.
+
+        :param query: the query ``str`` to execute.
+        :param start_result_seq_index: the first index of the results from which to return, defaults to first.
+        :param end_result_seq_index: the last index of the results to return, defaults to last.
+        :return: the query result.
+        """
         query_obj = {
             "query": query,
             "startResultSeqIndex": start_result_seq_index,
@@ -71,9 +87,6 @@ class Sirix:
 
     def delete_all(self) -> Union[Coroutine, None]:
         """
-        Deletes all databases and resources in the sirix database.
-
-        :return: ``None``
-        :raises:
+        Deletes all databases and resources in the SirixDB server. Be careful!
         """
         return self._client.delete_all()

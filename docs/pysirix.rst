@@ -70,10 +70,10 @@ pysirix.async_client module
    :private-members:
    :undoc-members:
 
-pysirix.utils module
---------------------
+pysirix.errors module
+---------------------
 
-.. automodule:: pysirix.utils
+.. automodule:: pysirix.errors
    :members:
    :private-members:
    :undoc-members:

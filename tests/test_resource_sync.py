@@ -4,6 +4,7 @@ from httpx import HTTPError
 
 import pysirix
 from pysirix import DBType
+from pysirix.errors import SirixServerError
 
 base_url = "https://localhost:9443"
 verify = "tests/resources/cert.pem"
@@ -32,7 +33,7 @@ def test_delete_resource():
 
 def test_delete_nonexistent_resource():
     assert resource.exists() is False
-    with pytest.raises(HTTPError):
+    with pytest.raises(SirixServerError):
         resource.delete(None, None)
 
 
@@ -50,14 +51,14 @@ def test_get_etag():
 
 def test_get_etag_nonexistent():
     resource.create([])
-    with pytest.raises(HTTPError):
+    with pytest.raises(SirixServerError):
         resource.get_etag(2)
 
 
 def test_delete_by_node_id():
     resource.create([])
     resource.delete(1, None)
-    with pytest.raises(HTTPError):
+    with pytest.raises(SirixServerError):
         resource.delete(1, None)
 
 
@@ -65,7 +66,7 @@ def test_delete_by_etag():
     resource.create([])
     etag = resource.get_etag(1)
     resource.delete(1, etag)
-    with pytest.raises(HTTPError):
+    with pytest.raises(SirixServerError):
         resource.delete(1, None)
 
 
@@ -84,7 +85,7 @@ def test_update_by_node_id():
 
 def test_update_nonexistent_node():
     resource.create([])
-    with pytest.raises(HTTPError):
+    with pytest.raises(SirixServerError):
         resource.update(5, {})
 
 

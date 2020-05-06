@@ -44,6 +44,7 @@ class JsonStore:
     def exists(self) -> Union[bool, Coroutine[None, None, bool]]:
         """
         Sends a ``head`` request to determine whether or not this store/resource already exists.
+
         :return: a ``bool`` corresponding to the existence of the store.
         """
         return self._client.resource_exists(self.db_name, self.db_type, self.name)

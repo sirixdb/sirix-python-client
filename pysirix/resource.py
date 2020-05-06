@@ -2,7 +2,7 @@ import json
 import xml.etree.ElementTree as ET
 from datetime import datetime
 
-from typing import Union, Dict, Tuple, Coroutine
+from typing import Union, Dict, Tuple, Coroutine, List
 
 from pysirix.auth import Auth
 from pysirix.constants import Insert, Revision, DBType
@@ -18,10 +18,12 @@ class Resource:
         db_type: DBType,
         resource_name: str,
         client: Union[SyncClient, AsyncClient],
-        auth: Auth
+        auth: Auth,
     ):
-        """Resource access class
-        this class allows for manipulation of a resource
+        """
+        Resource access class.
+
+        This class allows for manipulation of a resource
 
         :param db_name: the name of the database this resource belongs to.
         :param db_type: the type of data the database can hold.
@@ -57,6 +59,11 @@ class Resource:
         )
 
     def exists(self):
+        """
+        Sends a ``head`` request to determine whether or not this store/resource already exists.
+
+        :return: a ``bool`` corresponding to the existence of the store.
+        """
         return self._client.resource_exists(
             self.db_name, self.db_type, self.resource_name
         )
@@ -66,7 +73,17 @@ class Resource:
         node_id: Union[int, None],
         revision: Union[Revision, Tuple[Revision, Revision], None] = None,
         max_level: Union[int, None] = None,
-    ):
+    ) -> Union[Union[dict, ET.Element], Coroutine[None, None, Union[dict, ET.Element]]]:
+        """
+        Read the node (and its sub-nodes) corresponding to ``node_id``.
+
+        :param node_id: the nodeKey corresponding to the node to read, if ``None``,
+                        the entire resource is read.
+        :param revision: the revision to read from, defaults to latest.
+        :param max_level: the maximum depth for reading sub-nodes, defaults to latest.
+        :return: either a ``dict`` or an instance of ``xml.etree.ElementTree.Element``,
+                        depending on the database type of this resource.
+        """
         params = {}
         if node_id:
             params["nodeId"] = node_id
@@ -89,16 +106,29 @@ class Resource:
             self.db_name, self.db_type, self.resource_name, params
         )
 
-    def history(self):
+    def history(self) -> List[Dict]:
+        """
+        Get a ``list`` of all commits/revision of this resource.
+
+        :return: a ``list`` of ``dict``\s.
+        """
         return self._client.history(self.db_name, self.db_type, self.resource_name)
 
-    def get_etag(self, node_id: int, revision: Revision = None):
+    def get_etag(self, node_id: int):
+        """
+        Get the ETag of a given node.
+
+        :param node_id: the nodeKey corresponding to which the ETag should be returned.
+        :return: a ``str`` ETag.
+        """
         params = {"nodeId": node_id}
+        """
         if revision:
             if type(revision) == int:
                 params["revision"] = revision
             else:
                 params["revision-timestamp"] = revision.isoformat()
+        """
         return self._client.get_etag(
             self.db_name, self.db_type, self.resource_name, params
         )
@@ -110,13 +140,14 @@ class Resource:
         insert: Insert = Insert.CHILD,
         etag: str = None,
     ):
-        """Update a resource
+        """
+        Update a resource.
 
-        :param node_id:
+        :param node_id: the nodekey in reference to which the update should be performed.
         :param data: the updated data, can be of type ``str``, ``dict``, or
                 ``xml.etree.ElementTree.Element``
-        :param insert:
-        :param etag:
+        :param insert: the position of the update in relation to the node referenced by node_id.
+        :param etag: the ETag of the node referenced by node_id.
         """
         data = (
             data
@@ -135,6 +166,15 @@ class Resource:
         start_result_seq_index: int = None,
         end_result_seq_index: int = None,
     ):
+        """
+        Execute a custom query on this resource.
+        The ``start_result_seq_index`` and ``end_result_seq_index`` can be used for pagination.
+
+        :param query: the query ``str`` to execute.
+        :param start_result_seq_index: the first index of the results from which to return, defaults to first.
+        :param end_result_seq_index: the last index of the results to return, defaults to last.
+        :return: the query result.
+        """
         params = {
             "query": query,
             "startResultSeqIndex": start_result_seq_index,
