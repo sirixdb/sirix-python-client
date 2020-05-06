@@ -65,7 +65,7 @@ class SyncClient:
         Call the ``/{database}`` endpoint with a GET request.
 
         :param name: name of the database.
-        :return: a ``dict`` with the name of the database, the type, and a ``list`` of its resources.
+        :return: a ``dict`` with a ``resources`` field containing a ``list`` of resources.
         :raises: :py:class:`SirixServerError`.
         """
         resp = self.client.get(name, headers={"Accept": "application/json"})

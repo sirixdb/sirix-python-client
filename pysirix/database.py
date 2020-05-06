@@ -44,7 +44,7 @@ class Database:
 
     def get_database_info(self) -> Union[Coroutine[None, None, Dict], Dict]:
         """
-        Get information about this database and its resources.
+        Get information about the resources of this database.
         Raises a :py:class:`SirixServerError` error if the database does not exist.
 
         :return: a ``dict`` with the name, type, and resources (as a ``list`` of ``str``) of this database.
