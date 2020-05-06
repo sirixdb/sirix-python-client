@@ -1,7 +1,8 @@
+from datetime import datetime
 from typing import Union, Dict, List, Coroutine, cast
 from json import dumps
 
-from pysirix.constants import DBType, Insert
+from pysirix.constants import DBType, Insert, Revision
 from pysirix.async_client import AsyncClient
 from pysirix.auth import Auth
 from pysirix.sync_client import SyncClient
@@ -72,7 +73,11 @@ class JsonStore:
         )
 
     def find_all(
-        self, query_dict: Dict, projection: List[str] = None, node_key=True
+        self,
+        query_dict: Dict,
+        projection: List[str] = None,
+        revision: Revision = None,
+        node_key=True,
     ) -> Union[
         Dict[str, List[Dict]], Coroutine[None, None, Dict[str, List[Dict]]],
     ]:
@@ -90,9 +95,20 @@ class JsonStore:
         :param projection: a ``list`` of field names to return for the matching records.
         :param node_key: a ``bool`` determining whether or not to return a ``nodeKey`` field containing
                         the nodeKey of the record.
+        :param revision: the revision to search, defaults to latest.
         :return: a ``dict`` with a field ``rest``, containing a ``list`` of ``dict`` records matching the query.
         """
-        query_list = ["for $i in bit:array-values(.) where"]
+        if revision is None:
+            query_list = ["for $i in bit:array-values(.) where"]
+        elif isinstance(revision, datetime):
+            query_list = [
+                f"""for $i in bit:array-values(jn:open
+('{self.db_name}','{self.name}',xs:dateTime('{revision.isoformat()}'))) where"""
+            ]
+        else:
+            query_list = [
+                f"for $i in bit:array-values(jn:doc('{self.db_name}','{self.name}',{revision})) where"
+            ]
         for k, v in query_dict.items():
             v = (
                 "".join(['"', v, '"'])

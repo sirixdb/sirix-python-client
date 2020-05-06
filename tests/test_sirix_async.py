@@ -1,6 +1,5 @@
 import pytest
 import httpx
-from httpx import HTTPError
 
 import pysirix
 from pysirix import DBType

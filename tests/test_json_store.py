@@ -1,3 +1,5 @@
+from datetime import datetime
+
 import httpx
 
 import pysirix
@@ -63,3 +65,22 @@ def test_find_all_projection():
         "location": {"state": "CA", "city": "Los Angeles"},
         "nodeKey": 11,
     }
+
+
+def test_find_all_old_revision_number():
+    store.create()
+    store.insert_one({"city": "New York", "state": "NY"})
+    response = store.find_all({"city": "New York"}, revision=1)
+    assert response == {"rest": []}
+    response = store.find_all({"city": "New York"}, revision=2)
+    assert response == {"rest": [{"city": "New York", "state": "NY", "nodeKey": 2}]}
+
+
+"""
+def test_find_all_old_revision_date():
+    store.create()
+    timestamp = datetime.now()
+    store.insert_one({"city": "New York", "state": "NY"})
+    response = store.find_all({"city": "New York"}, revision=timestamp)
+    assert response == {"rest": []}
+"""
