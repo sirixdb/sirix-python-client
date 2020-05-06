@@ -18,6 +18,7 @@ class JsonStore:
     abstraction similar to a row in a relational database. The entirety of the
     store parallels a table in a relational database.
     """
+
     def __init__(
         self,
         db_name: str,
