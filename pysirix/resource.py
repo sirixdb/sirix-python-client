@@ -45,8 +45,8 @@ class Resource:
         """
         :param data: the data with which to initialize the resource.
                 May be an instance of ``dict``, or an instance of
-                ``xml.etree.ElementTree.Element``, or a ``str`` of properly
-                formed json or xml.
+                ``xml.etree.ElementTree.Element`` (depending on the database type),
+                or a ``str`` of properly formed json or xml.
         """
         data = (
             data

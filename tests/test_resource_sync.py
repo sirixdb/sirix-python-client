@@ -125,3 +125,8 @@ def test_diff():
             }
         }
     ]
+
+
+def test_query():
+    resource.create([])
+    assert resource.query("for $i in bit:array-values(.) return $i") == {"rest": []}
