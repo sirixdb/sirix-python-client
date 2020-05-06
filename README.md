@@ -6,7 +6,7 @@ This package is currently in alpha stage.
 
 The python client supports both sync and async programs.
 
-The api docs can be found (here)[https://pysirix.readthedocs.io/].
+The api docs can be found [here](https://pysirix.readthedocs.io/).
 The api docs can also be built locally with the following:
 ```bash
 cd docs
