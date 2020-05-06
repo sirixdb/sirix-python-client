@@ -85,6 +85,41 @@ class Resource:
         :return: either a ``dict`` or an instance of ``xml.etree.ElementTree.Element``,
                         depending on the database type of this resource.
         """
+        params = self._build_read_params(node_id, revision, max_level)
+        return self._client.read_resource(
+            self.db_name, self.db_type, self.resource_name, params
+        )
+
+    def read_with_metadata(
+        self,
+        node_id: Union[int, None],
+        revision: Union[Revision, Tuple[Revision, Revision], None] = None,
+        max_level: Union[int, None] = None,
+    ):
+        """
+        Read the node (and its sub-nodes) corresponding to ``node_id``, with metadata for each node.
+
+        :param node_id: the nodeKey corresponding to the node to read, if ``None``,
+                        the entire resource is read.
+        :param revision: the revision to read from, defaults to latest.
+        :param max_level: the maximum depth for reading sub-nodes, defaults to latest.
+        :return:
+        """
+        params = self._build_read_params(node_id, revision, max_level)
+        params["withMetadata"] = True
+        return self._client.read_resource(
+            self.db_name, self.db_type, self.resource_name, params
+        )
+
+    @staticmethod
+    def _build_read_params(
+        node_id: Union[int, None],
+        revision: Union[Revision, Tuple[Revision, Revision], None] = None,
+        max_level: Union[int, None] = None,
+    ) -> Dict[str, Union[str, int]]:
+        """
+        Helper method to build a parameters ``dict`` for reading a resource.
+        """
         params = {}
         if node_id:
             params["nodeId"] = node_id
@@ -102,10 +137,7 @@ class Resource:
                 else:
                     params["start-revision"] = revision[0]
                     params["end-revision"] = revision[1]
-
-        return self._client.read_resource(
-            self.db_name, self.db_type, self.resource_name, params
-        )
+        return params
 
     def history(self) -> List[Commit]:
         """

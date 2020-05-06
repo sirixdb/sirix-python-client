@@ -1,5 +1,7 @@
+from pysirix.info import NodeType
+
 try:
-    from typing import TypedDict, Dict, Union
+    from typing import TypedDict, Dict, Union, List, Iterable
 
     class QueryResult(TypedDict):
         """
@@ -54,6 +56,48 @@ try:
         type: str
         value: Union[str, int, float, bool, None]
 
+    class Metadata(TypedDict):
+        """
+        ``descendantCount`` and ``childCount`` are provided only where ``type`` is :py:class:`NodeType` OBJECT or ARRAY.
+        """
+
+        nodeKey: int
+        hash: int
+        type: NodeType
+        descendantCount: int
+        childCount: int
+
+    class MetaNode(TypedDict):
+        """
+        ``key`` is provided only if ``type`` is :py:class:`NodeType` ``OBJECT_KEY``.
+
+        ``value`` is of type ``List[MetaNode]`` if ``metadata.type`` is ``OBJECT`` or ``ARRAY``,
+        however, if ``metadata.childCount`` is 0, then ``value`` is an emtpy ``dict``, or an empty
+        ``list``, depending on whether ``metadata.type`` is ``OBJECT`` or ``ARRAY``.
+
+        ``value`` is of type :py:class:`MetaNode` if ``metadata.type`` is ``OBJECT_KEY``.
+
+        ``value`` is a ``str`` if ``metadata.type`` is ``OBJECT_STRING_VALUE`` or ``STRING_VALUE``.
+
+        ``value`` is an ``int`` or ``float`` if metadata.type === ``OBJECT_NUMBER_VALUE`` or ``NUMBER_VALUE``.
+
+        ``value`` is a ``bool`` if ``metadata.type`` is ``OBJECT_BOOLEAN_VALUE`` or ``BOOLEAN_VALUE``.
+
+        ``value`` is ``None`` if ``metadata.type`` is ``OBJECT_NULL_VALUE`` or ``NULL_VALUE``.
+        """
+
+        metadata: Metadata
+        key: str
+        value: Union[
+            List[Union[Iterable["MetaNode"]]],
+            Union[Iterable["MetaNode"]],
+            str,
+            int,
+            float,
+            bool,
+            None,
+        ]
+
 
 except ImportError:
     from typing import Dict
@@ -63,3 +107,5 @@ except ImportError:
     InsertDiff = Dict
     ReplaceDiff = Dict
     UpdateDiff = Dict
+    Metadata = Dict
+    MetaNode = Dict

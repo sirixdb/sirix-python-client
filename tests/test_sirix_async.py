@@ -210,6 +210,27 @@ async def test_update_nonexistent_node():
     await client.aclose()
 
 
+async def test_read_metadata():
+    client = httpx.AsyncClient(base_url=base_url, verify=verify)
+    sirix = await pysirix.sirix_async("admin", "admin", client)
+    db = sirix.database("First", DBType.JSON)
+    resource = db.resource("test_resource")
+    await resource.create([])
+    resp = await resource.read_with_metadata(1, 1)
+    assert resp == {
+        "metadata": {
+            "nodeKey": 1,
+            "hash": 54776712958846245656800940890181827689,
+            "type": "ARRAY",
+            "descendantCount": 0,
+            "childCount": 0,
+        },
+        "value": [],
+    }
+    await sirix.delete_all()
+    await client.aclose()
+
+
 async def test_history():
     client = httpx.AsyncClient(base_url=base_url, verify=verify)
     sirix = await pysirix.sirix_async("admin", "admin", client)
@@ -241,6 +262,8 @@ async def test_diff():
             }
         }
     ]
+    await sirix.delete_all()
+    await client.aclose()
 
 
 # needs to be fixed on the server

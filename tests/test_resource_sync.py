@@ -89,6 +89,21 @@ def test_update_nonexistent_node():
         resource.update(5, {})
 
 
+def test_read_metadata():
+    resource.create([])
+    resp = resource.read_with_metadata(1, 1)
+    assert resp == {
+        "metadata": {
+            "nodeKey": 1,
+            "hash": 54776712958846245656800940890181827689,
+            "type": "ARRAY",
+            "descendantCount": 0,
+            "childCount": 0,
+        },
+        "value": [],
+    }
+
+
 def test_history():
     resource.create([])
     resource.update(1, {})
