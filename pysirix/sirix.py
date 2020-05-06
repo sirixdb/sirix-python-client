@@ -23,7 +23,7 @@ class Sirix:
 
         :param username: the username registered with keycloak for this application.
         :param password: the password registered with keycloak for this application.
-        :param client: the ``httpx`` ``Client`` or ``AsyncClient`` to use.
+        :param client: the ``httpx.Client`` or ``httpx.AsyncClient`` to use.
         """
         if isinstance(client, httpx.Client):
             self._client = SyncClient(client)
