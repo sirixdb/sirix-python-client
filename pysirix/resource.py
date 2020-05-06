@@ -9,6 +9,7 @@ from pysirix.constants import Insert, Revision, DBType
 
 from pysirix.sync_client import SyncClient
 from pysirix.async_client import AsyncClient
+from pysirix.types import Commit
 
 
 class Resource:
@@ -92,10 +93,10 @@ class Resource:
         if revision:
             if type(revision) == int:
                 params["revision"] = revision
-            elif type(revision) == datetime:
+            elif isinstance(revision, datetime):
                 params["revision-timestamp"] = revision.isoformat()
             if type(revision) == tuple:
-                if type(revision[0]) == datetime:
+                if isinstance(revision[0], datetime):
                     params["start-revision-timestamp"] = revision[0].isoformat()
                     params["end-revision-timestamp"] = revision[1].isoformat()
                 else:
@@ -106,13 +107,35 @@ class Resource:
             self.db_name, self.db_type, self.resource_name, params
         )
 
-    def history(self) -> List[Dict]:
+    def history(self) -> List[Commit]:
         """
         Get a ``list`` of all commits/revision of this resource.
 
-        :return: a ``list`` of ``dict``\s.
+        :return: a ``list`` of ``dict``\s of the form :py:class:`Commit`.
         """
         return self._client.history(self.db_name, self.db_type, self.resource_name)
+
+    def diff(
+        self,
+        first_revision: Revision,
+        second_revision: Revision,
+        node_id: int = None,
+        max_depth: int = None,
+    ):
+        params = {}
+        if isinstance(first_revision, datetime):
+            params["first-revision"] = first_revision.isoformat()
+        else:
+            params["first-revision"] = first_revision
+        if isinstance(second_revision, datetime):
+            params["second-revision"] = second_revision.isoformat()
+        else:
+            params["second-revision"] = second_revision
+        if node_id is not None:
+            params["startNodeKey"] = node_id
+        if max_depth is not None:
+            params["maxDepth"] = max_depth
+        return self._client.diff(self.db_name, self.resource_name, params)
 
     def get_etag(self, node_id: int):
         """

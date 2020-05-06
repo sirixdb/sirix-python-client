@@ -5,6 +5,7 @@ from typing import Dict, Union, List
 
 from pysirix.constants import DBType, Insert
 from pysirix.errors import include_response_text_in_errors
+from pysirix.types import Commit, InsertDiff, ReplaceDiff, UpdateDiff
 
 
 class SyncClient:
@@ -145,7 +146,7 @@ class SyncClient:
         else:
             return ET.fromstring(resp.text)
 
-    def history(self, db_name: str, db_type: DBType, name: str) -> List[Dict]:
+    def history(self, db_name: str, db_type: DBType, name: str) -> List[Commit]:
         """
         Call the ``/{database}/{resource}/history`` endpoint with a GET request.
 
@@ -161,6 +162,22 @@ class SyncClient:
         with include_response_text_in_errors():
             resp.raise_for_status()
         return resp.json()["history"]
+
+    def diff(
+        self, db_name: str, name: str, params: Dict[str, str]
+    ) -> List[Dict[str, Union[InsertDiff, ReplaceDiff, UpdateDiff, int]]]:
+        """
+        Call the ``/{database}/{resource}/diff`` endpoint with a GET request.
+
+        :param db_name: the name of the database.
+        :param name: the name of the resource.
+        :param params: the parameters required for this request.
+        :return:
+        """
+        resp = self.client.get(f"{db_name}/{name}/diff", params=params)
+        with include_response_text_in_errors():
+            resp.raise_for_status()
+        return resp.json()["diffs"]
 
     def post_query(self, query: Dict[str, Union[int, str]]) -> str:
         """

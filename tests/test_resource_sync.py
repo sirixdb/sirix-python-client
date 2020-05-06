@@ -94,3 +94,19 @@ def test_history():
     resource.update(1, {})
     resource.delete(2, None)
     assert len(resource.history()) == 3
+
+
+def test_diff():
+    resource.create([])
+    resource.update(1, {})
+    assert resource.diff(1, 2) == [
+        {
+            "insert": {
+                "nodeKey": 2,
+                "insertPositionNodeKey": 1,
+                "insertPosition": "asFirstChild",
+                "deweyID": "1.3.3",
+                "depth": 2,
+            }
+        }
+    ]

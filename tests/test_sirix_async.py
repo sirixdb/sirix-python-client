@@ -223,6 +223,26 @@ async def test_history():
     await client.aclose()
 
 
+async def test_diff():
+    client = httpx.AsyncClient(base_url=base_url, verify=verify)
+    sirix = await pysirix.sirix_async("admin", "admin", client)
+    db = sirix.database("First", DBType.JSON)
+    resource = db.resource("test_resource")
+    await resource.create([])
+    await resource.update(1, {})
+    assert await resource.diff(1, 2) == [
+        {
+            "insert": {
+                "nodeKey": 2,
+                "insertPositionNodeKey": 1,
+                "insertPosition": "asFirstChild",
+                "deweyID": "1.3.3",
+                "depth": 2,
+            }
+        }
+    ]
+
+
 # needs to be fixed on the server
 """
 async def test_sirix_query():

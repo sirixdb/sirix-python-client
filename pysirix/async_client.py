@@ -5,6 +5,7 @@ from typing import Dict, Union, List
 
 from pysirix.constants import DBType, Insert
 from pysirix.errors import include_response_text_in_errors
+from pysirix.types import Commit, InsertDiff, ReplaceDiff, UpdateDiff
 
 
 class AsyncClient:
@@ -84,13 +85,21 @@ class AsyncClient:
         else:
             return ET.fromstring(resp.text)
 
-    async def history(self, db_name: str, db_type: DBType, name: str):
+    async def history(self, db_name: str, db_type: DBType, name: str) -> List[Commit]:
         resp = await self.client.get(
             f"{db_name}/{name}/history", headers={"Accept": db_type.value}
         )
         with include_response_text_in_errors():
             resp.raise_for_status()
         return resp.json()["history"]
+
+    async def diff(
+        self, db_name: str, name: str, params: Dict[str, str]
+    ) -> List[Dict[str, Union[InsertDiff, ReplaceDiff, UpdateDiff, int]]]:
+        resp = await self.client.get(f"{db_name}/{name}/diff", params=params)
+        with include_response_text_in_errors():
+            resp.raise_for_status()
+        return resp.json()["diffs"]
 
     async def post_query(self, query: Dict[str, Union[int, str]]):
         resp = await self.client.post("/", json=query)
