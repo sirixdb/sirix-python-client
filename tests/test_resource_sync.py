@@ -122,6 +122,8 @@ def test_diff():
                 "insertPosition": "asFirstChild",
                 "deweyID": "1.3.3",
                 "depth": 2,
+                "type": "jsonFragment",
+                "data": "{}",
             }
         }
     ]
