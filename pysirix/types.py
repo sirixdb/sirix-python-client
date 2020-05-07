@@ -35,6 +35,8 @@ try:
         insertPosition: str
         deweyID: str
         depth: int
+        type: str
+        data: str
 
     class ReplaceDiff(TypedDict):
         """
@@ -55,6 +57,16 @@ try:
         nodeKey: int
         type: str
         value: Union[str, int, float, bool, None]
+
+    class DeleteDiff(TypedDict):
+        """
+        This type is available only in python 3.8+.
+        Otherwise, defaults to ``dict``.
+        """
+
+        nodeKey: int
+        deweyID: str
+        depth: int
 
     class Metadata(TypedDict):
         """
@@ -107,5 +119,6 @@ except ImportError:
     InsertDiff = Dict
     ReplaceDiff = Dict
     UpdateDiff = Dict
+    DeleteDiff = Dict
     Metadata = Dict
     MetaNode = Dict
