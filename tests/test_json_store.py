@@ -76,11 +76,9 @@ def test_find_all_old_revision_number():
     assert response == {"rest": [{"city": "New York", "state": "NY", "nodeKey": 2}]}
 
 
-"""
 def test_find_all_old_revision_date():
     store.create()
     timestamp = datetime.now()
     store.insert_one({"city": "New York", "state": "NY"})
     response = store.find_all({"city": "New York"}, revision=timestamp)
     assert response == {"rest": []}
-"""
