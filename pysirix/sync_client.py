@@ -8,6 +8,9 @@ from pysirix.errors import include_response_text_in_errors
 from pysirix.types import Commit, InsertDiff, ReplaceDiff, UpdateDiff
 
 
+ET.register_namespace("rest", "https://sirix.io/rest")
+
+
 class SyncClient:
     def __init__(self, client: Client):
         """
