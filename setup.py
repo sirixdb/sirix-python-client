@@ -16,7 +16,7 @@ setuptools.setup(
     install_requires=["httpx==0.12.1"],
     classifiers=[
         "Programming Language :: Python :: 3",
-        "License :: OSI Approved :: APACHE SOFTWARE LICENSE",
+        "License :: OSI Approved :: Apache Software License",
         "Operating System :: OS Independent",
     ],
     python_requires='>=3.6',
