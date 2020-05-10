@@ -102,8 +102,8 @@ class JsonStore:
             query_list = ["for $i in bit:array-values(.) where"]
         elif isinstance(revision, datetime):
             query_list = [
-                f"""for $i in bit:array-values(jn:open
-('{self.db_name}','{self.name}',xs:dateTime('{revision.isoformat()}'))) where"""
+                "for $i in bit:array-values(jn:open"
+                f"('{self.db_name}','{self.name}',xs:dateTime('{revision.isoformat()}'))) where"
             ]
         else:
             query_list = [
