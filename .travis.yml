@@ -9,6 +9,6 @@ python:
 before_install:
   - bash ./test.sh
 install:
-  - pip install -r requirements-all.txt
+  - pip install -r requirements.txt
 script:
   - python -m pytest --cov=pysirix -v
