@@ -267,18 +267,15 @@ async def test_diff():
     await client.aclose()
 
 
-# needs to be fixed on the server
-"""
 async def test_sirix_query():
     client = httpx.AsyncClient(base_url=base_url, verify=verify)
     sirix = await pysirix.sirix_async("admin", "admin", client)
     db = sirix.database("Query", DBType.JSON)
     resource = db.resource("query_resource")
     await resource.create(data_for_query)
-    assert await sirix.query(post_query) == '{"rest": [6]}'
+    assert await sirix.query(post_query) == '{"rest":[6]}'
     await sirix.delete_all()
     await client.aclose()
-"""
 
 
 async def test_resource_query():
