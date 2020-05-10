@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="pysirix",
-    version="0.1.0",
+    version="0.1.1",
     author="Moshe Uminer",
     author_email="mosheduminer@gmail.com",
     description="The SirixDB Python SDK",
@@ -13,7 +13,7 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     url="https://github.com/sirixdb/sirix-python-client",
     packages=setuptools.find_packages(exclude=("tests",)),
-    install_requires=["httpx"],
+    install_requires=["httpx==0.12.1"],
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: APACHE SOFTWARE LICENSE",

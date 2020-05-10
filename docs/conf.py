@@ -26,7 +26,7 @@ author = 'Moshe Uminer'
 master_doc = 'index'
 
 # The full version, including alpha/beta/rc tags
-release = '0.1-dev'
+release = '0.1.1'
 
 
 # -- General configuration ---------------------------------------------------
