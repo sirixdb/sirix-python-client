@@ -1,3 +1,4 @@
+import json
 from datetime import datetime
 from typing import Union, Dict, List, Coroutine, cast
 from json import dumps
@@ -79,7 +80,8 @@ class JsonStore:
         revision: Revision = None,
         node_key=True,
     ) -> Union[
-        Dict[str, List[Dict]], Coroutine[None, None, Dict[str, List[Dict]]],
+        Dict[str, List[QueryResult]],
+        Coroutine[None, None, Dict[str, List[QueryResult]]],
     ]:
         """
         Finds and returns all records where the values of ``query_dict`` match the
@@ -99,7 +101,7 @@ class JsonStore:
         :return: a ``dict`` with a field ``rest``, containing a ``list`` of ``dict`` records matching the query.
         """
         if revision is None:
-            query_list = ["for $i in bit:array-values(.) where"]
+            query_list = [f"for $i in jn:doc('{self.db_name}','{self.name}') where"]
         elif isinstance(revision, datetime):
             query_list = [
                 "for $i in bit:array-values(jn:open"
@@ -134,10 +136,4 @@ class JsonStore:
             projection_string = ",".join(projection)
             query_string = "".join([query_string, "{", projection_string, "}"])
         params = {"query": query_string}
-        return cast(
-            Union[
-                Dict[str, List[QueryResult]],
-                Coroutine[None, None, Dict[str, List[QueryResult]]],
-            ],
-            self._client.read_resource(self.db_name, self.db_type, self.name, params),
-        )
+        return json.loads(self._client.post_query(params))
