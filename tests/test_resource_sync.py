@@ -3,6 +3,7 @@ import pytest
 
 import pysirix
 from pysirix import DBType
+from pysirix.constants import MetadataType
 from pysirix.errors import SirixServerError
 
 base_url = "https://localhost:9443"
@@ -100,6 +101,35 @@ def test_read_metadata():
             "childCount": 0,
         },
         "value": [],
+    }
+
+
+def test_read_metadata_key_only():
+    resource.create([{"test": "dict"}])
+    resp = resource.read_with_metadata(1, 1, MetadataType.KEY)
+    assert resp == {
+        "metadata": {"nodeKey": 1},
+        "value": [
+            {
+                "metadata": {"nodeKey": 2},
+                "value": [
+                    {
+                        "key": "test",
+                        "metadata": {"nodeKey": 3},
+                        "value": {"metadata": {"nodeKey": 4}, "value": "dict"},
+                    }
+                ],
+            }
+        ],
+    }
+
+
+def test_read_metadata_key_and_child_count():
+    resource.create([{}])
+    resp = resource.read_with_metadata(1, 1, MetadataType.KEYAndCHILD)
+    assert resp == {
+        "metadata": {"childCount": 1, "nodeKey": 1},
+        "value": [{"metadata": {"childCount": 0, "nodeKey": 2}, "value": {}}],
     }
 
 

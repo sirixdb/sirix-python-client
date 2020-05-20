@@ -5,7 +5,7 @@ from datetime import datetime
 from typing import Union, Dict, Tuple, Coroutine, List
 
 from pysirix.auth import Auth
-from pysirix.constants import Insert, Revision, DBType
+from pysirix.constants import Insert, Revision, DBType, MetadataType
 
 from pysirix.sync_client import SyncClient
 from pysirix.async_client import AsyncClient
@@ -94,6 +94,7 @@ class Resource:
         self,
         node_id: Union[int, None],
         revision: Union[Revision, Tuple[Revision, Revision], None] = None,
+        meta_type: MetadataType = MetadataType.ALL,
         max_level: Union[int, None] = None,
     ):
         """
@@ -102,11 +103,12 @@ class Resource:
         :param node_id: the nodeKey corresponding to the node to read, if ``None``,
                         the entire resource is read.
         :param revision: the revision to read from, defaults to latest.
+        :param meta_type: the type of metadata to return, defaults to all.
         :param max_level: the maximum depth for reading sub-nodes, defaults to latest.
         :return:
         """
         params = self._build_read_params(node_id, revision, max_level)
-        params["withMetadata"] = True
+        params["withMetadata"] = meta_type.value
         return self._client.read_resource(
             self.db_name, self.db_type, self.resource_name, params
         )

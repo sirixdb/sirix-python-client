@@ -113,7 +113,7 @@ class JsonStore:
             ]
         for k, v in query_dict.items():
             v = (
-                "".join(['"', v, '"'])
+                f'"{v}"'
                 if isinstance(v, str)
                 else "true()"
                 if v is True
