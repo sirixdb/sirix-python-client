@@ -7,12 +7,11 @@ from pysirix.errors import SirixServerError
 
 from .data import data_for_query, post_query, resource_query
 
-base_url = "https://localhost:9443"
-verify = "tests/resources/cert.pem"
+base_url = "http://localhost:9443"
 
 
 def test_sirix_sync_init():
-    client = httpx.Client(base_url=base_url, verify=verify)
+    client = httpx.Client(base_url=base_url)
     sirix = pysirix.sirix_sync("admin", "admin", client)
     data = sirix._auth._token_data
     assert type(data.access_token) == str
@@ -22,7 +21,7 @@ def test_sirix_sync_init():
 
 
 def test_auth_refresh():
-    client = httpx.Client(base_url=base_url, verify=verify)
+    client = httpx.Client(base_url=base_url)
     sirix = pysirix.sirix_sync("admin", "admin", client)
     data = sirix._auth._token_data
     sirix._auth._refresh()
@@ -32,7 +31,7 @@ def test_auth_refresh():
 
 
 def test_get_info():
-    client = httpx.Client(base_url=base_url, verify=verify)
+    client = httpx.Client(base_url=base_url)
     sirix = pysirix.sirix_sync("admin", "admin", client)
     data = sirix.get_info()
     assert data == []
@@ -40,7 +39,7 @@ def test_get_info():
 
 
 def test_create():
-    client = httpx.Client(base_url=base_url, verify=verify)
+    client = httpx.Client(base_url=base_url)
     sirix = pysirix.sirix_sync("admin", "admin", client)
     db = sirix.database("First", DBType.JSON)
     db.create()
@@ -51,7 +50,7 @@ def test_create():
 
 
 def test_delete():
-    client = httpx.Client(base_url=base_url, verify=verify)
+    client = httpx.Client(base_url=base_url)
     sirix = pysirix.sirix_sync("admin", "admin", client)
     db = sirix.database("First", DBType.JSON)
     db.create()
@@ -62,7 +61,7 @@ def test_delete():
 
 
 def test_exists():
-    client = httpx.Client(base_url=base_url, verify=verify)
+    client = httpx.Client(base_url=base_url)
     sirix = pysirix.sirix_sync("admin", "admin", client)
     db = sirix.database("First", DBType.JSON)
     resource = db.resource("test_resource")
@@ -71,7 +70,7 @@ def test_exists():
 
 
 def test_create_resource():
-    client = httpx.Client(base_url=base_url, verify=verify)
+    client = httpx.Client(base_url=base_url)
     sirix = pysirix.sirix_sync("admin", "admin", client)
     db = sirix.database("First", DBType.JSON)
     resource = db.resource("test_resource")
@@ -82,7 +81,7 @@ def test_create_resource():
 
 
 def test_sirix_query():
-    client = httpx.Client(base_url=base_url, verify=verify)
+    client = httpx.Client(base_url=base_url)
     sirix = pysirix.sirix_sync("admin", "admin", client)
     db = sirix.database("Query", DBType.JSON)
     resource = db.resource("query_resource")
@@ -93,7 +92,7 @@ def test_sirix_query():
 
 
 def test_resource_query():
-    client = httpx.Client(base_url=base_url, verify=verify)
+    client = httpx.Client(base_url=base_url)
     sirix = pysirix.sirix_sync("admin", "admin", client)
     db = sirix.database("Query", DBType.JSON)
     resource = db.resource("query_resource")

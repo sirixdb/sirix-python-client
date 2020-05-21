@@ -5,15 +5,14 @@ import httpx
 import pysirix
 from pysirix import DBType
 
-base_url = "https://localhost:9443"
-verify = "tests/resources/cert.pem"
+base_url = "http://localhost:9443"
 
 
 def setup_function():
     global client
     global sirix
     global store
-    client = httpx.Client(base_url=base_url, verify=verify)
+    client = httpx.Client(base_url=base_url)
     sirix = pysirix.sirix_sync("admin", "admin", client)
     db = sirix.database("First", DBType.JSON)
     store = db.json_store("test_resource")

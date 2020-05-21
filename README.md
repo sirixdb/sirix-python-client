@@ -19,7 +19,7 @@ Some example code:
 from pysirix import sirix_sync, DBType, Insert
 from httpx import Client
 
-client = Client(base_url="https://localhost:9443", verify="tests/resources/cert.pem")
+client = Client(base_url="http://localhost:9443")
 sirix = sirix_sync("admin", "admin", client)
 
 db = sirix.database("json-diff", DBType.JSON)
@@ -46,7 +46,7 @@ import asyncio
 
 
 async def main():
-    client = AsyncClient(base_url="https://localhost:9443", verify="tests/resources/cert.pem")
+    client = AsyncClient(base_url="http://localhost:9443")
     sirix = await sirix_async("admin", "admin", client)
     
     db = sirix.database("json-diff", DBType.JSON)

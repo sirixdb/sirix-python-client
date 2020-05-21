@@ -5,8 +5,7 @@ from pysirix import DBType
 from xml.etree import ElementTree as ET
 
 
-base_url = "https://localhost:9443"
-verify = "tests/resources/cert.pem"
+base_url = "http://localhost:9443"
 
 
 xml_string = """
@@ -37,7 +36,7 @@ def setup_function():
     global sirix
     global db
     global resource
-    client = httpx.Client(base_url=base_url, verify=verify)
+    client = httpx.Client(base_url=base_url)
     sirix = pysirix.sirix_sync("admin", "admin", client)
     db = sirix.database("First", DBType.XML)
     resource = db.resource("test_resource")

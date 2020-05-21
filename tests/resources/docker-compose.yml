@@ -23,6 +23,4 @@ services:
     restart: always
     volumes:
       - /opt/sirix
-      - ./cert.pem:/opt/sirix/sirix-data/cert.pem
-      - ./key.pem:/opt/sirix/sirix-data/key.pem
       - ./sirix-conf.json:/opt/sirix/sirix-conf.json

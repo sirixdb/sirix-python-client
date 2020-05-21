@@ -6,15 +6,14 @@ from pysirix import DBType
 from pysirix.constants import MetadataType
 from pysirix.errors import SirixServerError
 
-base_url = "https://localhost:9443"
-verify = "tests/resources/cert.pem"
+base_url = "http://localhost:9443"
 
 
 def setup_function():
     global client
     global sirix
     global resource
-    client = httpx.Client(base_url=base_url, verify=verify)
+    client = httpx.Client(base_url=base_url)
     sirix = pysirix.sirix_sync("admin", "admin", client)
     db = sirix.database("First", DBType.JSON)
     resource = db.resource("test_resource")
