@@ -13,7 +13,7 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     url="https://github.com/sirixdb/sirix-python-client",
     packages=setuptools.find_packages(exclude=("tests",)),
-    install_requires=["httpx==0.13.1"],
+    install_requires=["httpx==0.13.3"],
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: Apache Software License",
