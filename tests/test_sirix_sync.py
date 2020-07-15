@@ -25,6 +25,8 @@ def test_auth_refresh():
     client = httpx.Client(base_url=base_url)
     sirix = pysirix.sirix_sync("admin", "admin", client)
     data = sirix._auth._token_data
+    # cancel the current timer:
+    sirix._auth._timer.cancel()
     sirix._auth._refresh()
     new_data = sirix._auth._token_data
     assert new_data != data
