@@ -100,7 +100,8 @@ class Auth:
         self._client.headers[
             "Authorization"
         ] = f"{self._token_data.token_type} {self._token_data.access_token}"
-        self._timer = Timer(self._token_data.expires_in - 6, self._refresh)
+        self._timer = Timer(self._token_data.expires_in - 10, self._refresh)
+        self._timer.start()
 
     async def _async_handle_data(self, resp):
         """
@@ -121,5 +122,5 @@ class Auth:
         This method sleeps, then calls :py:func:`_async_refresh`
         6 seconds before the access token is set to expire.
         """
-        await sleep(self._token_data.expires_in - 6)
+        await sleep(self._token_data.expires_in - 10)
         await self._async_refresh()
