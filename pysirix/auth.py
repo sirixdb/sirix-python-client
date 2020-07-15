@@ -12,6 +12,7 @@ class Auth:
     """
     This class handles authentication for server access.
     """
+
     def __init__(
         self,
         username: str,
