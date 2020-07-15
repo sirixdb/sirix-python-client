@@ -39,6 +39,12 @@ class Sirix:
         """
         return self._auth.authenticate()
 
+    def shutdown(self):
+        """
+        Cancel any pending token refresh operations, to allow the program to exit.
+        """
+        self._auth.shutdown()
+
     def database(self, database_name: str, database_type: DBType):
         """
         Returns a :py:class:`Database` instance.

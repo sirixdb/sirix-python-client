@@ -30,6 +30,7 @@ class Auth:
         self._password = password
         self._asynchronous = asynchronous
         self._client = client
+        self._refresh_check = True
 
     def authenticate(self) -> Union[None, Coroutine[None, None, None]]:
         """
@@ -100,8 +101,9 @@ class Auth:
         self._client.headers[
             "Authorization"
         ] = f"{self._token_data.token_type} {self._token_data.access_token}"
-        self._timer = Timer(self._token_data.expires_in - 10, self._refresh)
-        self._timer.start()
+        if self._refresh_check:
+            self._timer = Timer(self._token_data.expires_in - 10, self._refresh)
+            self._timer.start()
 
     async def _async_handle_data(self, resp):
         """
@@ -114,7 +116,8 @@ class Auth:
         self._client.headers[
             "Authorization"
         ] = f"{self._token_data.token_type} {self._token_data.access_token}"
-        self._timer = ensure_future(self._sleep_then_refresh())
+        if self._refresh_check:
+            self._timer = ensure_future(self._sleep_then_refresh())
 
     async def _sleep_then_refresh(self):
         """
@@ -124,3 +127,7 @@ class Auth:
         """
         await sleep(self._token_data.expires_in - 10)
         await self._async_refresh()
+
+    def shutdown(self):
+        self._refresh_check = False
+        self._timer.cancel()

@@ -17,6 +17,7 @@ def test_sirix_sync_init():
     assert type(data.access_token) == str
     assert type(data.refresh_token) == str
     assert type(data.expires_in) == int
+    sirix.shutdown()
     client.close()
 
 
@@ -27,6 +28,7 @@ def test_auth_refresh():
     sirix._auth._refresh()
     new_data = sirix._auth._token_data
     assert new_data != data
+    sirix.shutdown()
     client.close()
 
 
@@ -35,6 +37,7 @@ def test_get_info():
     sirix = pysirix.sirix_sync("admin", "admin", client)
     data = sirix.get_info()
     assert data == []
+    sirix.shutdown()
     client.close()
 
 
@@ -46,6 +49,7 @@ def test_create():
     info = db.get_database_info()
     assert info["resources"] == []
     sirix.delete_all()
+    sirix.shutdown()
     client.close()
 
 
@@ -57,6 +61,7 @@ def test_delete():
     db.delete()
     with pytest.raises(SirixServerError):
         db.get_database_info()
+    sirix.shutdown()
     client.close()
 
 
@@ -66,6 +71,7 @@ def test_exists():
     db = sirix.database("First", DBType.JSON)
     resource = db.resource("test_resource")
     assert resource.exists() is False
+    sirix.shutdown()
     client.close()
 
 
@@ -77,6 +83,7 @@ def test_create_resource():
     assert resource.create([]) == "[]"
     assert resource.exists() is True
     sirix.delete_all()
+    sirix.shutdown()
     client.close()
 
 
@@ -88,6 +95,7 @@ def test_sirix_query():
     resource.create(data_for_query)
     assert sirix.query(post_query) == '{"rest":[6]}'
     sirix.delete_all()
+    sirix.shutdown()
     client.close()
 
 
@@ -99,4 +107,5 @@ def test_resource_query():
     resource.create(data_for_query)
     assert resource.query(resource_query) == {"rest": [6]}
     sirix.delete_all()
+    sirix.shutdown()
     client.close()

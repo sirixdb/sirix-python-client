@@ -21,6 +21,7 @@ def setup_function():
 
 def teardown_function():
     sirix.delete_all()
+    sirix.shutdown()
     client.close()
 
 
@@ -94,7 +95,7 @@ def test_read_metadata():
     assert resp == {
         "metadata": {
             "nodeKey": 1,
-            "hash": 54776712958846245656800940890181827689,
+            "hash": "29359c75ea7bce76d9e352a23abf7c69",
             "type": "ARRAY",
             "descendantCount": 0,
             "childCount": 0,
