@@ -13,7 +13,7 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     url="https://github.com/sirixdb/sirix-python-client",
     packages=setuptools.find_packages(exclude=("tests",)),
-    entry_points={"console_scripts": ["pysirix=pysirix.shell:main"]},
+    entry_points={"console_scripts": ["pysirix=pysirix.shell.sirixsh:main"]},
     install_requires=["httpx==0.13.3"],
     classifiers=[
         "Programming Language :: Python :: 3",
