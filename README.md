@@ -67,3 +67,34 @@ async def main():
 loop = asyncio.get_event_loop()
 loop.run_until_complete(asyncio.run(main()))
 ```
+
+# pysirix-shell
+
+## Installing
+
+If you are not installing pysirix as part of a project, the
+preferred install method is to use [pipx](https://github.com/pipxproject/pipx/):
+
+```sh
+pipx install pysirix
+```
+
+## Configuring
+
+In your home directory, create a folder named `pysirix-shell`, and create a file named `config.json`. This file will hold the configuration for the shell. It should have the following form:
+
+```json
+{
+    "localhost": {
+        "url": "http://localhost:9443",
+        "username": "admin",
+        "timeout": 4
+    },
+    "cloud": {
+        "url": "https://sirix-demo.com:9443",
+        "username": "administrator",
+    }
+}
+```
+
+The timeout field is optional, and defaults to 5 (seconds).
