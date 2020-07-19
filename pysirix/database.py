@@ -1,8 +1,8 @@
-from typing import Union, Optional, Coroutine, Dict, List
+from typing import Union, Awaitable, Dict
 
 from pysirix.auth import Auth
 from pysirix.constants import DBType
-from pysirix.json_store import JsonStore
+from pysirix.json_store import JsonStoreSync, JsonStoreAsync
 from pysirix.sync_client import SyncClient
 from pysirix.async_client import AsyncClient
 from pysirix.resource import Resource
@@ -36,13 +36,13 @@ class Database:
         self.database_name = database_name
         self.database_type = database_type
 
-    def create(self) -> Union[None, Coroutine[None, None, None]]:
+    def create(self) -> Union[None, Awaitable[None]]:
         """
         Create a database with the name and type of this :py:class:`Database` instance.
         """
         return self._client.create_database(self.database_name, self.database_type)
 
-    def get_database_info(self) -> Union[Coroutine[None, None, Dict], Dict]:
+    def get_database_info(self) -> Union[Awaitable[Dict], Dict]:
         """
         Get information about the resources of this database.
         Raises a :py:class:`SirixServerError` error if the database does not exist.
@@ -69,14 +69,19 @@ class Database:
 
     def json_store(self, name: str):
         """
-        Returns a :py:class:`store` instance.
+        Returns a :py:class:`JsonStoreSync` or :py:class:`JsonStoreAsync` instance,
+        depending or whether :py:func:`sirix_sync` or :py:func:`sirix_async` was used
+        for initialization.
 
         :param name: the resource name for the store.
-        :return: an instance of :py:class:`JsonStore`.
+        :return: an instance of :py:class:`JsonStoreSync` or :py:class:`JsonStoreAsync`.
         """
-        return JsonStore(self.database_name, name, self._client, self._auth)
+        if isinstance(self._client, AsyncClient):
+            return JsonStoreAsync(self.database_name, name, self._client, self._auth)
+        else:
+            return JsonStoreSync(self.database_name, name, self._client, self._auth)
 
-    def delete(self) -> Optional[Coroutine]:
+    def delete(self) -> Union[Awaitable[None], None]:
         """
         Delete the database with the name of this :py:class:`Database` instance.
         """

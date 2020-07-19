@@ -1,6 +1,6 @@
 import json
 from datetime import datetime
-from typing import Union, Dict, List, Coroutine, cast
+from typing import Union, Dict, List, Awaitable
 from json import dumps
 
 from pysirix.constants import DBType, Insert, Revision
@@ -10,17 +10,7 @@ from pysirix.sync_client import SyncClient
 from pysirix.types import QueryResult
 
 
-class JsonStore:
-    """
-    This class is a convenient abstraction over the resource entities exposed by SirixDB.
-    As such, there is no JsonStore on the SirixDB server, only the underlying resource is stored.
-
-    This class is for storing many distinct, json objects in a single resource,
-    where the objects storing data of similar type. As such, an object is an
-    abstraction similar to a row in a relational database. The entirety of the
-    store parallels a table in a relational database.
-    """
-
+class JsonStoreBase:
     def __init__(
         self,
         db_name: str,
@@ -34,27 +24,7 @@ class JsonStore:
         self._client = client
         self._auth = auth
 
-    def create(self) -> Union[str, Coroutine[None, None, str]]:
-        """
-        Creates the store, will overwrite the store if it already exists.
-
-        :return: will return the string "[]". If in async mode, an awaitable that resolves this string.
-        """
-        return self._client.create_resource(
-            self.db_name, self.db_type, self.name, "[]",
-        )
-
-    def exists(self) -> Union[bool, Coroutine[None, None, bool]]:
-        """
-        Sends a ``head`` request to determine whether or not this store/resource already exists.
-
-        :return: a ``bool`` corresponding to the existence of the store.
-        """
-        return self._client.resource_exists(self.db_name, self.db_type, self.name)
-
-    def insert_one(
-        self, insert_dict: Union[str, Dict]
-    ) -> Union[str, Coroutine[None, None, str]]:
+    def insert_one(self, insert_dict: Union[str, Dict]) -> Union[str, Awaitable[str]]:
         """
         Inserts a single record into the store. New records are added at the head of the store.
 
@@ -73,33 +43,43 @@ class JsonStore:
             etag=None,
         )
 
-    def find_all(
+    def exists(self) -> Union[bool, Awaitable[bool]]:
+        """
+        Sends a ``head`` request to determine whether or not this store/resource already exists.
+
+        :return: a ``bool`` corresponding to the existence of the store.
+        """
+        return self._client.resource_exists(self.db_name, self.db_type, self.name)
+
+    def create(self) -> Union[str, Awaitable[str]]:
+        """
+        Creates the store, will overwrite the store if it already exists.
+
+        :return: will return the string "[]". If in async mode, an awaitable that resolves this string.
+        """
+        return self._client.create_resource(
+            self.db_name, self.db_type, self.name, "[]",
+        )
+
+    def history(self, node_key: int = 0):
+        if node_key == 0:
+            return self._client.history(self.db_name, self.db_type, self.name)
+        query = (
+            f"let $node := sdb:select-node(., {node_key}) let $result := for $rev in jn:all-times($node)"
+            "return if (not(exists(jn:previous($rev)))) then sdb:revision($rev)"
+            "else if (sdb:hash($rev) ne sdb:hash(jn:previous($rev))) then sdb:revision($rev)"
+            "else () return for $i in $result order by $i descending return $i"
+        )
+        params = {"query": query}
+        return self._client.read_resource(self.db_name, self.db_type, self.name, params)
+
+    def _prepare_find_all(
         self,
         query_dict: Dict,
         projection: List[str] = None,
         revision: Revision = None,
         node_key=True,
-    ) -> Union[
-        Dict[str, List[QueryResult]],
-        Coroutine[None, None, Dict[str, List[QueryResult]]],
-    ]:
-        """
-        Finds and returns all records where the values of ``query_dict`` match the
-        corresponding values the record.
-
-        ``projection`` can optionally be used to retrieve only certain fields of the
-        matching records.
-
-        By default, the node_key of of each record is returned as a ``nodeKey`` field in the record.
-        The ``node_key`` parameter controls this behavior.
-
-        :param query_dict: a ``dict`` with which to query the records.
-        :param projection: a ``list`` of field names to return for the matching records.
-        :param node_key: a ``bool`` determining whether or not to return a ``nodeKey`` field containing
-                        the nodeKey of the record.
-        :param revision: the revision to search, defaults to latest.
-        :return: a ``dict`` with a field ``rest``, containing a ``list`` of ``dict`` records matching the query.
-        """
+    ):
         if revision is None:
             query_list = [f"for $i in jn:doc('{self.db_name}','{self.name}') where"]
         elif isinstance(revision, datetime):
@@ -135,5 +115,97 @@ class JsonStore:
                 projection.append("nodeKey")
             projection_string = ",".join(projection)
             query_string = "".join([query_string, "{", projection_string, "}"])
-        params = {"query": query_string}
-        return json.loads(self._client.post_query(params))
+        return {"query": query_string}
+
+
+class JsonStoreSync(JsonStoreBase):
+    """
+    This class is a convenient abstraction over the resource entities exposed by SirixDB.
+    As such, there is no JsonStore on the SirixDB server, only the underlying resource is stored.
+
+    This class is for storing many distinct, json objects in a single resource,
+    where the objects storing data of similar type. As such, an object is an
+    abstraction similar to a row in a relational database. The entirety of the
+    store parallels a table in a relational database.
+    """
+
+    def __init__(
+        self,
+        db_name: str,
+        name: str,
+        client: Union[SyncClient, AsyncClient],
+        auth: Auth,
+    ):
+        super().__init__(db_name, name, client, auth)
+
+    def find_all(
+        self,
+        query_dict: Dict,
+        projection: List[str] = None,
+        revision: Revision = None,
+        node_key=True,
+    ) -> Dict[str, List[QueryResult]]:
+        """
+        Finds and returns all records where the values of ``query_dict`` match the
+        corresponding values the record.
+
+        ``projection`` can optionally be used to retrieve only certain fields of the
+        matching records.
+
+        By default, the node_key of of each record is returned as a ``nodeKey`` field in the record.
+        The ``node_key`` parameter controls this behavior.
+
+        :param query_dict: a ``dict`` with which to query the records.
+        :param projection: a ``list`` of field names to return for the matching records.
+        :param node_key: a ``bool`` determining whether or not to return a ``nodeKey`` field containing
+                        the nodeKey of the record.
+        :param revision: the revision to search, defaults to latest.
+        :return: a ``dict`` with a field ``rest``, containing a ``list`` of ``dict`` records matching the query.
+        """
+        params = self._prepare_find_all(query_dict, projection, revision, node_key)
+        result = self._client.post_query(params)
+        return json.loads(result)
+
+
+class JsonStoreAsync(JsonStoreBase):
+    """
+    See the documentation for :py:class:`JsonStoreSync`. This class implements the same interfaces,
+    with async support.
+    """
+
+    def __init__(
+        self,
+        db_name: str,
+        name: str,
+        client: Union[SyncClient, AsyncClient],
+        auth: Auth,
+    ):
+        super().__init__(db_name, name, client, auth)
+
+    async def find_all(
+        self,
+        query_dict: Dict,
+        projection: List[str] = None,
+        revision: Revision = None,
+        node_key=True,
+    ) -> Awaitable[Dict[str, List[QueryResult]]]:
+        """
+        Finds and returns all records where the values of ``query_dict`` match the
+        corresponding values the record.
+
+        ``projection`` can optionally be used to retrieve only certain fields of the
+        matching records.
+
+        By default, the node_key of of each record is returned as a ``nodeKey`` field in the record.
+        The ``node_key`` parameter controls this behavior.
+
+        :param query_dict: a ``dict`` with which to query the records.
+        :param projection: a ``list`` of field names to return for the matching records.
+        :param node_key: a ``bool`` determining whether or not to return a ``nodeKey`` field containing
+                        the nodeKey of the record.
+        :param revision: the revision to search, defaults to latest.
+        :return: a ``dict`` with a field ``rest``, containing a ``list`` of ``dict`` records matching the query.
+        """
+        params = self._prepare_find_all(query_dict, projection, revision, node_key)
+        result = await self._client.post_query(params)
+        return json.loads(result)
