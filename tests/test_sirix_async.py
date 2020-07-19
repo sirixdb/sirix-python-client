@@ -64,6 +64,7 @@ async def test_database_delete():
     await db.delete()
     with pytest.raises(SirixServerError):
         await db.get_database_info()
+    await sirix.delete_all()
     sirix.shutdown()
     await client.aclose()
 
@@ -74,6 +75,7 @@ async def test_resource_exists():
     db = sirix.database("First", DBType.JSON)
     resource = db.resource("test_resource")
     assert await resource.exists() is False
+    await sirix.delete_all()
     sirix.shutdown()
     await client.aclose()
 

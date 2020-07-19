@@ -82,3 +82,13 @@ def test_find_all_old_revision_date():
     store.insert_one({"city": "New York", "state": "NY"})
     response = store.find_all({"city": "New York"}, revision=timestamp)
     assert response == {"rest": []}
+
+
+"""
+def test_find_one():
+    store.create()
+    store.insert_one({"generic": 1, "location": {"state": "NY", "city": "New York"}})
+    store.insert_one({"generic": 1, "location": {"state": "CA", "city": "Los Angeles"}})
+    response = store.find_one({"generic": 1})
+    print(response)
+"""

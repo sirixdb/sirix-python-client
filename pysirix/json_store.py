@@ -1,7 +1,9 @@
 import json
 from datetime import datetime
-from typing import Union, Dict, List, Awaitable
+from typing import Union, Dict, List, Awaitable, Optional
 from json import dumps
+
+from abc import ABC
 
 from pysirix.constants import DBType, Insert, Revision
 from pysirix.async_client import AsyncClient
@@ -10,7 +12,7 @@ from pysirix.sync_client import SyncClient
 from pysirix.types import QueryResult
 
 
-class JsonStoreBase:
+class JsonStoreBase(ABC):
     def __init__(
         self,
         db_name: str,
@@ -79,6 +81,8 @@ class JsonStoreBase:
         projection: List[str] = None,
         revision: Revision = None,
         node_key=True,
+        start_result_index: Optional[int] = None,
+        end_result_index: Optional[int] = None,
     ):
         if revision is None:
             query_list = [f"for $i in jn:doc('{self.db_name}','{self.name}') where"]
@@ -115,7 +119,34 @@ class JsonStoreBase:
                 projection.append("nodeKey")
             projection_string = ",".join(projection)
             query_string = "".join([query_string, "{", projection_string, "}"])
-        return {"query": query_string}
+        params = {"query": query_string}
+        if start_result_index:
+            params["startResultSeqIndex"] = start_result_index
+        if end_result_index:
+            params["endResultSeqIndex"] = end_result_index
+        return params
+
+    def find_all(
+        self,
+        query_dict: Dict,
+        projection: List[str] = None,
+        revision: Revision = None,
+        node_key=True,
+        start_result_index: Optional[int] = None,
+        end_result_index: Optional[int] = None,
+    ):
+        raise NotImplementedError()
+
+    def find_one(
+        self,
+        query_dict: Dict,
+        projection: List[str] = None,
+        revision: Revision = None,
+        node_key=True,
+    ) -> Dict[str, List[QueryResult]]:
+        return self.find_all(
+            query_dict, projection, revision, node_key, end_result_index=1
+        )
 
 
 class JsonStoreSync(JsonStoreBase):
@@ -144,6 +175,8 @@ class JsonStoreSync(JsonStoreBase):
         projection: List[str] = None,
         revision: Revision = None,
         node_key=True,
+        start_result_index: Optional[int] = None,
+        end_result_index: Optional[int] = None,
     ) -> Dict[str, List[QueryResult]]:
         """
         Finds and returns all records where the values of ``query_dict`` match the
@@ -160,9 +193,18 @@ class JsonStoreSync(JsonStoreBase):
         :param node_key: a ``bool`` determining whether or not to return a ``nodeKey`` field containing
                         the nodeKey of the record.
         :param revision: the revision to search, defaults to latest.
+        :param start_result_index: index of first result to return.
+        :param end_result_index: index of last result to return.
         :return: a ``dict`` with a field ``rest``, containing a ``list`` of ``dict`` records matching the query.
         """
-        params = self._prepare_find_all(query_dict, projection, revision, node_key)
+        params = self._prepare_find_all(
+            query_dict,
+            projection,
+            revision,
+            node_key,
+            start_result_index,
+            end_result_index,
+        )
         result = self._client.post_query(params)
         return json.loads(result)
 
@@ -188,6 +230,8 @@ class JsonStoreAsync(JsonStoreBase):
         projection: List[str] = None,
         revision: Revision = None,
         node_key=True,
+        start_result_index: Optional[int] = None,
+        end_result_index: Optional[int] = None,
     ) -> Awaitable[Dict[str, List[QueryResult]]]:
         """
         Finds and returns all records where the values of ``query_dict`` match the
@@ -204,8 +248,17 @@ class JsonStoreAsync(JsonStoreBase):
         :param node_key: a ``bool`` determining whether or not to return a ``nodeKey`` field containing
                         the nodeKey of the record.
         :param revision: the revision to search, defaults to latest.
+        :param start_result_index: index of first result to return.
+        :param end_result_index: index of last result to return.
         :return: a ``dict`` with a field ``rest``, containing a ``list`` of ``dict`` records matching the query.
         """
-        params = self._prepare_find_all(query_dict, projection, revision, node_key)
+        params = self._prepare_find_all(
+            query_dict,
+            projection,
+            revision,
+            node_key,
+            start_result_index,
+            end_result_index,
+        )
         result = await self._client.post_query(params)
         return json.loads(result)
