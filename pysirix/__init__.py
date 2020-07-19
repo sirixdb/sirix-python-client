@@ -3,6 +3,7 @@ import httpx
 from pysirix.sirix import Sirix
 from pysirix.database import Database
 from pysirix.resource import Resource
+from pysirix.json_store import JsonStoreSync, JsonStoreAsync
 from pysirix.constants import Insert, DBType
 from pysirix.errors import SirixServerError
 
@@ -40,6 +41,8 @@ __all__ = [
     "SirixServerError",
     "Database",
     "Resource",
+    "JsonStoreSync",
+    "JsonStoreAsync",
     "Insert",
     "DBType",
 ]
