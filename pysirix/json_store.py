@@ -120,9 +120,9 @@ class JsonStoreBase(ABC):
             projection_string = ",".join(projection)
             query_string = "".join([query_string, "{", projection_string, "}"])
         params = {"query": query_string}
-        if start_result_index:
+        if start_result_index is not None:
             params["startResultSeqIndex"] = start_result_index
-        if end_result_index:
+        if end_result_index is not None:
             params["endResultSeqIndex"] = end_result_index
         return params
 
@@ -145,7 +145,7 @@ class JsonStoreBase(ABC):
         node_key=True,
     ) -> Dict[str, List[QueryResult]]:
         return self.find_all(
-            query_dict, projection, revision, node_key, end_result_index=1
+            query_dict, projection, revision, node_key, start_result_index=0, end_result_index=0
         )
 
 

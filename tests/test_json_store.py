@@ -84,11 +84,17 @@ def test_find_all_old_revision_date():
     assert response == {"rest": []}
 
 
-"""
 def test_find_one():
     store.create()
     store.insert_one({"generic": 1, "location": {"state": "NY", "city": "New York"}})
     store.insert_one({"generic": 1, "location": {"state": "CA", "city": "Los Angeles"}})
     response = store.find_one({"generic": 1})
-    print(response)
-"""
+    assert response == {
+        "rest": [
+            {
+                "generic": 1,
+                "location": {"state": "CA", "city": "Los Angeles"},
+                "nodeKey": 11,
+            }
+        ]
+    }
