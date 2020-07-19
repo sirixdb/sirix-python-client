@@ -2,7 +2,7 @@ import json
 import xml.etree.ElementTree as ET
 from datetime import datetime
 
-from typing import Union, Dict, Tuple, Coroutine, List
+from typing import Union, Dict, Tuple, Awaitable, Optional, List
 
 from pysirix.auth import Auth
 from pysirix.constants import Insert, Revision, DBType, MetadataType
@@ -74,7 +74,7 @@ class Resource:
         node_id: Union[int, None],
         revision: Union[Revision, Tuple[Revision, Revision], None] = None,
         max_level: Union[int, None] = None,
-    ) -> Union[Union[dict, ET.Element], Coroutine[None, None, Union[dict, ET.Element]]]:
+    ) -> Union[Union[dict, ET.Element], Awaitable[Union[dict, ET.Element]]]:
         """
         Read the node (and its sub-nodes) corresponding to ``node_id``.
 
@@ -95,7 +95,7 @@ class Resource:
         node_id: Union[int, None],
         revision: Union[Revision, Tuple[Revision, Revision], None] = None,
         meta_type: MetadataType = MetadataType.ALL,
-        max_level: Union[int, None] = None,
+        max_level: Optional[int] = None,
     ):
         """
         Read the node (and its sub-nodes) corresponding to ``node_id``, with metadata for each node.
@@ -171,7 +171,7 @@ class Resource:
             params["maxDepth"] = max_depth
         return self._client.diff(self.db_name, self.resource_name, params)
 
-    def get_etag(self, node_id: int):
+    def get_etag(self, node_id: int) -> Union[str, Awaitable[str]]:
         """
         Get the ETag of a given node.
 
@@ -196,7 +196,7 @@ class Resource:
         data: Union[str, ET.Element, Dict],
         insert: Insert = Insert.CHILD,
         etag: str = None,
-    ):
+    ) -> Union[str, Awaitable[str]]:
         """
         Update a resource.
 
@@ -244,7 +244,7 @@ class Resource:
 
     def delete(
         self, node_id: Union[int, None], etag: Union[str, None]
-    ) -> Union[None, Coroutine]:
+    ) -> Union[None, Awaitable[None]]:
         """
         Delete a node in a resource, or, if ``node_id`` is specified as ``None``,
         delete the entire resource.

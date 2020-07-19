@@ -26,7 +26,7 @@ class DBType(Enum):
 class MetadataType(Enum):
     """
     This class defines the scope of the metadata to return using the
-    :py:method:`readWithMetadata` method.
+    :py:meth:`readWithMetadata` method.
     """
 
     ALL = True

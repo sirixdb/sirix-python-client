@@ -76,7 +76,7 @@ class Sirix:
         Execute a custom query on SirixDB.
         Unlike the query method on :py:class:`Resource`, queries executed with this method
         potentially access the entirety of the SirixDB server.
-        The `start_result_seq_index`` and ``end_result_seq_index`` can be used for pagination.
+        The ``start_result_seq_index`` and ``end_result_seq_index`` can be used for pagination.
 
         :param query: the query ``str`` to execute.
         :param start_result_seq_index: the first index of the results from which to return, defaults to first.
