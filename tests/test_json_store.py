@@ -154,3 +154,10 @@ def test_find_one():
             }
         ]
     }
+
+
+def test_history():
+    store.create()
+    store.insert_one({"generic": 1, "location": {"state": "NY", "city": "New York"}})
+    store.insert_one({"generic": 1, "location": {"state": "CA", "city": "Los Angeles"}})
+    assert store.history(11) == {"rest": [3]}
