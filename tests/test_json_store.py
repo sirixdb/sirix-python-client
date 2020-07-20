@@ -24,6 +24,18 @@ def teardown_function():
     client.close()
 
 
+def test_delete_resource():
+    client = httpx.Client(base_url=base_url)
+    sirix = pysirix.sirix_sync("admin", "admin", client)
+    resource = sirix.database("First", DBType.JSON).resource("test_resource")
+    resource.create([])
+    resource.delete(None, None)
+    assert resource.exists() is False
+    sirix.delete_all()
+    sirix.shutdown()
+    client.close()
+
+
 def test_create_store():
     assert store.create() == "[]"
 
@@ -40,6 +52,18 @@ def test_insert_into_store():
         store.insert_one({"city": "Brooklyn", "state": "NY"})
         == '[{"city":"Brooklyn","state":"NY"}]'
     )
+
+
+def test_delete_resource1():
+    client = httpx.Client(base_url=base_url)
+    sirix = pysirix.sirix_sync("admin", "admin", client)
+    resource = sirix.database("First", DBType.JSON).resource("test_resource")
+    resource.create([])
+    resource.delete(None, None)
+    assert resource.exists() is False
+    sirix.delete_all()
+    sirix.shutdown()
+    client.close()
 
 
 def test_find_all_store():
@@ -98,3 +122,15 @@ def test_find_one():
             }
         ]
     }
+
+
+def test_delete_resource2():
+    client = httpx.Client(base_url=base_url)
+    sirix = pysirix.sirix_sync("admin", "admin", client)
+    resource = sirix.database("First", DBType.JSON).resource("test_resource")
+    resource.create([])
+    resource.delete(None, None)
+    assert resource.exists() is False
+    sirix.delete_all()
+    sirix.shutdown()
+    client.close()
