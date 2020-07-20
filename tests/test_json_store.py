@@ -24,35 +24,14 @@ def teardown_function():
     client.close()
 
 
-def test_delete_resource7():
-    resource = sirix.database("First", DBType.JSON).resource("test_resource")
-    resource.create([])
-    resource.delete(None, None)
-    assert resource.exists() is False
-
-
 def test_create_store():
     assert store.create() == "[]"
-
-
-def test_delete_resource6():
-    resource = sirix.database("First", DBType.JSON).resource("test_resource")
-    resource.create([])
-    resource.delete(None, None)
-    assert resource.exists() is False
 
 
 def test_exists():
     assert store.exists() is False
     store.create()
     assert store.exists() is True
-
-
-def test_delete_resource5():
-    resource = sirix.database("First", DBType.JSON).resource("test_resource")
-    resource.create([])
-    resource.delete(None, None)
-    assert resource.exists() is False
 
 
 def test_insert_into_store():
@@ -63,13 +42,6 @@ def test_insert_into_store():
     )
 
 
-def test_delete_resource4():
-    resource = sirix.database("First", DBType.JSON).resource("test_resource")
-    resource.create([])
-    resource.delete(None, None)
-    assert resource.exists() is False
-
-
 def test_find_all_store():
     store.create()
     store.insert_one({"city": "New York", "state": "NY"})
@@ -78,13 +50,6 @@ def test_find_all_store():
     assert response["rest"][0] == {"city": "New York", "state": "NY"}
     response = store.find_all({"city": "New York"})
     assert response["rest"][0] == {"city": "New York", "state": "NY", "nodeKey": 2}
-
-
-def test_delete_resource3():
-    resource = sirix.database("First", DBType.JSON).resource("test_resource")
-    resource.create([])
-    resource.delete(None, None)
-    assert resource.exists() is False
 
 
 def test_find_all_projection():
@@ -102,13 +67,6 @@ def test_find_all_projection():
     }
 
 
-def test_delete_resource2():
-    resource = sirix.database("First", DBType.JSON).resource("test_resource")
-    resource.create([])
-    resource.delete(None, None)
-    assert resource.exists() is False
-
-
 def test_find_all_old_revision_number():
     store.create()
     store.insert_one({"city": "New York", "state": "NY"})
@@ -118,26 +76,12 @@ def test_find_all_old_revision_number():
     assert response == {"rest": [{"city": "New York", "state": "NY", "nodeKey": 2}]}
 
 
-def test_delete_resource1():
-    resource = sirix.database("First", DBType.JSON).resource("test_resource")
-    resource.create([])
-    resource.delete(None, None)
-    assert resource.exists() is False
-
-
 def test_find_all_old_revision_date():
     store.create()
     timestamp = datetime.now()
     store.insert_one({"city": "New York", "state": "NY"})
     response = store.find_all({"city": "New York"}, revision=timestamp)
     assert response == {"rest": []}
-
-
-def test_delete_resource():
-    resource = sirix.database("First", DBType.JSON).resource("test_resource")
-    resource.create([])
-    resource.delete(None, None)
-    assert resource.exists() is False
 
 
 def test_find_one():
@@ -157,8 +101,12 @@ def test_find_one():
 
 
 def test_history():
+    resource = sirix.database("First", DBType.JSON).resource("test_resource")
     store.create()
+    print(resource.read(None))
     store.insert_one({"generic": 1, "location": {"state": "NY", "city": "New York"}})
+    print(resource.read(None))
     store.insert_one({"generic": 1, "location": {"state": "CA", "city": "Los Angeles"}})
+    print(resource.read(None))
     assert len(store.history()) == 3
     assert store.history(11) == {"rest": [3]}
