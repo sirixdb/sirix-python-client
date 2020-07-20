@@ -24,26 +24,28 @@ def teardown_function():
     client.close()
 
 
+def test_create_store():
+    assert store.create() == "[]"
+
+
 def test_delete_resource():
-    client = httpx.Client(base_url=base_url)
-    sirix = pysirix.sirix_sync("admin", "admin", client)
     resource = sirix.database("First", DBType.JSON).resource("test_resource")
     resource.create([])
     resource.delete(None, None)
     assert resource.exists() is False
-    sirix.delete_all()
-    sirix.shutdown()
-    client.close()
-
-
-def test_create_store():
-    assert store.create() == "[]"
 
 
 def test_exists():
     assert store.exists() is False
     store.create()
     assert store.exists() is True
+
+
+def test_delete_resource1():
+    resource = sirix.database("First", DBType.JSON).resource("test_resource")
+    resource.create([])
+    resource.delete(None, None)
+    assert resource.exists() is False
 
 
 def test_insert_into_store():
@@ -54,16 +56,11 @@ def test_insert_into_store():
     )
 
 
-def test_delete_resource1():
-    client = httpx.Client(base_url=base_url)
-    sirix = pysirix.sirix_sync("admin", "admin", client)
+def test_delete_resource2():
     resource = sirix.database("First", DBType.JSON).resource("test_resource")
     resource.create([])
     resource.delete(None, None)
     assert resource.exists() is False
-    sirix.delete_all()
-    sirix.shutdown()
-    client.close()
 
 
 def test_find_all_store():
@@ -74,6 +71,13 @@ def test_find_all_store():
     assert response["rest"][0] == {"city": "New York", "state": "NY"}
     response = store.find_all({"city": "New York"})
     assert response["rest"][0] == {"city": "New York", "state": "NY", "nodeKey": 2}
+
+
+def test_delete_resource3():
+    resource = sirix.database("First", DBType.JSON).resource("test_resource")
+    resource.create([])
+    resource.delete(None, None)
+    assert resource.exists() is False
 
 
 def test_find_all_projection():
@@ -122,15 +126,3 @@ def test_find_one():
             }
         ]
     }
-
-
-def test_delete_resource2():
-    client = httpx.Client(base_url=base_url)
-    sirix = pysirix.sirix_sync("admin", "admin", client)
-    resource = sirix.database("First", DBType.JSON).resource("test_resource")
-    resource.create([])
-    resource.delete(None, None)
-    assert resource.exists() is False
-    sirix.delete_all()
-    sirix.shutdown()
-    client.close()
