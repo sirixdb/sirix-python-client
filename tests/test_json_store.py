@@ -28,24 +28,10 @@ def test_create_store():
     assert store.create() == "[]"
 
 
-def test_delete_resource():
-    resource = sirix.database("First", DBType.JSON).resource("test_resource")
-    resource.create([])
-    resource.delete(None, None)
-    assert resource.exists() is False
-
-
 def test_exists():
     assert store.exists() is False
     store.create()
     assert store.exists() is True
-
-
-def test_delete_resource1():
-    resource = sirix.database("First", DBType.JSON).resource("test_resource")
-    resource.create([])
-    resource.delete(None, None)
-    assert resource.exists() is False
 
 
 def test_insert_into_store():
@@ -56,13 +42,6 @@ def test_insert_into_store():
     )
 
 
-def test_delete_resource2():
-    resource = sirix.database("First", DBType.JSON).resource("test_resource")
-    resource.create([])
-    resource.delete(None, None)
-    assert resource.exists() is False
-
-
 def test_find_all_store():
     store.create()
     store.insert_one({"city": "New York", "state": "NY"})
@@ -71,13 +50,6 @@ def test_find_all_store():
     assert response["rest"][0] == {"city": "New York", "state": "NY"}
     response = store.find_all({"city": "New York"})
     assert response["rest"][0] == {"city": "New York", "state": "NY", "nodeKey": 2}
-
-
-def test_delete_resource3():
-    resource = sirix.database("First", DBType.JSON).resource("test_resource")
-    resource.create([])
-    resource.delete(None, None)
-    assert resource.exists() is False
 
 
 def test_find_all_projection():
