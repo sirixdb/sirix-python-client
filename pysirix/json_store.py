@@ -68,9 +68,9 @@ class JsonStoreBase(ABC):
             return self._client.history(self.db_name, self.db_type, self.name)
         query = (
             f"let $node := sdb:select-node(., {node_key}) let $result := for $rev in jn:all-times($node)"
-            "return if (not(exists(jn:previous($rev)))) then sdb:revision($rev)"
-            "else if (sdb:hash($rev) ne sdb:hash(jn:previous($rev))) then sdb:revision($rev)"
-            "else () return for $i in $result order by $i descending return $i"
+            " return if (not(exists(jn:previous($rev)))) then sdb:revision($rev)"
+            " else if (sdb:hash($rev) ne sdb:hash(jn:previous($rev))) then sdb:revision($rev)"
+            " else () return for $i in $result order by $i descending return $i"
         )
         params = {"query": query}
         return self._client.read_resource(self.db_name, self.db_type, self.name, params)
