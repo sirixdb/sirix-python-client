@@ -84,6 +84,13 @@ def test_find_all_old_revision_date():
     assert response == {"rest": []}
 
 
+def test_delete_resource():
+    resource = sirix.database("First", DBType.JSON).resource("test_resource")
+    resource.create([])
+    resource.delete(None, None)
+    assert resource.exists() is False
+
+
 def test_find_one():
     store.create()
     store.insert_one({"generic": 1, "location": {"state": "NY", "city": "New York"}})
