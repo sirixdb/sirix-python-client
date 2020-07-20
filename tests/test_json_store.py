@@ -101,12 +101,8 @@ def test_find_one():
 
 
 def test_history():
-    resource = sirix.database("First", DBType.JSON).resource("test_resource")
     store.create()
-    print(resource.read(None))
     store.insert_one({"generic": 1, "location": {"state": "NY", "city": "New York"}})
-    print(resource.read(None))
     store.insert_one({"generic": 1, "location": {"state": "CA", "city": "Los Angeles"}})
-    print(resource.read(None))
     assert len(store.history()) == 3
     assert store.history(11) == {"rest": [3]}
