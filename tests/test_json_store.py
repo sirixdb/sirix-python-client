@@ -1,7 +1,6 @@
 from datetime import datetime
 
 import httpx
-
 import pysirix
 from pysirix import DBType
 
@@ -12,7 +11,7 @@ def setup_function():
     global client
     global sirix
     global store
-    client = httpx.Client(base_url=base_url)
+    client = httpx.Client(base_url=base_url,timeout=None)
     sirix = pysirix.sirix_sync("admin", "admin", client)
     db = sirix.database("First", DBType.JSON)
     store = db.json_store("test_resource")
@@ -78,7 +77,7 @@ def test_find_all_old_revision_number():
 
 def test_find_all_old_revision_date():
     store.create()
-    timestamp = datetime.now()
+    timestamp = datetime.utcnow()
     store.insert_one({"city": "New York", "state": "NY"})
     response = store.find_all({"city": "New York"}, revision=timestamp)
     assert response == {"rest": []}
