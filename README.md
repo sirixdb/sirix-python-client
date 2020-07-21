@@ -81,7 +81,7 @@ pipx install pysirix
 
 ## Configuring
 
-In your home directory, create a folder named `pysirix-shell`, and create a file named `config.json`. This file will hold the configuration for the shell. It should have the following form:
+In your home directory, create a folder named `pysirix-shell`, and create a file named `config.json` in this folder. This file will hold the configuration for the shell. It should have the following form:
 
 ```json
 {
@@ -92,7 +92,7 @@ In your home directory, create a folder named `pysirix-shell`, and create a file
     },
     "cloud": {
         "url": "https://sirix-demo.com:9443",
-        "username": "administrator",
+        "username": "administrator"
     }
 }
 ```
