@@ -93,7 +93,7 @@ def test_sirix_query():
     client = httpx.Client(base_url=base_url)
     sirix = pysirix.sirix_sync("admin", "admin", client)
     db = sirix.database("Query", DBType.JSON)
-    resource = db.resource("query_resource")
+    resource = db.resource("query_resource1")
     resource.create(data_for_query)
     assert sirix.query(post_query) == '{"rest":[6]}'
     sirix.delete_all()
