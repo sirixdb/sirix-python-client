@@ -11,7 +11,7 @@ def setup_function():
     global client
     global sirix
     global store
-    client = httpx.Client(base_url=base_url,timeout=None)
+    client = httpx.Client(base_url=base_url)
     sirix = pysirix.sirix_sync("admin", "admin", client)
     db = sirix.database("First", DBType.JSON)
     store = db.json_store("test_resource")
