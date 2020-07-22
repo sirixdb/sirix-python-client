@@ -22,7 +22,7 @@ async def test_sirix_async_init():
     sirix.shutdown()
     await client.aclose()
 
-
+"""
 async def test_delete_resource1():
     client = httpx.AsyncClient(base_url=base_url)
     sirix = await pysirix.sirix_async("admin", "admin", client)
@@ -582,3 +582,4 @@ async def test_resource_query():
     await sirix.delete_all()
     sirix.shutdown()
     await client.aclose()
+"""
