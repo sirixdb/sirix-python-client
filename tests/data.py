@@ -4,7 +4,7 @@ data_for_query = {
     "baz": "hello",
     "tada": [{"foo": "bar"}, {"baz": False}, "boo", {}, []],
 }
-post_query = """let $nodeKey := sdb:nodekey(jn:doc('Query','query_resource')=>foo[[2]])
+post_query = """let $nodeKey := sdb:nodekey(jn:doc('Query','query_resource1')=>foo[[2]])
 return $nodeKey"""
 
 resource_query = """let $nodeKey := sdb:nodekey(.=>foo[[2]])
