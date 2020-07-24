@@ -3,7 +3,7 @@ from threading import Timer
 
 import httpx
 
-from typing import Union, Coroutine
+from typing import Union, Awaitable
 
 from pysirix.info import TokenData
 
@@ -33,7 +33,7 @@ class Auth:
         self._client = client
         self._refresh_check = True
 
-    def authenticate(self) -> Union[None, Coroutine[None, None, None]]:
+    def authenticate(self) -> Union[None, Awaitable[None]]:
         """
         Initial authentication for server access, using username and password.
         Access tokens are renewed in the background.
@@ -124,7 +124,7 @@ class Auth:
         """
         Helper function for :py:func:`_async_handle_data`.
         This method sleeps, then calls :py:func:`_async_refresh`
-        6 seconds before the access token is set to expire.
+        10 seconds before the access token is set to expire.
         """
         await sleep(self._token_data.expires_in - 10)
         await self._async_refresh()

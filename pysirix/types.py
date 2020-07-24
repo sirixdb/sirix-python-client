@@ -24,6 +24,15 @@ try:
         author: str
         commitMessage: str
 
+    class Revision(TypedDict):
+        """
+        This type is available only in python 3.8+.
+        Otherwise, defaults to ``dict``.
+        """
+
+        timestamp: str
+        revision: int
+
     class InsertDiff(TypedDict):
         """
         This type is available only in python 3.8+.
@@ -70,7 +79,8 @@ try:
 
     class Metadata(TypedDict):
         """
-        ``descendantCount`` and ``childCount`` are provided only where ``type`` is :py:class:`NodeType` OBJECT or ARRAY.
+        ``descendantCount`` and ``childCount`` are provided only where ``type`` is :py:class:`pysirix.info.NodeType`
+        OBJECT or ARRAY.
         """
 
         nodeKey: int
@@ -81,7 +91,7 @@ try:
 
     class MetaNode(TypedDict):
         """
-        ``key`` is provided only if ``type`` is :py:class:`NodeType` ``OBJECT_KEY``.
+        ``key`` is provided only if ``type`` is :py:class:`pysirix.info.NodeType` ``OBJECT_KEY``.
 
         ``value`` is of type ``List[MetaNode]`` if ``metadata.type`` is ``OBJECT`` or ``ARRAY``,
         however, if ``metadata.childCount`` is 0, then ``value`` is an emtpy ``dict``, or an empty
@@ -91,7 +101,7 @@ try:
 
         ``value`` is a ``str`` if ``metadata.type`` is ``OBJECT_STRING_VALUE`` or ``STRING_VALUE``.
 
-        ``value`` is an ``int`` or ``float`` if metadata.type === ``OBJECT_NUMBER_VALUE`` or ``NUMBER_VALUE``.
+        ``value`` is an ``int`` or ``float`` if ``metadata.type`` == ``OBJECT_NUMBER_VALUE`` or ``NUMBER_VALUE``.
 
         ``value`` is a ``bool`` if ``metadata.type`` is ``OBJECT_BOOLEAN_VALUE`` or ``BOOLEAN_VALUE``.
 
@@ -116,6 +126,7 @@ except ImportError:
 
     QueryResult = Dict
     Commit = Dict
+    Revision = Dict
     InsertDiff = Dict
     ReplaceDiff = Dict
     UpdateDiff = Dict

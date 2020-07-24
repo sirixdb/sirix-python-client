@@ -30,7 +30,7 @@ class SyncClient:
         :return: a ``list`` of ``dict``\s, where each ``dict`` has a ``name``
                         field, a ``type`` field, and (if ``resources`` is
                         ``True``) a ``resources`` field (containing a ``list`` of names).
-        :raises: :py:class:`SirixServerError`.
+        :raises: :py:class:`pysirix.errors.SirixServerError`.
         """
         params = {}
         if resources:
@@ -45,7 +45,7 @@ class SyncClient:
         Call the ``/`` endpoint with DELETE request.
         Deletes all databases and their resources. Be careful!
 
-        :raises: :py:class:`SirixServerError`.
+        :raises: :py:class:`pysirix.errors.SirixServerError`.
         """
         resp = self.client.delete("/")
         with include_response_text_in_errors():
@@ -57,7 +57,7 @@ class SyncClient:
 
         :param name: name of the database to create.
         :param db_type: type of the database to create.
-        :raises: :py:class:`SirixServerError`.
+        :raises: :py:class:`pysirix.errors.SirixServerError`.
         """
         resp = self.client.put(name, headers={"Content-Type": db_type.value})
         with include_response_text_in_errors():
@@ -69,7 +69,7 @@ class SyncClient:
 
         :param name: name of the database.
         :return: a ``dict`` with a ``resources`` field containing a ``list`` of resources.
-        :raises: :py:class:`SirixServerError`.
+        :raises: :py:class:`pysirix.errors.SirixServerError`.
         """
         resp = self.client.get(name, headers={"Accept": "application/json"})
         with include_response_text_in_errors():
@@ -81,7 +81,7 @@ class SyncClient:
         call the ``/{database}`` endpoint with a DELETE request.
 
         :param name: the name of the database to delete.
-        :raises: :py:class:`SirixServerError`.
+        :raises: :py:class:`pysirix.errors.SirixServerError`.
         """
         resp = self.client.delete(name)
         with include_response_text_in_errors():
@@ -95,7 +95,7 @@ class SyncClient:
         :param db_type: the type of the database.
         :param name: the name of the resource.
         :return: a ``bool`` indicating the existence (or lack thereof) of the resource.
-        :raises: :py:class:`SirixServerError`.
+        :raises: :py:class:`pysirix.errors.SirixServerError`.
         """
         resp = self.client.head(f"{db_name}/{name}", headers={"Accept": db_type.value})
         if resp.status_code == 200:
@@ -113,7 +113,7 @@ class SyncClient:
         :param name: the name of the resource.
         :param data: the data to initialize the database with.
         :return: a ``str`` of ``data``.
-        :raises: :py:class:`SirixServerError`.
+        :raises: :py:class:`pysirix.errors.SirixServerError`.
         """
         resp = self.client.put(
             f"{db_name}/{name}", headers={"Content-Type": db_type.value}, data=data,
@@ -128,7 +128,7 @@ class SyncClient:
         db_type: DBType,
         name: str,
         params: Dict[str, Union[str, int]],
-    ) -> Union[Dict, ET.Element]:
+    ) -> Union[Dict, List, ET.Element]:
         """
         Call the ``/{database}/{resource}`` endpoint with a GET request.
 
@@ -137,7 +137,7 @@ class SyncClient:
         :param name: the name of the resource.
         :param params: query parameters to call the endpoint with.
         :return: either a ``dict`` or a ``xml.etree.ElementTree.Element``, depending on the database type.
-        :raises: :py:class:`SirixServerError`.
+        :raises: :py:class:`pysirix.errors.SirixServerError`.
         """
         resp = self.client.get(
             f"{db_name}/{name}", params=params, headers={"Accept": db_type.value}
@@ -157,7 +157,7 @@ class SyncClient:
         :param db_type: the type of the database.
         :param name: the name of the resource.
         :return: a ``list`` of ``dict`` containing the history of the resource.
-        :raises: :py:class:`SirixServerError`.
+        :raises: :py:class:`pysirix.errors.SirixServerError`.
         """
         resp = self.client.get(
             f"{db_name}/{name}/history", headers={"Accept": db_type.value}
@@ -188,7 +188,7 @@ class SyncClient:
 
         :param query: the body of the request.
         :return: the query result as a ``str``.
-        :raises: :py:class:`SirixServerError`.
+        :raises: :py:class:`pysirix.errors.SirixServerError`.
         """
         resp = self.client.post("/", json=query)
         with include_response_text_in_errors():
@@ -210,7 +210,7 @@ class SyncClient:
         :param name: the name of the resource.
         :param params: the query parameters to call the endpoint with.
         :return: the ETag of the node queried.
-        :raises: :py:class:`SirixServerError`.
+        :raises: :py:class:`pysirix.errors.SirixServerError`.
         """
         resp = self.client.head(
             f"{db_name}/{name}", params=params, headers={"Accept": db_type.value}
@@ -240,7 +240,7 @@ class SyncClient:
         :param insert: the position of the update in relation to the node referenced by node_id.
         :param etag: the ETag of the node referenced by node_id.
         :return: the resource as a ``str``.
-        :raises: :py:class:`SirixServerError`.
+        :raises: :py:class:`pysirix.errors.SirixServerError`.
         """
         if not etag:
             etag = self.get_etag(db_name, db_type, name, {"nodeId": node_id})
@@ -270,7 +270,7 @@ class SyncClient:
         :param name: the name of the resource.
         :param node_id: the nodeKey of the node to delete. ``None`` to delete the entire resource.
         :param etag: the etag of the node to delete.
-        :raises: :py:class:`SirixServerError`.
+        :raises: :py:class:`pysirix.errors.SirixServerError`.
         """
         if node_id and not etag:
             etag = self.get_etag(db_name, db_type, name, {"nodeId": node_id})

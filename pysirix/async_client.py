@@ -77,7 +77,7 @@ class AsyncClient:
         db_type: DBType,
         name: str,
         params: Dict[str, Union[str, int]],
-    ) -> Union[Dict, ET.Element]:
+    ) -> Union[Dict, List, ET.Element]:
         resp = await self.client.get(
             f"{db_name}/{name}", params=params, headers={"Accept": db_type.value}
         )
