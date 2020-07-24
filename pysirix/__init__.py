@@ -6,6 +6,17 @@ from pysirix.resource import Resource
 from pysirix.json_store import JsonStoreSync, JsonStoreAsync
 from pysirix.constants import Insert, DBType
 from pysirix.errors import SirixServerError
+from pysirix.types import (
+    QueryResult,
+    Commit,
+    Revision,
+    InsertDiff,
+    ReplaceDiff,
+    UpdateDiff,
+    DeleteDiff,
+    Metadata,
+    MetaNode,
+)
 
 
 def sirix_sync(username: str, password: str, client: httpx.Client,) -> Sirix:
@@ -45,4 +56,13 @@ __all__ = [
     "JsonStoreAsync",
     "Insert",
     "DBType",
+    "QueryResult",
+    "Commit",
+    "Revision",
+    "InsertDiff",
+    "ReplaceDiff",
+    "UpdateDiff",
+    "DeleteDiff",
+    "Metadata",
+    "MetaNode",
 ]

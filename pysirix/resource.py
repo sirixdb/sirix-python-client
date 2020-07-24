@@ -145,7 +145,7 @@ class Resource:
         """
         Get a ``list`` of all commits/revision of this resource.
 
-        :return: a ``list`` of ``dict``\s of the form :py:class:`Commit`.
+        :return: a ``list`` of ``dict`` of the form :py:class:`pysirix.Commit`.
         """
         return self._client.history(self.db_name, self.db_type, self.resource_name)
 
