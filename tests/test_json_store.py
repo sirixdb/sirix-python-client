@@ -104,4 +104,6 @@ def test_history():
     store.insert_one({"generic": 1, "location": {"state": "NY", "city": "New York"}})
     store.insert_one({"generic": 1, "location": {"state": "CA", "city": "Los Angeles"}})
     assert len(store.history()) == 3
-    assert store.history(11) == {"rest": [3]}
+    assert store.history(11, timestamp=False) == {"rest": [3]}
+    assert type(store.history(11)["rest"][0]["timestamp"]) == str
+    assert type(store.history(11, revision=False)["rest"][0]) == str

@@ -1,6 +1,7 @@
 import json
 from datetime import datetime
 from typing import Union, Dict, List, Awaitable, Optional
+from pysirix.types import Commit, Revision as RevisionType
 from json import dumps
 
 from abc import ABC
@@ -63,14 +64,39 @@ class JsonStoreBase(ABC):
             self.db_name, self.db_type, self.name, "[]",
         )
 
-    def history(self, node_key: int = 0):
+    def history(
+        self, node_key: int = 0, revision: bool = True, timestamp: bool = True
+    ) -> Union[List[Commit], List[int], List[str], List[RevisionType]]:
+        """
+        This method returns the history of a resource. If ``node_key`` is not specified,
+        it returns the history of the resource (root) itself, in the form of a list of :py:class:`Commit`.
+
+        If ``node_key`` is specified, the method returns a list of :py:class:`pysirix.types.Revision`.
+        In such a case, if `timestamp` is specified as ``False``, a list of `int` of revision numbers will be returned.
+        Otherwise, if `revision` is specified as `False`, then a list of `str` of timestamps will be returned.
+
+        :param node_key: the root of the subtree whose history should be returned. Defaults to document root.
+        :param revision: whether to return the revision number, when node_key is not document root. Defaults to `True`.
+        :param timestamp: whether to return the revision timestamp, when node_key is not document root.
+                Defaults to ``True``.
+        :return: a list of :py:class:`pysirix.types.Commit` if node_key is not specified. Otherwise, a list of either
+                `int`, `str`, or :py:class:`pysirix.types.Revision`, depending on the specified arguments.
+        """
         if node_key == 0:
             return self._client.history(self.db_name, self.db_type, self.name)
+        if timestamp:
+            if revision:
+                revision_data = '{"revision": sdb:revision($rev), "timestamp": xs:string(sdb:timestamp($rev))}'
+            else:
+                revision_data = "xs:string(sdb:timestamp($rev))"
+        else:
+            revision_data = "sdb:revision($rev)"
+
         query = (
             f"let $node := sdb:select-node(., {node_key}) let $result := for $rev in jn:all-times($node)"
-            " return if (not(exists(jn:previous($rev)))) then sdb:revision($rev)"
-            " else if (sdb:hash($rev) ne sdb:hash(jn:previous($rev))) then sdb:revision($rev)"
-            " else () return for $i in $result order by $i descending return $i"
+            f" return if (not(exists(jn:previous($rev)))) then {revision_data}"
+            f" else if (sdb:hash($rev) ne sdb:hash(jn:previous($rev))) then {revision_data}"
+            " else () return $result"
         )
         params = {"query": query}
         return self._client.read_resource(self.db_name, self.db_type, self.name, params)
@@ -145,7 +171,12 @@ class JsonStoreBase(ABC):
         node_key=True,
     ) -> Dict[str, List[QueryResult]]:
         return self.find_all(
-            query_dict, projection, revision, node_key, start_result_index=0, end_result_index=0
+            query_dict,
+            projection,
+            revision,
+            node_key,
+            start_result_index=0,
+            end_result_index=0,
         )
 
 
