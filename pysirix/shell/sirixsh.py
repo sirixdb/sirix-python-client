@@ -718,6 +718,5 @@ def main():
         shell.cmdloop()
     except BaseException as e:
         print(e)
-        shell.sirix.shutdown()
         shell.client.close()
         exit()
