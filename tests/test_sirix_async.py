@@ -19,7 +19,6 @@ async def test_sirix_async_init():
     assert type(data.access_token) == str
     assert type(data.refresh_token) == str
     assert type(data.expires_in) == int
-    sirix.shutdown()
     await client.aclose()
 
 
@@ -32,7 +31,6 @@ async def test_delete_resource1():
     await resource.delete(None, None)
     assert await resource.exists() is False
     await sirix.delete_all()
-    sirix.shutdown()
     await client.aclose()
 
 
@@ -43,7 +41,6 @@ async def test_auth_refresh():
     await sirix._auth._async_refresh()
     new_data = sirix._auth._token_data
     assert new_data != data
-    sirix.shutdown()
     await client.aclose()
 
 
@@ -56,7 +53,6 @@ async def test_delete_resource2():
     await resource.delete(None, None)
     assert await resource.exists() is False
     await sirix.delete_all()
-    sirix.shutdown()
     await client.aclose()
 
 
@@ -67,7 +63,6 @@ async def test_get_info():
     data = await sirix.get_info()
     assert data == []
     await sirix.delete_all()
-    sirix.shutdown()
     await client.aclose()
 
 
@@ -80,7 +75,6 @@ async def test_delete_resource3():
     await resource.delete(None, None)
     assert await resource.exists() is False
     await sirix.delete_all()
-    sirix.shutdown()
     await client.aclose()
 
 
@@ -92,7 +86,6 @@ async def test_database_create():
     info = await db.get_database_info()
     assert info["resources"] == []
     await sirix.delete_all()
-    sirix.shutdown()
     await client.aclose()
 
 
@@ -105,7 +98,6 @@ async def test_delete_resource4():
     await resource.delete(None, None)
     assert await resource.exists() is False
     await sirix.delete_all()
-    sirix.shutdown()
     await client.aclose()
 
 
@@ -118,7 +110,6 @@ async def test_database_delete():
     with pytest.raises(SirixServerError):
         await db.get_database_info()
     await sirix.delete_all()
-    sirix.shutdown()
     await client.aclose()
 
 
@@ -131,7 +122,6 @@ async def test_delete_resource5():
     await resource.delete(None, None)
     assert await resource.exists() is False
     await sirix.delete_all()
-    sirix.shutdown()
     await client.aclose()
 
 
@@ -142,7 +132,6 @@ async def test_resource_exists():
     resource = db.resource("test_resource6")
     assert await resource.exists() is False
     await sirix.delete_all()
-    sirix.shutdown()
     await client.aclose()
 
 
@@ -155,7 +144,6 @@ async def test_delete_resource6():
     await resource.delete(None, None)
     assert await resource.exists() is False
     await sirix.delete_all()
-    sirix.shutdown()
     await client.aclose()
 
 
@@ -167,7 +155,6 @@ async def test_create_resource():
     assert await resource.create([]) == "[]"
     assert await resource.exists() is True
     await sirix.delete_all()
-    sirix.shutdown()
     await client.aclose()
 
 
@@ -180,7 +167,6 @@ async def test_delete_resource7():
     await resource.delete(None, None)
     assert await resource.exists() is False
     await sirix.delete_all()
-    sirix.shutdown()
     await client.aclose()
 
 
@@ -193,7 +179,6 @@ async def test_delete_resource():
     await resource.delete(None, None)
     assert await resource.exists() is False
     await sirix.delete_all()
-    sirix.shutdown()
     await client.aclose()
 
 
@@ -206,7 +191,6 @@ async def test_delete_resource8():
     await resource.delete(None, None)
     assert await resource.exists() is False
     await sirix.delete_all()
-    sirix.shutdown()
     await client.aclose()
 
 
@@ -218,7 +202,6 @@ async def test_delete_nonexistent_resource():
     assert await resource.exists() is False
     with pytest.raises(SirixServerError):
         await resource.delete(None, None)
-    sirix.shutdown()
     await client.aclose()
 
 
@@ -231,7 +214,6 @@ async def test_delete_resource9():
     await resource.delete(None, None)
     assert await resource.exists() is False
     await sirix.delete_all()
-    sirix.shutdown()
     await client.aclose()
 
 
@@ -244,7 +226,6 @@ async def test_read_resource():
     data = await resource.read(None)
     assert data == []
     await sirix.delete_all()
-    sirix.shutdown()
     await client.aclose()
 
 
@@ -257,7 +238,6 @@ async def test_delete_resource10():
     await resource.delete(None, None)
     assert await resource.exists() is False
     await sirix.delete_all()
-    sirix.shutdown()
     await client.aclose()
 
 
@@ -270,7 +250,6 @@ async def test_get_etag():
     etag = await resource.get_etag(1)
     assert type(etag) == str
     await sirix.delete_all()
-    sirix.shutdown()
     await client.aclose()
 
 
@@ -283,7 +262,6 @@ async def test_delete_resource11():
     await resource.delete(None, None)
     assert await resource.exists() is False
     await sirix.delete_all()
-    sirix.shutdown()
     await client.aclose()
 
 
@@ -296,7 +274,6 @@ async def test_get_etag_nonexistent():
     with pytest.raises(SirixServerError):
         await resource.get_etag(2)
     await sirix.delete_all()
-    sirix.shutdown()
     await client.aclose()
 
 
@@ -309,7 +286,6 @@ async def test_delete_resource12():
     await resource.delete(None, None)
     assert await resource.exists() is False
     await sirix.delete_all()
-    sirix.shutdown()
     await client.aclose()
 
 
@@ -323,7 +299,6 @@ async def test_delete_by_node_id():
     with pytest.raises(SirixServerError):
         await resource.delete(1, None)
     await sirix.delete_all()
-    sirix.shutdown()
     await client.aclose()
 
 
@@ -336,7 +311,6 @@ async def test_delete_resource13():
     await resource.delete(None, None)
     assert await resource.exists() is False
     await sirix.delete_all()
-    sirix.shutdown()
     await client.aclose()
 
 
@@ -351,7 +325,6 @@ async def test_delete_by_etag():
     with pytest.raises(SirixServerError):
         await resource.delete(1, None)
     await sirix.delete_all()
-    sirix.shutdown()
     await client.aclose()
 
 
@@ -364,7 +337,6 @@ async def test_delete_resource14():
     await resource.delete(None, None)
     assert await resource.exists() is False
     await sirix.delete_all()
-    sirix.shutdown()
     await client.aclose()
 
 
@@ -378,7 +350,6 @@ async def test_update_by_etag():
     await resource.update(1, {}, etag=etag)
     assert await resource.read(None) == [{}]
     await sirix.delete_all()
-    sirix.shutdown()
     await client.aclose()
 
 
@@ -391,7 +362,6 @@ async def test_delete_resource15():
     await resource.delete(None, None)
     assert await resource.exists() is False
     await sirix.delete_all()
-    sirix.shutdown()
     await client.aclose()
 
 
@@ -404,7 +374,6 @@ async def test_update_by_node_id():
     await resource.update(1, {})
     assert await resource.read(None) == [{}]
     await sirix.delete_all()
-    sirix.shutdown()
     await client.aclose()
 
 
@@ -417,7 +386,6 @@ async def test_delete_resource16():
     await resource.delete(None, None)
     assert await resource.exists() is False
     await sirix.delete_all()
-    sirix.shutdown()
     await client.aclose()
 
 
@@ -430,7 +398,6 @@ async def test_update_nonexistent_node():
     with pytest.raises(SirixServerError):
         await resource.update(5, {})
     await sirix.delete_all()
-    sirix.shutdown()
     await client.aclose()
 
 
@@ -443,7 +410,6 @@ async def test_delete_resource17():
     await resource.delete(None, None)
     assert await resource.exists() is False
     await sirix.delete_all()
-    sirix.shutdown()
     await client.aclose()
 
 
@@ -465,7 +431,6 @@ async def test_read_metadata():
         "value": [],
     }
     await sirix.delete_all()
-    sirix.shutdown()
     await client.aclose()
 
 
@@ -478,7 +443,6 @@ async def test_delete_resource18():
     await resource.delete(None, None)
     assert await resource.exists() is False
     await sirix.delete_all()
-    sirix.shutdown()
     await client.aclose()
 
 
@@ -492,7 +456,6 @@ async def test_history():
     await resource.delete(2, None)
     assert len(await resource.history()) == 3
     await sirix.delete_all()
-    sirix.shutdown()
     await client.aclose()
 
 
@@ -505,7 +468,6 @@ async def test_delete_resource19():
     await resource.delete(None, None)
     assert await resource.exists() is False
     await sirix.delete_all()
-    sirix.shutdown()
     await client.aclose()
 
 
@@ -530,7 +492,6 @@ async def test_diff():
         }
     ]
     await sirix.delete_all()
-    sirix.shutdown()
     await client.aclose()
 
 
@@ -543,7 +504,6 @@ async def test_delete_resource20():
     await resource.delete(None, None)
     assert await resource.exists() is False
     await sirix.delete_all()
-    sirix.shutdown()
     await client.aclose()
 
 
@@ -555,7 +515,6 @@ async def test_sirix_query():
     await resource.create(data_for_query)
     assert await sirix.query(post_query) == '{"rest":[6]}'
     await sirix.delete_all()
-    sirix.shutdown()
     await client.aclose()
 
 
@@ -568,7 +527,6 @@ async def test_delete_resource21():
     await resource.delete(None, None)
     assert await resource.exists() is False
     await sirix.delete_all()
-    sirix.shutdown()
     await client.aclose()
 
 
@@ -580,5 +538,4 @@ async def test_resource_query():
     await resource.create(data_for_query)
     assert await resource.query(resource_query) == {"rest": [6]}
     await sirix.delete_all()
-    sirix.shutdown()
     await client.aclose()

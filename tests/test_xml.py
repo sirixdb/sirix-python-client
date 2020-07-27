@@ -44,7 +44,6 @@ def setup_function():
 
 def teardown_function():
     sirix.delete_all()
-    sirix.shutdown()
     client.close()
 
 
