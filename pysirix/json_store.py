@@ -1,6 +1,6 @@
 import json
 from datetime import datetime
-from typing import Union, Dict, List, Awaitable, Optional, Literal
+from typing import Union, Dict, List, Awaitable, Optional
 from pysirix.types import Commit, Revision as RevisionType
 from json import dumps
 
@@ -27,7 +27,7 @@ class JsonStoreBase(ABC):
         self._client = client
         self._auth = auth
 
-    def insert_one(self, insert_dict: Union[str, Dict]) -> Union[Literal[""], Awaitable[Literal[""]]]:
+    def insert_one(self, insert_dict: Union[str, Dict]) -> Union[str, Awaitable[str]]:
         """
         Inserts a single record into the store. New records are added at the head of the store.
 
