@@ -22,18 +22,6 @@ async def test_sirix_async_init():
     await client.aclose()
 
 
-async def test_delete_resource1():
-    client = httpx.AsyncClient(base_url=base_url)
-    sirix = await pysirix.sirix_async("admin", "admin", client)
-    db = sirix.database("First", DBType.JSON)
-    resource = db.resource("test_resource1")
-    await resource.create([])
-    await resource.delete(None, None)
-    assert await resource.exists() is False
-    await sirix.delete_all()
-    await client.aclose()
-
-
 async def test_auth_refresh():
     client = httpx.AsyncClient(base_url=base_url)
     sirix = await pysirix.sirix_async("admin", "admin", client)
@@ -41,18 +29,6 @@ async def test_auth_refresh():
     await sirix._auth._async_refresh()
     new_data = sirix._auth._token_data
     assert new_data != data
-    await client.aclose()
-
-
-async def test_delete_resource2():
-    client = httpx.AsyncClient(base_url=base_url)
-    sirix = await pysirix.sirix_async("admin", "admin", client)
-    db = sirix.database("First", DBType.JSON)
-    resource = db.resource("test_resource2")
-    await resource.create([])
-    await resource.delete(None, None)
-    assert await resource.exists() is False
-    await sirix.delete_all()
     await client.aclose()
 
 
@@ -66,18 +42,6 @@ async def test_get_info():
     await client.aclose()
 
 
-async def test_delete_resource3():
-    client = httpx.AsyncClient(base_url=base_url)
-    sirix = await pysirix.sirix_async("admin", "admin", client)
-    db = sirix.database("First", DBType.JSON)
-    resource = db.resource("test_resource3")
-    await resource.create([])
-    await resource.delete(None, None)
-    assert await resource.exists() is False
-    await sirix.delete_all()
-    await client.aclose()
-
-
 async def test_database_create():
     client = httpx.AsyncClient(base_url=base_url)
     sirix = await pysirix.sirix_async("admin", "admin", client)
@@ -85,18 +49,6 @@ async def test_database_create():
     await db.create()
     info = await db.get_database_info()
     assert info["resources"] == []
-    await sirix.delete_all()
-    await client.aclose()
-
-
-async def test_delete_resource4():
-    client = httpx.AsyncClient(base_url=base_url)
-    sirix = await pysirix.sirix_async("admin", "admin", client)
-    db = sirix.database("First", DBType.JSON)
-    resource = db.resource("test_resource4")
-    await resource.create([])
-    await resource.delete(None, None)
-    assert await resource.exists() is False
     await sirix.delete_all()
     await client.aclose()
 
@@ -113,35 +65,11 @@ async def test_database_delete():
     await client.aclose()
 
 
-async def test_delete_resource5():
-    client = httpx.AsyncClient(base_url=base_url)
-    sirix = await pysirix.sirix_async("admin", "admin", client)
-    db = sirix.database("First", DBType.JSON)
-    resource = db.resource("test_resource5")
-    await resource.create([])
-    await resource.delete(None, None)
-    assert await resource.exists() is False
-    await sirix.delete_all()
-    await client.aclose()
-
-
 async def test_resource_exists():
     client = httpx.AsyncClient(base_url=base_url)
     sirix = await pysirix.sirix_async("admin", "admin", client)
     db = sirix.database("First", DBType.JSON)
     resource = db.resource("test_resource6")
-    assert await resource.exists() is False
-    await sirix.delete_all()
-    await client.aclose()
-
-
-async def test_delete_resource6():
-    client = httpx.AsyncClient(base_url=base_url)
-    sirix = await pysirix.sirix_async("admin", "admin", client)
-    db = sirix.database("First", DBType.JSON)
-    resource = db.resource("test_resource7")
-    await resource.create([])
-    await resource.delete(None, None)
     assert await resource.exists() is False
     await sirix.delete_all()
     await client.aclose()
@@ -158,35 +86,11 @@ async def test_create_resource():
     await client.aclose()
 
 
-async def test_delete_resource7():
-    client = httpx.AsyncClient(base_url=base_url)
-    sirix = await pysirix.sirix_async("admin", "admin", client)
-    db = sirix.database("First", DBType.JSON)
-    resource = db.resource("test_resource9")
-    await resource.create([])
-    await resource.delete(None, None)
-    assert await resource.exists() is False
-    await sirix.delete_all()
-    await client.aclose()
-
-
 async def test_delete_resource():
     client = httpx.AsyncClient(base_url=base_url)
     sirix = await pysirix.sirix_async("admin", "admin", client)
     db = sirix.database("First", DBType.JSON)
     resource = db.resource("test_resource10")
-    await resource.create([])
-    await resource.delete(None, None)
-    assert await resource.exists() is False
-    await sirix.delete_all()
-    await client.aclose()
-
-
-async def test_delete_resource8():
-    client = httpx.AsyncClient(base_url=base_url)
-    sirix = await pysirix.sirix_async("admin", "admin", client)
-    db = sirix.database("First", DBType.JSON)
-    resource = db.resource("test_resource11")
     await resource.create([])
     await resource.delete(None, None)
     assert await resource.exists() is False
@@ -205,18 +109,6 @@ async def test_delete_nonexistent_resource():
     await client.aclose()
 
 
-async def test_delete_resource9():
-    client = httpx.AsyncClient(base_url=base_url)
-    sirix = await pysirix.sirix_async("admin", "admin", client)
-    db = sirix.database("First", DBType.JSON)
-    resource = db.resource("test_resource12")
-    await resource.create([])
-    await resource.delete(None, None)
-    assert await resource.exists() is False
-    await sirix.delete_all()
-    await client.aclose()
-
-
 async def test_read_resource():
     client = httpx.AsyncClient(base_url=base_url)
     sirix = await pysirix.sirix_async("admin", "admin", client)
@@ -225,18 +117,6 @@ async def test_read_resource():
     await resource.create([])
     data = await resource.read(None)
     assert data == []
-    await sirix.delete_all()
-    await client.aclose()
-
-
-async def test_delete_resource10():
-    client = httpx.AsyncClient(base_url=base_url)
-    sirix = await pysirix.sirix_async("admin", "admin", client)
-    db = sirix.database("First", DBType.JSON)
-    resource = db.resource("test_resource14")
-    await resource.create([])
-    await resource.delete(None, None)
-    assert await resource.exists() is False
     await sirix.delete_all()
     await client.aclose()
 
@@ -253,18 +133,6 @@ async def test_get_etag():
     await client.aclose()
 
 
-async def test_delete_resource11():
-    client = httpx.AsyncClient(base_url=base_url)
-    sirix = await pysirix.sirix_async("admin", "admin", client)
-    db = sirix.database("First", DBType.JSON)
-    resource = db.resource("test_resource16")
-    await resource.create([])
-    await resource.delete(None, None)
-    assert await resource.exists() is False
-    await sirix.delete_all()
-    await client.aclose()
-
-
 async def test_get_etag_nonexistent():
     client = httpx.AsyncClient(base_url=base_url)
     sirix = await pysirix.sirix_async("admin", "admin", client)
@@ -273,18 +141,6 @@ async def test_get_etag_nonexistent():
     await resource.create([])
     with pytest.raises(SirixServerError):
         await resource.get_etag(2)
-    await sirix.delete_all()
-    await client.aclose()
-
-
-async def test_delete_resource12():
-    client = httpx.AsyncClient(base_url=base_url)
-    sirix = await pysirix.sirix_async("admin", "admin", client)
-    db = sirix.database("First", DBType.JSON)
-    resource = db.resource("test_resource18")
-    await resource.create([])
-    await resource.delete(None, None)
-    assert await resource.exists() is False
     await sirix.delete_all()
     await client.aclose()
 
@@ -298,18 +154,6 @@ async def test_delete_by_node_id():
     await resource.delete(1, None)
     with pytest.raises(SirixServerError):
         await resource.delete(1, None)
-    await sirix.delete_all()
-    await client.aclose()
-
-
-async def test_delete_resource13():
-    client = httpx.AsyncClient(base_url=base_url)
-    sirix = await pysirix.sirix_async("admin", "admin", client)
-    db = sirix.database("First", DBType.JSON)
-    resource = db.resource("test_resource20")
-    await resource.create([])
-    await resource.delete(None, None)
-    assert await resource.exists() is False
     await sirix.delete_all()
     await client.aclose()
 
@@ -328,18 +172,6 @@ async def test_delete_by_etag():
     await client.aclose()
 
 
-async def test_delete_resource14():
-    client = httpx.AsyncClient(base_url=base_url)
-    sirix = await pysirix.sirix_async("admin", "admin", client)
-    db = sirix.database("First", DBType.JSON)
-    resource = db.resource("test_resource22")
-    await resource.create([])
-    await resource.delete(None, None)
-    assert await resource.exists() is False
-    await sirix.delete_all()
-    await client.aclose()
-
-
 async def test_update_by_etag():
     client = httpx.AsyncClient(base_url=base_url)
     sirix = await pysirix.sirix_async("admin", "admin", client)
@@ -349,18 +181,6 @@ async def test_update_by_etag():
     etag = await resource.get_etag(1)
     await resource.update(1, {}, etag=etag)
     assert await resource.read(None) == [{}]
-    await sirix.delete_all()
-    await client.aclose()
-
-
-async def test_delete_resource15():
-    client = httpx.AsyncClient(base_url=base_url)
-    sirix = await pysirix.sirix_async("admin", "admin", client)
-    db = sirix.database("First", DBType.JSON)
-    resource = db.resource("test_resource24")
-    await resource.create([])
-    await resource.delete(None, None)
-    assert await resource.exists() is False
     await sirix.delete_all()
     await client.aclose()
 
@@ -377,18 +197,6 @@ async def test_update_by_node_id():
     await client.aclose()
 
 
-async def test_delete_resource16():
-    client = httpx.AsyncClient(base_url=base_url)
-    sirix = await pysirix.sirix_async("admin", "admin", client)
-    db = sirix.database("First", DBType.JSON)
-    resource = db.resource("test_resource26")
-    await resource.create([])
-    await resource.delete(None, None)
-    assert await resource.exists() is False
-    await sirix.delete_all()
-    await client.aclose()
-
-
 async def test_update_nonexistent_node():
     client = httpx.AsyncClient(base_url=base_url)
     sirix = await pysirix.sirix_async("admin", "admin", client)
@@ -397,18 +205,6 @@ async def test_update_nonexistent_node():
     await resource.create([])
     with pytest.raises(SirixServerError):
         await resource.update(5, {})
-    await sirix.delete_all()
-    await client.aclose()
-
-
-async def test_delete_resource17():
-    client = httpx.AsyncClient(base_url=base_url)
-    sirix = await pysirix.sirix_async("admin", "admin", client)
-    db = sirix.database("First", DBType.JSON)
-    resource = db.resource("test_resource28")
-    await resource.create([])
-    await resource.delete(None, None)
-    assert await resource.exists() is False
     await sirix.delete_all()
     await client.aclose()
 
@@ -434,18 +230,6 @@ async def test_read_metadata():
     await client.aclose()
 
 
-async def test_delete_resource18():
-    client = httpx.AsyncClient(base_url=base_url)
-    sirix = await pysirix.sirix_async("admin", "admin", client)
-    db = sirix.database("First", DBType.JSON)
-    resource = db.resource("test_resource30")
-    await resource.create([])
-    await resource.delete(None, None)
-    assert await resource.exists() is False
-    await sirix.delete_all()
-    await client.aclose()
-
-
 async def test_history():
     client = httpx.AsyncClient(base_url=base_url)
     sirix = await pysirix.sirix_async("admin", "admin", client)
@@ -455,18 +239,6 @@ async def test_history():
     await resource.update(1, {})
     await resource.delete(2, None)
     assert len(await resource.history()) == 3
-    await sirix.delete_all()
-    await client.aclose()
-
-
-async def test_delete_resource19():
-    client = httpx.AsyncClient(base_url=base_url)
-    sirix = await pysirix.sirix_async("admin", "admin", client)
-    db = sirix.database("First", DBType.JSON)
-    resource = db.resource("test_resource32")
-    await resource.create([])
-    await resource.delete(None, None)
-    assert await resource.exists() is False
     await sirix.delete_all()
     await client.aclose()
 
@@ -495,18 +267,6 @@ async def test_diff():
     await client.aclose()
 
 
-async def test_delete_resource20():
-    client = httpx.AsyncClient(base_url=base_url)
-    sirix = await pysirix.sirix_async("admin", "admin", client)
-    db = sirix.database("First", DBType.JSON)
-    resource = db.resource("test_resource34")
-    await resource.create([])
-    await resource.delete(None, None)
-    assert await resource.exists() is False
-    await sirix.delete_all()
-    await client.aclose()
-
-
 async def test_sirix_query():
     client = httpx.AsyncClient(base_url=base_url)
     sirix = await pysirix.sirix_async("admin", "admin", client)
@@ -514,18 +274,6 @@ async def test_sirix_query():
     resource = db.resource("query_resource1")
     await resource.create(data_for_query)
     assert await sirix.query(post_query) == '{"rest":[6]}'
-    await sirix.delete_all()
-    await client.aclose()
-
-
-async def test_delete_resource21():
-    client = httpx.AsyncClient(base_url=base_url)
-    sirix = await pysirix.sirix_async("admin", "admin", client)
-    db = sirix.database("First", DBType.JSON)
-    resource = db.resource("test_resource35")
-    await resource.create([])
-    await resource.delete(None, None)
-    assert await resource.exists() is False
     await sirix.delete_all()
     await client.aclose()
 
