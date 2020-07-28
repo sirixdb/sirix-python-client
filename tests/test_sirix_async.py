@@ -481,13 +481,13 @@ async def test_diff():
     assert await resource.diff(1, 2) == [
         {
             "insert": {
-                "nodeKey": 2,
-                "insertPositionNodeKey": 1,
-                "insertPosition": "asFirstChild",
-                "deweyID": "1.3.3",
-                "depth": 2,
-                "type": "jsonFragment",
                 "data": "{}",
+                "depth": 2,
+                "deweyID": "1.17.17",
+                "insertPosition": "asFirstChild",
+                "insertPositionNodeKey": 1,
+                "nodeKey": 2,
+                "type": "jsonFragment",
             }
         }
     ]

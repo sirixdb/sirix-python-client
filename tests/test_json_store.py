@@ -1,3 +1,4 @@
+import json
 from datetime import datetime
 
 import httpx
@@ -34,10 +35,8 @@ def test_exists():
 
 def test_insert_into_store():
     store.create()
-    assert (
-        store.insert_one({"city": "Brooklyn", "state": "NY"})
-        == '[{"city":"Brooklyn","state":"NY"}]'
-    )
+    doc = {"city": "Brooklyn", "state": "NY"}
+    assert store.insert_one(doc) == ""
 
 
 def test_find_all_store():
@@ -84,15 +83,15 @@ def test_find_all_old_revision_date():
 
 def test_find_one():
     store.create()
-    store.insert_one({"generic": 1, "location": {"state": "NY", "city": "New York"}})
     store.insert_one({"generic": 1, "location": {"state": "CA", "city": "Los Angeles"}})
+    store.insert_one({"generic": 1, "location": {"state": "NY", "city": "New York"}})
     response = store.find_one({"generic": 1})
     assert response == {
         "rest": [
             {
                 "generic": 1,
                 "location": {"state": "CA", "city": "Los Angeles"},
-                "nodeKey": 11,
+                "nodeKey": 2,
             }
         ]
     }

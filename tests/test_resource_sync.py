@@ -64,7 +64,6 @@ def test_delete_resource3():
     assert resource.exists() is False
 
 
-
 def test_get_etag():
     resource.create([])
     etag = resource.get_etag(1)
@@ -174,6 +173,7 @@ def test_read_metadata():
         "value": [],
     }
 
+
 def test_delete_resource11():
     resource = db.resource("test_resource11")
     resource.create([])
@@ -244,13 +244,13 @@ def test_diff():
     assert resource.diff(1, 2) == [
         {
             "insert": {
-                "nodeKey": 2,
-                "insertPositionNodeKey": 1,
-                "insertPosition": "asFirstChild",
-                "deweyID": "1.3.3",
-                "depth": 2,
-                "type": "jsonFragment",
                 "data": "{}",
+                "depth": 2,
+                "deweyID": "1.17.17",
+                "insertPosition": "asFirstChild",
+                "insertPositionNodeKey": 1,
+                "nodeKey": 2,
+                "type": "jsonFragment",
             }
         }
     ]
