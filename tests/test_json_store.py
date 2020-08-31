@@ -33,10 +33,20 @@ def test_exists():
     assert store.exists() is True
 
 
-def test_insert_into_store():
+def test_insert_one():
     store.create()
     doc = {"city": "Brooklyn", "state": "NY"}
     assert store.insert_one(doc) == ""
+
+
+def test_insert_many():
+    store.create()
+    doc = [
+        {"generic": 1, "location": {"state": "CA", "city": "Los Angeles"}},
+        {"generic": 1, "location": {"state": "NY", "city": "New York"}},
+    ]
+    store.insert_many(doc)
+    assert len(store.find_all({"generic": 1})["rest"]) == 2
 
 
 def test_find_all_store():
@@ -83,8 +93,12 @@ def test_find_all_old_revision_date():
 
 def test_find_one():
     store.create()
-    store.insert_one({"generic": 1, "location": {"state": "CA", "city": "Los Angeles"}})
-    store.insert_one({"generic": 1, "location": {"state": "NY", "city": "New York"}})
+    store.insert_many(
+        [
+            {"generic": 1, "location": {"state": "CA", "city": "Los Angeles"}},
+            {"generic": 1, "location": {"state": "NY", "city": "New York"}},
+        ]
+    )
     response = store.find_one({"generic": 1})
     assert response == {
         "rest": [
@@ -118,7 +132,20 @@ def test_update_by_key():
 
 def test_update_many():
     store.create()
-    store.insert_one({"generic": 1, "location": {"state": "CA", "city": "Los Angeles"}})
-    store.insert_one({"generic": 2, "location": {"state": "NY", "city": "New York"}})
+    store.insert_many(
+        [
+            {"generic": 1, "location": {"state": "CA", "city": "Los Angeles"}},
+            {"generic": 2, "location": {"state": "NY", "city": "New York"}},
+        ]
+    )
     store.update_many({"generic": 2}, "generic", 1)
     assert len(store.find_all({"generic": 1})["rest"]) == 2
+
+
+"""
+def test_delete_field():
+    store.create()
+    store.insert_one({"generic": 1, "location": {"state": "CA", "city": "Los Angeles"}})
+    store.delete_field({"generic": 1}, "location")
+    assert store.find_one({"generic": 1}, node_key=False)["rest"] == [{"generic": 1}]
+"""

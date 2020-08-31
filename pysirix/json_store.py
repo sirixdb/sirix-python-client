@@ -45,11 +45,27 @@ class JsonStoreBase(ABC):
         """
         Inserts a single record into the store. New records are added at the tail of the store.
 
-        :param insert_dict: either a JSON string, or a ``dict`` that can be converted to JSON.
-        :return: ``None``.
+        :param insert_dict: either a JSON string of a ``dict``, or a ``dict`` that can be converted to JSON.
+        :return: an emtpy ``str`` or an empty ``Awaitable[str].
         """
         insert_dict = dumps(insert_dict)
         query = f"append json {insert_dict} into jn:doc('{self.db_name}','{self.name}')"
+        return self._client.post_query({"query": query})
+
+    def insert_many(
+        self, insert_list: Union[str, List[Dict]]
+    ) -> Union[str, Awaitable[str]]:
+        """
+        Inserts a list of records into the store. New records are added at the the tail of the store.
+
+        :param insert_list: either a JSON string of ``list`` of ``dict``\s, or a ``list`` that can be converted to JSON
+        :return: a ``str`` "{rest: []}" or an ``Awaitable[str]`` resolving to this string.
+        """
+        insert_list = dumps(insert_list)
+        query = (
+            f"let $doc := jn:doc('{self.db_name}','{self.name}')"
+            f"for $i in {insert_list} return append json $i into $doc"
+        )
         return self._client.post_query({"query": query})
 
     def exists(self) -> Union[bool, Awaitable[bool]]:
@@ -172,21 +188,33 @@ class JsonStoreBase(ABC):
             f"let $obj := sdb:select-node(jn:doc('{self.db_name}','{self.name}'),{node_key}) "
             f"return replace json value of $obj=>{field} with {stringify(value)}"
         )
-        print()
-        print(query)
         return self._client.post_query({"query": query})
 
     def update_many(
         self, query_dict: Dict, field: str, value: Union[None, int, str, List, Dict]
     ):
-        query_list = [f"for $i in jn:doc('{self.db_name}','{self.name}') where"]
-        query_list.append(self._prepare_query_dict(query_dict))
-        query_list.append(
-            f"return replace json value of $i=>{field} with {stringify(value)}"
+        query = (
+            f"for $i in jn:doc('{self.db_name}','{self.name}') where {self._prepare_query_dict(query_dict)}"
+            f" return replace json value of $i=>{field} with {stringify(value)}"
         )
-        print()
-        print(" ".join(query_list))
-        return self._client.post_query({"query": " ".join(query_list)})
+        return self._client.post_query({"query": query})
+
+    def delete_field_by_key(self, node_key: int, field: str):
+        query = (
+            f"let $obj := sdb:select-node(jn:doc('{self.db_name}','{self.name}'),{node_key})"
+            f" return delete json $obj=>{field}"
+        )
+        return self._client.post_query({"query": query})
+
+    def delete_field(self, query_dict: Dict, field: str):
+        query = (
+            f"for $i in jn:doc('{self.db_name}','{self.name}') where {self._prepare_query_dict(query_dict)}"
+            f" return delete json $i=>{field}"
+        )
+        return self._client.post_query({"query": query})
+
+    def delete_record(self, query_dict: Dict, field: str):
+        pass
 
     def find_one(
         self,

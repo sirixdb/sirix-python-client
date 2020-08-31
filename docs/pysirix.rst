@@ -42,6 +42,7 @@ pysirix.json_store module
 
 .. automodule:: pysirix.json_store
    :members:
+   :inherited-members:
    :private-members:
    :undoc-members:
    :show-inheritance:
