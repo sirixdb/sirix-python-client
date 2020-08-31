@@ -105,3 +105,20 @@ def test_history():
     assert store.history(11, timestamp=False) == {"rest": [3]}
     assert type(store.history(11)["rest"][0]["timestamp"]) == str
     assert type(store.history(11, revision=False)["rest"][0]) == str
+
+
+def test_update_by_key():
+    store.create()
+    store.insert_one({"generic": 1, "location": {"state": "NY", "city": "New York"}})
+    store.update_by_key(2, "location", {"state": "CA", "city": "Los Angeles"})
+    assert store.find_one({"generic": 1}, node_key=False) == {
+        "rest": [{"generic": 1, "location": {"state": "CA", "city": "Los Angeles"}}]
+    }
+
+
+def test_update_many():
+    store.create()
+    store.insert_one({"generic": 1, "location": {"state": "CA", "city": "Los Angeles"}})
+    store.insert_one({"generic": 2, "location": {"state": "NY", "city": "New York"}})
+    store.update_many({"generic": 2}, "generic", 1)
+    assert len(store.find_all({"generic": 1})["rest"]) == 2

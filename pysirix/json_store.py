@@ -13,6 +13,20 @@ from pysirix.sync_client import SyncClient
 from pysirix.types import QueryResult
 
 
+def stringify(v: Union[None, int, str, Dict, List]):
+    return (
+        f'"{v}"'
+        if isinstance(v, str)
+        else "true()"
+        if v is True
+        else "false()"
+        if v is False
+        else "jn:null()"
+        if v is None
+        else v
+    )
+
+
 class JsonStoreBase(ABC):
     def __init__(
         self,
@@ -29,7 +43,7 @@ class JsonStoreBase(ABC):
 
     def insert_one(self, insert_dict: Union[str, Dict]) -> Union[str, Awaitable[str]]:
         """
-        Inserts a single record into the store. New records are added at the head of the store.
+        Inserts a single record into the store. New records are added at the tail of the store.
 
         :param insert_dict: either a JSON string, or a ``dict`` that can be converted to JSON.
         :return: ``None``.
@@ -93,6 +107,14 @@ class JsonStoreBase(ABC):
         params = {"query": query}
         return self._client.read_resource(self.db_name, self.db_type, self.name, params)
 
+    @staticmethod
+    def _prepare_query_dict(query_dict: Dict) -> str:
+        query_list = []
+        for k, v in query_dict.items():
+            v = stringify(v)
+            query_list.append(f"deep-equal($i=>{k}, {v}) and")
+        return " ".join(query_list)[:-4]
+
     def _prepare_find_all(
         self,
         query_dict: Dict,
@@ -113,22 +135,10 @@ class JsonStoreBase(ABC):
             query_list = [
                 f"for $i in bit:array-values(jn:doc('{self.db_name}','{self.name}',{revision})) where"
             ]
-        for k, v in query_dict.items():
-            v = (
-                f'"{v}"'
-                if isinstance(v, str)
-                else "true()"
-                if v is True
-                else "false()"
-                if v is False
-                else "jn:null()"
-                if v is None
-                else v
-            )
-            query_list.append(f"deep-equal($i=>{k}, {v}) and")
+        query_list.append(self._prepare_query_dict(query_dict))
         query_string = " ".join(
             [
-                " ".join(query_list)[:-4],
+                *query_list,
                 "return {$i,'nodeKey': sdb:nodekey($i)}" if node_key else "return {$i}",
             ]
         )
@@ -154,6 +164,29 @@ class JsonStoreBase(ABC):
         end_result_index: Optional[int] = None,
     ):
         raise NotImplementedError()
+
+    def update_by_key(
+        self, node_key: int, field: str, value: Union[int, str, List, Dict]
+    ):
+        query = (
+            f"let $obj := sdb:select-node(jn:doc('{self.db_name}','{self.name}'),{node_key}) "
+            f"return replace json value of $obj=>{field} with {stringify(value)}"
+        )
+        print()
+        print(query)
+        return self._client.post_query({"query": query})
+
+    def update_many(
+        self, query_dict: Dict, field: str, value: Union[None, int, str, List, Dict]
+    ):
+        query_list = [f"for $i in jn:doc('{self.db_name}','{self.name}') where"]
+        query_list.append(self._prepare_query_dict(query_dict))
+        query_list.append(
+            f"return replace json value of $i=>{field} with {stringify(value)}"
+        )
+        print()
+        print(" ".join(query_list))
+        return self._client.post_query({"query": " ".join(query_list)})
 
     def find_one(
         self,
