@@ -64,7 +64,7 @@ class JsonStoreBase(ABC):
         insert_list = dumps(insert_list)
         query = (
             f"let $doc := jn:doc('{self.db_name}','{self.name}')"
-            f"for $i in {insert_list} return append json $i into $doc"
+            f"for $i in jn:parse('{insert_list}') return append json $i into $doc"
         )
         return self._client.post_query({"query": query})
 
@@ -200,7 +200,7 @@ class JsonStoreBase(ABC):
         )
         return self._client.post_query({"query": query})
 
-    def delete_record(self, query_dict: Dict):
+    def delete_records(self, query_dict: Dict):
         query = (
             f"let $doc := jn:doc('{self.db_name}','{self.name}')"
             f" for $i at $pos in $doc where {self._prepare_query_dict(query_dict)} return delete json $doc[[$pos - 1]]"
