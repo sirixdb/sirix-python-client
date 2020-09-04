@@ -205,7 +205,6 @@ class JsonStoreBase(ABC):
             f"let $doc := jn:doc('{self.db_name}','{self.name}')"
             f" for $i at $pos in $doc where {self._prepare_query_dict(query_dict)} return delete json $doc[[$pos]]"
         )
-        print(query)
         return self._client.post_query({"query": query})
 
     def find_one(
