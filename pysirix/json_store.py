@@ -115,8 +115,7 @@ class JsonStoreBase(ABC):
     def _prepare_query_dict(query_dict: Dict) -> str:
         query_list = []
         for k, v in query_dict.items():
-            v = stringify(v)
-            query_list.append(f"deep-equal($i=>{k}, {v}) and")
+            query_list.append(f"deep-equal($i=>{stringify(k)}, {stringify(v)}) and")
         return " ".join(query_list)[:-4]
 
     def _prepare_find_all(
