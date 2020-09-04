@@ -46,17 +46,17 @@ def test_insert_many():
         {"generic": 1, "location": {"state": "NY", "city": "New York"}},
     ]
     store.insert_many(doc)
-    assert len(store.find_all({"generic": 1})["rest"]) == 2
+    assert len(store.find_all({"generic": 1})) == 2
 
 
 def test_find_all_store():
     store.create()
     store.insert_one({"city": "New York", "state": "NY"})
     response = store.find_all({"city": "New York"}, node_key=False)
-    assert type(response["rest"]) is list and len(response["rest"]) == 1
-    assert response["rest"][0] == {"city": "New York", "state": "NY"}
+    assert type(response) is list and len(response) == 1
+    assert response[0] == {"city": "New York", "state": "NY"}
     response = store.find_all({"city": "New York"})
-    assert response["rest"][0] == {"city": "New York", "state": "NY", "nodeKey": 2}
+    assert response[0] == {"city": "New York", "state": "NY", "nodeKey": 2}
 
 
 def test_find_all_projection():
@@ -64,11 +64,11 @@ def test_find_all_projection():
     store.insert_one({"key": 1, "location": {"state": "NY", "city": "New York"}})
     store.insert_one({"key": 2, "location": {"state": "CA", "city": "Los Angeles"}})
     response = store.find_all({"key": 2}, ["location"], node_key=False)
-    assert response["rest"][0] == {
+    assert response[0] == {
         "location": {"state": "CA", "city": "Los Angeles"},
     }
     response = store.find_all({"key": 2}, ["location"])
-    assert response["rest"][0] == {
+    assert response[0] == {
         "location": {"state": "CA", "city": "Los Angeles"},
         "nodeKey": 11,
     }
@@ -78,9 +78,9 @@ def test_find_all_old_revision_number():
     store.create()
     store.insert_one({"city": "New York", "state": "NY"})
     response = store.find_all({"city": "New York"}, revision=1)
-    assert response == {"rest": []}
+    assert response == []
     response = store.find_all({"city": "New York"}, revision=2)
-    assert response == {"rest": [{"city": "New York", "state": "NY", "nodeKey": 2}]}
+    assert response == [{"city": "New York", "state": "NY", "nodeKey": 2}]
 
 
 def test_find_all_old_revision_date():
@@ -88,7 +88,7 @@ def test_find_all_old_revision_date():
     timestamp = datetime.utcnow()
     store.insert_one({"city": "New York", "state": "NY"})
     response = store.find_all({"city": "New York"}, revision=timestamp)
-    assert response == {"rest": []}
+    assert response == []
 
 
 def test_find_one():
@@ -100,15 +100,13 @@ def test_find_one():
         ]
     )
     response = store.find_one({"generic": 1})
-    assert response == {
-        "rest": [
-            {
-                "generic": 1,
-                "location": {"state": "CA", "city": "Los Angeles"},
-                "nodeKey": 2,
-            }
-        ]
-    }
+    assert response == [
+        {
+            "generic": 1,
+            "location": {"state": "CA", "city": "Los Angeles"},
+            "nodeKey": 2,
+        }
+    ]
 
 
 def test_history():
@@ -116,18 +114,19 @@ def test_history():
     store.insert_one({"generic": 1, "location": {"state": "NY", "city": "New York"}})
     store.insert_one({"generic": 1, "location": {"state": "CA", "city": "Los Angeles"}})
     assert len(store.history()) == 3
-    assert store.history(11, timestamp=False) == {"rest": [3]}
-    assert type(store.history(11)["rest"][0]["timestamp"]) == str
-    assert type(store.history(11, revision=False)["rest"][0]) == str
+    history = store.history(11)["rest"][0]
+    assert type(history["timestamp"]) == str
+    assert type(history["revision"]) == int
+    assert len(history) == 2
 
 
 def test_update_by_key():
     store.create()
     store.insert_one({"generic": 1, "location": {"state": "NY", "city": "New York"}})
     store.update_by_key(2, "location", {"state": "CA", "city": "Los Angeles"})
-    assert store.find_one({"generic": 1}, node_key=False) == {
-        "rest": [{"generic": 1, "location": {"state": "CA", "city": "Los Angeles"}}]
-    }
+    assert store.find_one({"generic": 1}, node_key=False) == [
+        {"generic": 1, "location": {"state": "CA", "city": "Los Angeles"}}
+    ]
 
 
 def test_update_many():
@@ -139,13 +138,18 @@ def test_update_many():
         ]
     )
     store.update_many({"generic": 2}, "generic", 1)
-    assert len(store.find_all({"generic": 1})["rest"]) == 2
+    assert len(store.find_all({"generic": 1})) == 2
 
 
-"""
 def test_delete_field():
     store.create()
     store.insert_one({"generic": 1, "location": {"state": "CA", "city": "Los Angeles"}})
     store.delete_field({"generic": 1}, "location")
-    assert store.find_one({"generic": 1}, node_key=False)["rest"] == [{"generic": 1}]
-"""
+    assert store.find_one({"generic": 1}, node_key=False) == [{"generic": 1}]
+
+
+def test_delete_record():
+    store.create()
+    store.insert_one({"generic": 1, "location": {"state": "CA", "city": "Los Angeles"}})
+    store.delete_record({"generic": 1})
+    assert len(store.find_all({"generic": 1})) == 0

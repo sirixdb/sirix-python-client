@@ -49,7 +49,7 @@ class JsonStoreBase(ABC):
         :return: an emtpy ``str`` or an empty ``Awaitable[str].
         """
         insert_dict = dumps(insert_dict)
-        query = f"append json {insert_dict} into jn:doc('{self.db_name}','{self.name}')"
+        query = f"append json jn:parse('{insert_dict}') into jn:doc('{self.db_name}','{self.name}')"
         return self._client.post_query({"query": query})
 
     def insert_many(
@@ -86,33 +86,21 @@ class JsonStoreBase(ABC):
             self.db_name, self.db_type, self.name, "[]",
         )
 
-    def history(
-        self, node_key: int = 0, revision: bool = True, timestamp: bool = True
-    ) -> Union[List[Commit], List[int], List[str], List[RevisionType]]:
+    def history(self, node_key: int = 0) -> Union[List[Commit], List[RevisionType]]:
         """
         This method returns the history of a resource. If ``node_key`` is not specified,
         it returns the history of the resource (root) itself, in the form of a list of :py:class:`Commit`.
 
         If ``node_key`` is specified, the method returns a list of :py:class:`pysirix.types.Revision`.
-        In such a case, if `timestamp` is specified as ``False``, a list of `int` of revision numbers will be returned.
-        Otherwise, if `revision` is specified as `False`, then a list of `str` of timestamps will be returned.
 
         :param node_key: the root of the subtree whose history should be returned. Defaults to document root.
-        :param revision: whether to return the revision number, when node_key is not document root. Defaults to `True`.
-        :param timestamp: whether to return the revision timestamp, when node_key is not document root.
-                Defaults to ``True``.
-        :return: a list of :py:class:`pysirix.types.Commit` if node_key is not specified. Otherwise, a list of either
-                `int`, `str`, or :py:class:`pysirix.types.Revision`, depending on the specified arguments.
+        :return: a list of :py:class:`pysirix.types.Commit` if node_key is not specified. Otherwise, a list of
+                :py:class:`pysirix.types.Revision`.
         """
         if node_key == 0:
             return self._client.history(self.db_name, self.db_type, self.name)
-        if timestamp:
-            if revision:
-                revision_data = '{"revision": sdb:revision($rev), "timestamp": xs:string(sdb:timestamp($rev))}'
-            else:
-                revision_data = "xs:string(sdb:timestamp($rev))"
         else:
-            revision_data = "sdb:revision($rev)"
+            revision_data = '{"revision": sdb:revision($rev), "timestamp": xs:string(sdb:timestamp($rev))}'
 
         query = (
             f"let $node := sdb:select-node(., {node_key}) let $result := for $rev in jn:all-times($node)"
@@ -186,7 +174,7 @@ class JsonStoreBase(ABC):
     ):
         query = (
             f"let $obj := sdb:select-node(jn:doc('{self.db_name}','{self.name}'),{node_key}) "
-            f"return replace json value of $obj=>{field} with {stringify(value)}"
+            f"return replace json value of $obj=>{stringify(field)} with {stringify(value)}"
         )
         return self._client.post_query({"query": query})
 
@@ -195,26 +183,31 @@ class JsonStoreBase(ABC):
     ):
         query = (
             f"for $i in jn:doc('{self.db_name}','{self.name}') where {self._prepare_query_dict(query_dict)}"
-            f" return replace json value of $i=>{field} with {stringify(value)}"
+            f" return replace json value of $i=>{stringify(field)} with {stringify(value)}"
         )
         return self._client.post_query({"query": query})
 
     def delete_field_by_key(self, node_key: int, field: str):
         query = (
             f"let $obj := sdb:select-node(jn:doc('{self.db_name}','{self.name}'),{node_key})"
-            f" return delete json $obj=>{field}"
+            f" return delete json $obj=>{stringify(field)}"
         )
         return self._client.post_query({"query": query})
 
     def delete_field(self, query_dict: Dict, field: str):
         query = (
             f"for $i in jn:doc('{self.db_name}','{self.name}') where {self._prepare_query_dict(query_dict)}"
-            f" return delete json $i=>{field}"
+            f" return delete json $i=>{stringify(field)}"
         )
         return self._client.post_query({"query": query})
 
-    def delete_record(self, query_dict: Dict, field: str):
-        pass
+    def delete_record(self, query_dict: Dict):
+        query = (
+            f"let $doc := jn:doc('{self.db_name}','{self.name}')"
+            f" for $i at $pos in $doc where {self._prepare_query_dict(query_dict)} return delete json $doc[[$pos]]"
+        )
+        print(query)
+        return self._client.post_query({"query": query})
 
     def find_one(
         self,
@@ -222,7 +215,7 @@ class JsonStoreBase(ABC):
         projection: List[str] = None,
         revision: Revision = None,
         node_key=True,
-    ) -> Dict[str, List[QueryResult]]:
+    ) -> List[QueryResult]:
         return self.find_all(
             query_dict,
             projection,
@@ -238,20 +231,10 @@ class JsonStoreSync(JsonStoreBase):
     This class is a convenient abstraction over the resource entities exposed by SirixDB.
     As such, there is no JsonStore on the SirixDB server, only the underlying resource is stored.
 
-    This class is for storing many distinct, json objects in a single resource,
-    where the objects storing data of similar type. As such, an object is an
-    abstraction similar to a row in a relational database. The entirety of the
-    store parallels a table in a relational database.
+    This class is for storing many distinct, JSON objects in a single resource, where the objects/records
+    store data of similar type. As such, it's usage parallels a that of a document store, and an object is
+    an abstraction similar to a single document in such a store.
     """
-
-    def __init__(
-        self,
-        db_name: str,
-        name: str,
-        client: Union[SyncClient, AsyncClient],
-        auth: Auth,
-    ):
-        super().__init__(db_name, name, client, auth)
 
     def find_all(
         self,
@@ -261,7 +244,7 @@ class JsonStoreSync(JsonStoreBase):
         node_key=True,
         start_result_index: Optional[int] = None,
         end_result_index: Optional[int] = None,
-    ) -> Dict[str, List[QueryResult]]:
+    ) -> List[QueryResult]:
         """
         Finds and returns all records where the values of ``query_dict`` match the
         corresponding values the record.
@@ -279,7 +262,7 @@ class JsonStoreSync(JsonStoreBase):
         :param revision: the revision to search, defaults to latest.
         :param start_result_index: index of first result to return.
         :param end_result_index: index of last result to return.
-        :return: a ``dict`` with a field ``rest``, containing a ``list`` of ``dict`` records matching the query.
+        :return: a ``list`` of :py:class:`QueryResult` records matching the query.
         """
         params = self._prepare_find_all(
             query_dict,
@@ -290,7 +273,7 @@ class JsonStoreSync(JsonStoreBase):
             end_result_index,
         )
         result = self._client.post_query(params)
-        return json.loads(result)
+        return json.loads(result)["rest"]
 
 
 class JsonStoreAsync(JsonStoreBase):
@@ -298,15 +281,6 @@ class JsonStoreAsync(JsonStoreBase):
     See the documentation for :py:class:`JsonStoreSync`. This class implements the same interfaces,
     with async support.
     """
-
-    def __init__(
-        self,
-        db_name: str,
-        name: str,
-        client: Union[SyncClient, AsyncClient],
-        auth: Auth,
-    ):
-        super().__init__(db_name, name, client, auth)
 
     async def find_all(
         self,
@@ -316,7 +290,7 @@ class JsonStoreAsync(JsonStoreBase):
         node_key=True,
         start_result_index: Optional[int] = None,
         end_result_index: Optional[int] = None,
-    ) -> Awaitable[Dict[str, List[QueryResult]]]:
+    ) -> Awaitable[List[QueryResult]]:
         """
         Finds and returns all records where the values of ``query_dict`` match the
         corresponding values the record.
@@ -334,7 +308,7 @@ class JsonStoreAsync(JsonStoreBase):
         :param revision: the revision to search, defaults to latest.
         :param start_result_index: index of first result to return.
         :param end_result_index: index of last result to return.
-        :return: a ``dict`` with a field ``rest``, containing a ``list`` of ``dict`` records matching the query.
+        :return: an ``Awaitable`` ``list`` of :py:class:`QueryResult` records matching the query.
         """
         params = self._prepare_find_all(
             query_dict,
@@ -345,4 +319,4 @@ class JsonStoreAsync(JsonStoreBase):
             end_result_index,
         )
         result = await self._client.post_query(params)
-        return json.loads(result)
+        return json.loads(result)["rest"]
