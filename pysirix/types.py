@@ -30,8 +30,9 @@ try:
         Otherwise, defaults to ``dict``.
         """
 
-        timestamp: str
-        revision: int
+        revisionTimestamp: str
+        revisionNumber: int
+        revision: Union[List, Dict, str, int, float, None]
 
     class InsertDiff(TypedDict):
         """

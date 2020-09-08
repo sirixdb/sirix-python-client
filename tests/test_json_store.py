@@ -114,10 +114,12 @@ def test_history():
     store.insert_one({"generic": 1, "location": {"state": "NY", "city": "New York"}})
     store.insert_one({"generic": 1, "location": {"state": "CA", "city": "Los Angeles"}})
     assert len(store.history()) == 3
-    history = store.history(11)["rest"][0]
-    assert type(history["timestamp"]) == str
-    assert type(history["revision"]) == int
-    assert len(history) == 2
+    history = store.history(11)["rest"]
+    assert len(history) == 1
+    history = history[0]
+    assert type(history["revisionTimestamp"]) == str
+    assert type(history["revisionNumber"]) == int
+    assert len(history) == 3
 
 
 def test_update_by_key():

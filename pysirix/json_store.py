@@ -99,15 +99,7 @@ class JsonStoreBase(ABC):
         """
         if node_key == 0:
             return self._client.history(self.db_name, self.db_type, self.name)
-        else:
-            revision_data = '{"revision": sdb:revision($rev), "timestamp": xs:string(sdb:timestamp($rev))}'
-
-        query = (
-            f"let $node := sdb:select-node(., {node_key}) let $result := for $rev in jn:all-times($node)"
-            f" return if (not(exists(jn:previous($rev)))) then {revision_data}"
-            f" else if (sdb:hash($rev) ne sdb:hash(jn:previous($rev))) then {revision_data}"
-            " else () return $result"
-        )
+        query = f"sdb:node-history(sdb:select-node(., {node_key}))"
         params = {"query": query}
         return self._client.read_resource(self.db_name, self.db_type, self.name, params)
 
