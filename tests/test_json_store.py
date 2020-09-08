@@ -155,6 +155,7 @@ def test_delete_record():
             {"generic": 1, "location": {"state": "CA", "city": "Los Angeles"}},
             {"generic": 2, "location": {"state": "NY", "city": "New York"}},
             {"generic": 1, "location": {"state": "CA", "city": "Los Angeles"}},
+            {"generic": 2, "location": {"state": "NY", "city": "New York"}},
         ]
     )
     store.delete_records({"generic": 1})

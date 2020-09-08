@@ -203,7 +203,8 @@ class JsonStoreBase(ABC):
     def delete_records(self, query_dict: Dict):
         query = (
             f"let $doc := jn:doc('{self.db_name}','{self.name}')"
-            f" for $i at $pos in $doc where {self._prepare_query_dict(query_dict)} return delete json $doc[[$pos - 1]]"
+            f" let $m := for $i at $pos in $doc where {self._prepare_query_dict(query_dict)} return $pos - 1"
+            " for $i in $m order by $i descending return delete json $doc[[$i]]"
         )
         return self._client.post_query({"query": query})
 
