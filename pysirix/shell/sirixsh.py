@@ -559,7 +559,7 @@ class SirixShell(cmd.Cmd):
                 return
         try:
             if parsed.get("metadata"):
-                result = self.resource.read_with_metadata(node_key, rev, max_level)
+                result = self.resource.read_with_metadata(node_key, rev, max_level=max_level)
             else:
                 result = self.resource.read(node_key, rev, max_level)
             if self.context["database"][1] == DBType.JSON:
