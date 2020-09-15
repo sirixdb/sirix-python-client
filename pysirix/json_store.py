@@ -1,7 +1,7 @@
 import json
 from datetime import datetime
 from typing import Union, Dict, List, Awaitable, Optional
-from pysirix.types import Commit, Revision as RevisionType
+from pysirix.types import Commit, Revision as RevisionType, SubtreeRevision
 from json import dumps
 
 from abc import ABC
@@ -46,7 +46,7 @@ class JsonStoreBase(ABC):
         Inserts a single record into the store. New records are added at the tail of the store.
 
         :param insert_dict: either a JSON string of a ``dict``, or a ``dict`` that can be converted to JSON.
-        :return: an emtpy ``str`` or an empty ``Awaitable[str].
+        :return: an emtpy ``str`` or an empty ``Awaitable[str]``.
         """
         insert_dict = dumps(insert_dict)
         query = f"append json jn:parse('{insert_dict}') into jn:doc('{self.db_name}','{self.name}')"
@@ -86,7 +86,9 @@ class JsonStoreBase(ABC):
             self.db_name, self.db_type, self.name, "[]",
         )
 
-    def history(self, node_key: int = 0) -> Union[List[Commit], List[RevisionType]]:
+    def history(
+        self, node_key: int = 0, subtree: bool = True
+    ) -> Union[List[Commit], List[SubtreeRevision], List[RevisionType]]:
         """
         This method returns the history of a resource. If ``node_key`` is not specified,
         it returns the history of the resource (root) itself, in the form of a list of :py:class:`Commit`.
@@ -99,7 +101,16 @@ class JsonStoreBase(ABC):
         """
         if node_key == 0:
             return self._client.history(self.db_name, self.db_type, self.name)
-        query = f"sdb:node-history(sdb:select-node(., {node_key}))"
+        if subtree:
+            revision_data = '{"revisionNumber": sdb:revision($rev), "revisionTimestamp": xs:string(sdb:timestamp($rev))}'
+            query = (
+                f"let $node := sdb:select-item(., {node_key}) let $result := for $rev in jn:all-times($node)"
+                f" return if (not(exists(jn:previous($rev)))) then {revision_data}"
+                f" else if (sdb:hash($rev) ne sdb:hash(jn:previous($rev))) then {revision_data}"
+                " else () return $result"
+            )
+        else:
+            query = f"sdb:item-history(sdb:select-item(., {node_key}))"
         params = {"query": query}
         return self._client.read_resource(self.db_name, self.db_type, self.name, params)
 
@@ -164,7 +175,7 @@ class JsonStoreBase(ABC):
         self, node_key: int, field: str, value: Union[int, str, List, Dict]
     ):
         query = (
-            f"let $obj := sdb:select-node(jn:doc('{self.db_name}','{self.name}'),{node_key}) "
+            f"let $obj := sdb:select-item(jn:doc('{self.db_name}','{self.name}'),{node_key}) "
             f"return replace json value of $obj=>{stringify(field)} with {stringify(value)}"
         )
         return self._client.post_query({"query": query})
@@ -180,7 +191,7 @@ class JsonStoreBase(ABC):
 
     def delete_field_by_key(self, node_key: int, field: str):
         query = (
-            f"let $obj := sdb:select-node(jn:doc('{self.db_name}','{self.name}'),{node_key})"
+            f"let $obj := sdb:select-item(jn:doc('{self.db_name}','{self.name}'),{node_key})"
             f" return delete json $obj=>{stringify(field)}"
         )
         return self._client.post_query({"query": query})

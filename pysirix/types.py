@@ -1,4 +1,4 @@
-from pysirix.info import NodeType
+from pysirix.info import NodeType, InsertPosition, DataType
 
 try:
     from typing import TypedDict, Dict, Union, List, Iterable
@@ -24,6 +24,15 @@ try:
         author: str
         commitMessage: str
 
+    class SubtreeRevision(TypedDict):
+        """
+        This type is available only in python 3.8+.
+        Otherwise, defaults to ``dict``.
+        """
+
+        revisionTimestamp: str
+        revisionNumber: int
+
     class Revision(TypedDict):
         """
         This type is available only in python 3.8+.
@@ -42,11 +51,11 @@ try:
 
         nodeKey: int
         insertPositionNodeKey: int
-        insertPosition: str
+        insertPosition: InsertPosition
         deweyID: str
         depth: int
         type: str
-        data: str
+        data: DataType
 
     class ReplaceDiff(TypedDict):
         """
@@ -55,7 +64,7 @@ try:
         """
 
         nodeKey: int
-        type: str
+        type: DataType
         data: str
 
     class UpdateDiff(TypedDict):
@@ -65,7 +74,7 @@ try:
         """
 
         nodeKey: int
-        type: str
+        type: DataType
         value: Union[str, int, float, bool, None]
 
     class DeleteDiff(TypedDict):
@@ -128,6 +137,7 @@ except ImportError:
     QueryResult = Dict
     Commit = Dict
     Revision = Dict
+    SubtreeRevision = Dict
     InsertDiff = Dict
     ReplaceDiff = Dict
     UpdateDiff = Dict

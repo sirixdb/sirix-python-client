@@ -119,7 +119,8 @@ def test_history():
     history = history[0]
     assert type(history["revisionTimestamp"]) == str
     assert type(history["revisionNumber"]) == int
-    assert len(history) == 3
+    assert len(history) == 2
+    assert len(store.history(11, subtree=False)["rest"][0]) == 3
 
 
 def test_update_by_key():

@@ -35,3 +35,18 @@ class NodeType(Enum):
     BOOLEAN_VALUE = "BOOLEAN_VALUE"
     OBJECT_NULL_VALUE = "OBJECT_NULL_VALUE"
     NULL_VALUE = "NULL_VALUE"
+
+
+class InsertPosition(Enum):
+    asFirstChild = "asFirstChild"
+    asLeftSibling = "asLeftSibling"
+    asRightSibling = "asRightSibling"
+    replace = "replace"
+
+
+class DataType(Enum):
+    string = "string"
+    number = "number"
+    boolean = "boolean"
+    null = "null"
+    jsonFragment = "jsonFragment"
