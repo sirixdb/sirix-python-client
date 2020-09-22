@@ -74,6 +74,8 @@ class Resource:
         node_id: Union[int, None],
         revision: Union[Revision, Tuple[Revision, Revision], None] = None,
         max_level: Union[int, None] = None,
+        top_level_limit: Optional[int] = None,
+        top_level_skip_last_node: Optional[int] = None,
     ) -> Union[Union[dict, ET.Element], Awaitable[Union[dict, ET.Element]]]:
         """
         Read the node (and its sub-nodes) corresponding to ``node_id``.
@@ -82,10 +84,14 @@ class Resource:
                         the entire resource is read.
         :param revision: the revision to read from, defaults to latest.
         :param max_level: the maximum depth for reading sub-nodes, defaults to latest.
+        :param top_level_limit: the maximum number of top level nodes to return (used for paging).
+        :param top_level_skip_last_node: the last nodeId to skip (used for paging).
         :return: either a ``dict`` or an instance of ``xml.etree.ElementTree.Element``,
                         depending on the database type of this resource.
         """
-        params = self._build_read_params(node_id, revision, max_level)
+        params = self._build_read_params(
+            node_id, revision, max_level, top_level_limit, top_level_skip_last_node
+        )
         return self._client.read_resource(
             self.db_name, self.db_type, self.resource_name, params
         )
@@ -96,6 +102,8 @@ class Resource:
         revision: Union[Revision, Tuple[Revision, Revision], None] = None,
         meta_type: MetadataType = MetadataType.ALL,
         max_level: Optional[int] = None,
+        top_level_limit: Optional[int] = None,
+        top_level_skip_last_node: Optional[int] = None,
     ):
         """
         Read the node (and its sub-nodes) corresponding to ``node_id``, with metadata for each node.
@@ -105,9 +113,13 @@ class Resource:
         :param revision: the revision to read from, defaults to latest.
         :param meta_type: the type of metadata to return, defaults to all.
         :param max_level: the maximum depth for reading sub-nodes, defaults to latest.
+        :param top_level_limit: the maximum number of top level nodes to return (used for paging).
+        :param top_level_skip_last_node: the last nodeId to skip (used for paging).
         :return:
         """
-        params = self._build_read_params(node_id, revision, max_level)
+        params = self._build_read_params(
+            node_id, revision, max_level, top_level_limit, top_level_skip_last_node
+        )
         params["withMetadata"] = meta_type.value
         return self._client.read_resource(
             self.db_name, self.db_type, self.resource_name, params
@@ -118,6 +130,8 @@ class Resource:
         node_id: Union[int, None],
         revision: Union[Revision, Tuple[Revision, Revision], None] = None,
         max_level: Union[int, None] = None,
+        top_level_limit: Optional[int] = None,
+        top_level_skip_last_node: Optional[int] = None,
     ) -> Dict[str, Union[str, int]]:
         """
         Helper method to build a parameters ``dict`` for reading a resource.
@@ -127,6 +141,10 @@ class Resource:
             params["nodeId"] = node_id
         if max_level:
             params["maxLevel"] = max_level
+        if top_level_limit:
+            params["nextTopLevelNodes"] = top_level_limit
+        if top_level_skip_last_node:
+            params["lastTopLevelNodeKey"] = top_level_skip_last_node
         if revision:
             if type(revision) == int:
                 params["revision"] = revision

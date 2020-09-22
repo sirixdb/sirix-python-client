@@ -82,6 +82,20 @@ def read_parser():
         default=False,
         help="Whether to read with metadata of each node. Defaults to False.",
     )
+    parser.add_argument(
+        "-j",
+        "--skip",
+        type=int,
+        default=None,
+        help="The last nodeId to skip (assuming you want to skip...). Defaults to None.",
+    )
+    parser.add_argument(
+        "-l",
+        "--limit",
+        type=int,
+        default=None,
+        help="Limits the number of top level nodes returned. Defaults to None.",
+    )
     return parser
 
 
@@ -541,6 +555,8 @@ class SirixShell(cmd.Cmd):
         revision = parsed.get("revision")
         start_revision = parsed.get("start_revision")
         end_revision = parsed.get("end_revision")
+        top_level_limit = parsed.get("limit")
+        top_level_skip_last_node = parsed.get("skip")
         rev = None
         if start_revision is not None:
             start_rev = parse_revision(start_revision)
@@ -559,9 +575,17 @@ class SirixShell(cmd.Cmd):
                 return
         try:
             if parsed.get("metadata"):
-                result = self.resource.read_with_metadata(node_key, rev, max_level=max_level)
+                result = self.resource.read_with_metadata(
+                    node_key,
+                    rev,
+                    max_level=max_level,
+                    top_level_limit=top_level_limit,
+                    top_level_skip_last_node=top_level_skip_last_node,
+                )
             else:
-                result = self.resource.read(node_key, rev, max_level)
+                result = self.resource.read(
+                    node_key, rev, max_level, top_level_limit, top_level_skip_last_node,
+                )
             if self.context["database"][1] == DBType.JSON:
                 print(json.dumps(result, indent=2))
             else:
