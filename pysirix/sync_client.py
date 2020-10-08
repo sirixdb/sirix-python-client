@@ -5,8 +5,7 @@ from typing import Dict, Union, List
 
 from pysirix.constants import DBType, Insert
 from pysirix.errors import include_response_text_in_errors
-from pysirix.types import Commit, InsertDiff, ReplaceDiff, UpdateDiff
-
+from pysirix.types import Commit, InsertDiff, ReplaceDiff, UpdateDiff, BytesLike
 
 ET.register_namespace("rest", "https://sirix.io/rest")
 
@@ -103,7 +102,7 @@ class SyncClient:
         return False
 
     def create_resource(
-        self, db_name: str, db_type: DBType, name: str, data: str
+        self, db_name: str, db_type: DBType, name: str, data: BytesLike
     ) -> str:
         """
         Call the ``/{database}/{resource}`` endpoint with a PUT request.
@@ -225,7 +224,7 @@ class SyncClient:
         db_type: DBType,
         name: str,
         node_id: int,
-        data: str,
+        data: BytesLike,
         insert: Insert,
         etag: Union[str, None],
     ) -> str:

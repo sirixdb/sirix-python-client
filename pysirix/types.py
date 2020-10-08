@@ -1,7 +1,9 @@
 from pysirix.info import NodeType, InsertPosition, DataType
+from typing import Union
+
 
 try:
-    from typing import TypedDict, Dict, Union, List, Iterable
+    from typing import TypedDict, Dict, List, Iterable
 
     class QueryResult(TypedDict):
         """
@@ -144,3 +146,13 @@ except ImportError:
     DeleteDiff = Dict
     Metadata = Dict
     MetaNode = Dict
+
+import sys
+
+if sys.version_info >= (3, 9):
+    from collections.abc import Iterator, AsyncIterator
+else:
+    from typing import Iterator, AsyncIterator
+
+BytesLike = Union[str, bytes, Iterator[bytes]]
+BytesLikeAsync = Union[BytesLike, AsyncIterator[bytes]]

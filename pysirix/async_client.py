@@ -5,8 +5,7 @@ from typing import Dict, Union, List
 
 from pysirix.constants import DBType, Insert
 from pysirix.errors import include_response_text_in_errors
-from pysirix.types import Commit, InsertDiff, ReplaceDiff, UpdateDiff
-
+from pysirix.types import Commit, InsertDiff, ReplaceDiff, UpdateDiff, BytesLikeAsync
 
 ET.register_namespace("rest", "https://sirix.io/rest")
 
@@ -62,7 +61,7 @@ class AsyncClient:
         return False
 
     async def create_resource(
-        self, db_name: str, db_type: DBType, name: str, data: str
+        self, db_name: str, db_type: DBType, name: str, data: BytesLikeAsync
     ) -> str:
         resp = await self.client.put(
             f"{db_name}/{name}", headers={"Content-Type": db_type.value}, data=data,
@@ -130,7 +129,7 @@ class AsyncClient:
         db_type: DBType,
         name: str,
         node_id: int,
-        data: str,
+        data: BytesLikeAsync,
         insert: Insert,
         etag: Union[str, None],
     ) -> str:

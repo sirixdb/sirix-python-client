@@ -1,5 +1,6 @@
 import json
 import xml.etree.ElementTree as ET
+from collections import Iterator
 from datetime import datetime
 
 from typing import Union, Dict, Tuple, Awaitable, Optional, List
@@ -50,7 +51,7 @@ class Resource:
         """
         data = (
             data
-            if type(data) is str
+            if type(data) is str or isinstance(data, Iterator)
             else json.dumps(data)
             if self.db_type == DBType.JSON
             else ET.tostring(data)
