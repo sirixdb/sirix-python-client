@@ -36,7 +36,7 @@ def test_exists():
 def test_insert_one():
     store.create()
     doc = {"city": "Brooklyn", "state": "NY"}
-    assert store.insert_one(doc) == '{"rest": []}'
+    assert store.insert_one(doc) == '{"rest":[]}'
 
 
 def test_insert_many():
