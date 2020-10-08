@@ -1,6 +1,6 @@
 import json
 import xml.etree.ElementTree as ET
-from collections import Iterator
+from collections.abc import Iterator
 from datetime import datetime
 
 from typing import Union, Dict, Tuple, Awaitable, Optional, List
