@@ -5,6 +5,7 @@ language: python
 python:
   - "3.7"
   - "3.8"
+  - "3.9"
 before_install:
   - bash ./test.sh
 install:
