@@ -1,12 +1,11 @@
-import json
 from datetime import datetime
 from typing import Union, Dict, List, Awaitable, Optional
 from pysirix.types import Commit, Revision as RevisionType, SubtreeRevision
-from json import dumps
+from json import dumps, loads
 
 from abc import ABC
 
-from pysirix.constants import DBType, Insert, Revision
+from pysirix.constants import DBType, Revision
 from pysirix.async_client import AsyncClient
 from pysirix.auth import Auth
 from pysirix.sync_client import SyncClient
@@ -275,7 +274,7 @@ class JsonStoreSync(JsonStoreBase):
             end_result_index,
         )
         result = self._client.post_query(params)
-        return json.loads(result)["rest"]
+        return loads(result)["rest"]
 
 
 class JsonStoreAsync(JsonStoreBase):
@@ -321,4 +320,4 @@ class JsonStoreAsync(JsonStoreBase):
             end_result_index,
         )
         result = await self._client.post_query(params)
-        return json.loads(result)["rest"]
+        return loads(result)["rest"]
