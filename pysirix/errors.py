@@ -6,11 +6,11 @@ import httpx
 def include_response_text_in_errors():
     try:
         yield
-    except httpx.HTTPError as exc:
+    except httpx.HTTPStatusError as exc:
         response = exc.response
         message = f"{exc}\nSirixDB error message: {response.text}"
-        raise SirixServerError(message, response=response) from None
+        raise SirixServerError(message, response=response, request=exc.request) from None
 
 
-class SirixServerError(httpx.HTTPError):
+class SirixServerError(httpx.HTTPStatusError):
     pass
