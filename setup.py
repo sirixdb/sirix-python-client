@@ -14,7 +14,7 @@ setuptools.setup(
     url="https://github.com/sirixdb/sirix-python-client",
     packages=setuptools.find_packages(exclude=("tests",)),
     entry_points={"console_scripts": ["pysirix=pysirix.shell.sirixsh:main"]},
-    install_requires=["httpx ~= 0.14.0"],
+    install_requires=["httpx ~= 0.16.0"],
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: Apache Software License",

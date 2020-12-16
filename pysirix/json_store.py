@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Union, Dict, List, Awaitable, Optional
+from typing import Union, Dict, List, Awaitable, Optional, Tuple
 from pysirix.types import Commit, Revision as RevisionType, SubtreeRevision
 from json import dumps, loads
 
@@ -12,17 +12,27 @@ from pysirix.sync_client import SyncClient
 from pysirix.types import QueryResult
 
 
+def parse_revision(revision: Revision, params: Dict) -> None:
+    if type(revision) == int:
+        params["revision"] = revision
+    elif isinstance(revision, datetime):
+        params["revision-timestamp"] = revision.isoformat()
+
+
 def stringify(v: Union[None, int, str, Dict, List]):
     return (
         f'"{v}"'
         if isinstance(v, str)
+        else f"{v}"
+        if isinstance(v, int)
         else "true()"
         if v is True
         else "false()"
         if v is False
         else "jn:null()"
         if v is None
-        else v
+        # not a primitive value
+        else f"jn:parse('{dumps(v)}')"
     )
 
 
@@ -86,7 +96,10 @@ class JsonStoreBase(ABC):
         )
 
     def history(
-        self, node_key: int = 0, subtree: bool = True
+        self,
+        node_key: int = 0,
+        subtree: bool = True,
+        revision: Optional[Revision] = None,
     ) -> Union[List[Commit], List[SubtreeRevision], List[RevisionType]]:
         """
         This method returns the history of a resource. If ``node_key`` is not specified,
@@ -95,6 +108,10 @@ class JsonStoreBase(ABC):
         If ``node_key`` is specified, the method returns a list of :py:class:`pysirix.types.Revision`.
 
         :param node_key: the root of the subtree whose history should be returned. Defaults to document root.
+        :param subtree: whether to account for changes in the subtree of the given node. Defaults to ``True``.
+        :param revision: the revision in which the node with the given ``node_key`` exists
+                (if it does not exist currently). Defaults to the latest revision. May be an integer or a
+                ``datetime`` instance
         :return: a list of :py:class:`pysirix.types.Commit` if node_key is not specified. Otherwise, a list of
                 :py:class:`pysirix.types.Revision`.
         """
@@ -111,6 +128,8 @@ class JsonStoreBase(ABC):
         else:
             query = f"sdb:item-history(sdb:select-item(., {node_key}))"
         params = {"query": query}
+        if revision:
+            parse_revision(revision, params)
         return self._client.read_resource(self.db_name, self.db_type, self.name, params)
 
     @staticmethod
@@ -167,12 +186,19 @@ class JsonStoreBase(ABC):
         node_key=True,
         start_result_index: Optional[int] = None,
         end_result_index: Optional[int] = None,
-    ):
+    ) -> List[QueryResult]:
         raise NotImplementedError()
 
     def update_by_key(
         self, node_key: int, field: str, value: Union[int, str, List, Dict]
-    ):
+    ) -> Union[str, Awaitable[str]]:
+        """
+
+        :param node_key: the nodeKey of the record to update
+        :param field: the key of the field of the record to update
+        :param value: the value with which to replace the field in the record
+        :return:
+        """
         query = (
             f"let $obj := sdb:select-item(jn:doc('{self.db_name}','{self.name}'),{node_key}) "
             f"return replace json value of $obj=>{stringify(field)} with {stringify(value)}"
@@ -181,34 +207,74 @@ class JsonStoreBase(ABC):
 
     def update_many(
         self, query_dict: Dict, field: str, value: Union[None, int, str, List, Dict]
-    ):
+    ) -> Union[str, Awaitable[str]]:
+        """
+
+        :param query_dict: a ``dict`` of field names and their values to match against
+        :param field: the key of the field of the record to update
+        :param value: the value with which to replace the field in the record
+        :return:
+        """
         query = (
             f"for $i in jn:doc('{self.db_name}','{self.name}') where {self._prepare_query_dict(query_dict)}"
             f" return replace json value of $i=>{stringify(field)} with {stringify(value)}"
         )
         return self._client.post_query({"query": query})
 
-    def delete_field_by_key(self, node_key: int, field: str):
+    def delete_field_by_key(
+        self, node_key: int, field: str
+    ) -> Union[str, Awaitable[str]]:
+        """
+
+        :param node_key: the nodeKey of the record to update
+        :param field: the key of the field of the record to delete
+        :return:
+        """
         query = (
             f"let $obj := sdb:select-item(jn:doc('{self.db_name}','{self.name}'),{node_key})"
             f" return delete json $obj=>{stringify(field)}"
         )
         return self._client.post_query({"query": query})
 
-    def delete_field(self, query_dict: Dict, field: str):
+    def delete_field(self, query_dict: Dict, field: str) -> Union[str, Awaitable[str]]:
+        """
+
+        :param query_dict: a ``dict`` of field names and their values to match against
+        :param field: the key of the field of the record to delete
+        :return:
+        """
         query = (
             f"for $i in jn:doc('{self.db_name}','{self.name}') where {self._prepare_query_dict(query_dict)}"
             f" return delete json $i=>{stringify(field)}"
         )
         return self._client.post_query({"query": query})
 
-    def delete_records(self, query_dict: Dict):
+    def delete_records(self, query_dict: Dict) -> Union[str, Awaitable[str]]:
+        """
+
+        :param query_dict: a ``dict`` of field names and their values to match against
+        :return:
+        """
         query = (
             f"let $doc := jn:doc('{self.db_name}','{self.name}')"
             f" let $m := for $i at $pos in $doc where {self._prepare_query_dict(query_dict)} return $pos - 1"
             " for $i in $m order by $i descending return delete json $doc[[$i]]"
         )
         return self._client.post_query({"query": query})
+
+    def find_by_key(
+        self, node_key: Union[int, None], revision: Union[Revision, None] = None,
+    ) -> Union[Dict, Awaitable[Dict]]:
+        """
+
+        :param node_key: the nodeKey of the record to read
+        :param revision: the revision to search, defaults to latest. May be an integer or a ``datetime`` instance
+        :return:
+        """
+        params = {"nodeId": node_key}
+        if revision:
+            parse_revision(revision, params)
+        return self._client.read_resource(self.db_name, self.db_type, self.name, params)
 
     def find_one(
         self,
@@ -260,7 +326,7 @@ class JsonStoreSync(JsonStoreBase):
         :param projection: a ``list`` of field names to return for the matching records.
         :param node_key: a ``bool`` determining whether or not to return a ``nodeKey`` field containing
                         the nodeKey of the record.
-        :param revision: the revision to search, defaults to latest.
+        :param revision: the revision to search, defaults to latest. May be an integer or a ``datetime`` instance
         :param start_result_index: index of first result to return.
         :param end_result_index: index of last result to return.
         :return: a ``list`` of :py:class:`QueryResult` records matching the query.
@@ -291,7 +357,7 @@ class JsonStoreAsync(JsonStoreBase):
         node_key=True,
         start_result_index: Optional[int] = None,
         end_result_index: Optional[int] = None,
-    ) -> Awaitable[List[QueryResult]]:
+    ) -> List[QueryResult]:
         """
         Finds and returns all records where the values of ``query_dict`` match the
         corresponding values the record.
@@ -306,7 +372,7 @@ class JsonStoreAsync(JsonStoreBase):
         :param projection: a ``list`` of field names to return for the matching records.
         :param node_key: a ``bool`` determining whether or not to return a ``nodeKey`` field containing
                         the nodeKey of the record.
-        :param revision: the revision to search, defaults to latest.
+        :param revision: the revision to search, defaults to latest. May be an integer or a ``datetime`` instance
         :param start_result_index: index of first result to return.
         :param end_result_index: index of last result to return.
         :return: an ``Awaitable`` ``list`` of :py:class:`QueryResult` records matching the query.
