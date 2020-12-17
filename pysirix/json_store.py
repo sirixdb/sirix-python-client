@@ -95,28 +95,40 @@ class JsonStoreBase(ABC):
             self.db_name, self.db_type, self.name, "[]",
         )
 
-    def history(
-        self,
-        node_key: int = 0,
-        subtree: bool = True,
-        revision: Optional[Revision] = None,
-    ) -> Union[List[Commit], List[SubtreeRevision], List[RevisionType]]:
+    def resource_history(self) -> Union[List[Commit], Awaitable[List[Commit]]]:
         """
-        This method returns the history of a resource. If ``node_key`` is not specified,
-        it returns the history of the resource (root) itself, in the form of a list of :py:class:`Commit`.
+        This method returns the entire history of a resource.
 
-        If ``node_key`` is specified, the method returns a list of :py:class:`pysirix.types.Revision`.
+        :return: a list of :py:class:`Commit`.
+        """
+        return self._client.history(self.db_name, self.db_type, self.name)
+
+    def history_embed(self, node_key: int, revision: Optional[Revision] = None):
+        query = (
+            f"let $node := sdb:select-item(., {node_key}) let $result := for $rev in jn:all-times($node)"
+            f" return if (not(exists(jn:previous($rev)))) then $rev"
+            f" else if (sdb:hash($rev) ne sdb:hash(jn:previous($rev))) then $rev"
+            " else () return $result"
+        )
+        params = {"query": query}
+        if revision:
+            parse_revision(revision, params)
+        return self._client.read_resource(self.db_name, self.db_type, self.name, params)
+
+    def history(
+        self, node_key: int, subtree: bool = True, revision: Optional[Revision] = None
+    ):
+        """
+        This method returns the history of a node in the resource.
 
         :param node_key: the root of the subtree whose history should be returned. Defaults to document root.
         :param subtree: whether to account for changes in the subtree of the given node. Defaults to ``True``.
         :param revision: the revision in which the node with the given ``node_key`` exists
                 (if it does not exist currently). Defaults to the latest revision. May be an integer or a
                 ``datetime`` instance
-        :return: a list of :py:class:`pysirix.types.Commit` if node_key is not specified. Otherwise, a list of
-                :py:class:`pysirix.types.Revision`.
+        :return: If ``subtree`` is ``True``, a list of :py:class:`pysirix.types.SubtreeRevision`. Else, a list of
+                :py:class:`pysirix.types.RevisionType`.
         """
-        if node_key == 0:
-            return self._client.history(self.db_name, self.db_type, self.name)
         if subtree:
             revision_data = '{"revisionNumber": sdb:revision($rev), "revisionTimestamp": xs:string(sdb:timestamp($rev))}'
             query = (
@@ -187,21 +199,40 @@ class JsonStoreBase(ABC):
         start_result_index: Optional[int] = None,
         end_result_index: Optional[int] = None,
     ) -> List[QueryResult]:
+        """
+        Finds and returns all records where the values of ``query_dict`` match the
+        corresponding values the record.
+
+        ``projection`` can optionally be used to retrieve only certain fields of the
+        matching records.
+
+        By default, the node_key of of each record is returned as a ``nodeKey`` field in the record.
+        The ``node_key`` parameter controls this behavior.
+
+        :param query_dict: a ``dict`` with which to query the records.
+        :param projection: a ``list`` of field names to return for the matching records.
+        :param node_key: a ``bool`` determining whether or not to return a ``nodeKey`` field containing
+                        the nodeKey of the record.
+        :param revision: the revision to search, defaults to latest. May be an integer or a ``datetime`` instance
+        :param start_result_index: index of first result to return.
+        :param end_result_index: index of last result to return.
+        :return: a ``list`` of :py:class:`QueryResult` records matching the query.
+        """
         raise NotImplementedError()
 
     def update_by_key(
-        self, node_key: int, field: str, value: Union[int, str, List, Dict]
+        self, node_key: int, update_dict: Dict[str, Union[List, Dict, str, int, None]],
     ) -> Union[str, Awaitable[str]]:
         """
 
         :param node_key: the nodeKey of the record to update
-        :param field: the key of the field of the record to update
-        :param value: the value with which to replace the field in the record
+        :param update_dict: the keys in the record to be updated, with the values to update with
         :return:
         """
         query = (
             f"let $obj := sdb:select-item(jn:doc('{self.db_name}','{self.name}'),{node_key}) "
-            f"return replace json value of $obj=>{stringify(field)} with {stringify(value)}"
+            f"let $update := {stringify(update_dict)} "
+            "return for $key in bit:fields($update) return replace json value of $obj=>$key with $update=>$key"
         )
         return self._client.post_query({"query": query})
 
@@ -264,7 +295,7 @@ class JsonStoreBase(ABC):
 
     def find_by_key(
         self, node_key: Union[int, None], revision: Union[Revision, None] = None,
-    ) -> Union[Dict, Awaitable[Dict]]:
+    ):
         """
 
         :param node_key: the nodeKey of the record to read
@@ -283,6 +314,16 @@ class JsonStoreBase(ABC):
         revision: Revision = None,
         node_key=True,
     ) -> List[QueryResult]:
+        """
+        This method is the same as :py:meth:`find_many`, except that this method will only return the first result,
+                by way of passing ``0`` to that method's ``start_result_index``, and ``end_result_index`` parameters.
+
+        :param query_dict:
+        :param projection:
+        :param revision:
+        :param node_key:
+        :return:
+        """
         return self.find_all(
             query_dict,
             projection,
@@ -302,7 +343,6 @@ class JsonStoreSync(JsonStoreBase):
     store data of similar type. As such, it's usage parallels a that of a document store, and an object is
     an abstraction similar to a single document in such a store.
     """
-
     def find_all(
         self,
         query_dict: Dict,
@@ -312,25 +352,6 @@ class JsonStoreSync(JsonStoreBase):
         start_result_index: Optional[int] = None,
         end_result_index: Optional[int] = None,
     ) -> List[QueryResult]:
-        """
-        Finds and returns all records where the values of ``query_dict`` match the
-        corresponding values the record.
-
-        ``projection`` can optionally be used to retrieve only certain fields of the
-        matching records.
-
-        By default, the node_key of of each record is returned as a ``nodeKey`` field in the record.
-        The ``node_key`` parameter controls this behavior.
-
-        :param query_dict: a ``dict`` with which to query the records.
-        :param projection: a ``list`` of field names to return for the matching records.
-        :param node_key: a ``bool`` determining whether or not to return a ``nodeKey`` field containing
-                        the nodeKey of the record.
-        :param revision: the revision to search, defaults to latest. May be an integer or a ``datetime`` instance
-        :param start_result_index: index of first result to return.
-        :param end_result_index: index of last result to return.
-        :return: a ``list`` of :py:class:`QueryResult` records matching the query.
-        """
         params = self._prepare_find_all(
             query_dict,
             projection,
@@ -342,13 +363,36 @@ class JsonStoreSync(JsonStoreBase):
         result = self._client.post_query(params)
         return loads(result)["rest"]
 
+    def history(
+        self, node_key: int, subtree: bool = True, revision: Optional[Revision] = None
+    ) -> Union[
+        List[SubtreeRevision], List[RevisionType],
+    ]:
+        return super().history(node_key, subtree, revision)["rest"]
+
+    def resource_history(self) -> List[Commit]:
+        return super().resource_history()
+
+    def history_embed(
+        self, node_key: int, revision: Optional[Revision] = None
+    ) -> List[QueryResult]:
+        return super().history_embed(node_key, revision)["rest"]
+
+    def find_by_key(
+        self, node_key: Union[int, None], revision: Union[Revision, None] = None,
+    ):
+        return super().find_by_key(node_key, revision)["rest"]
+
 
 class JsonStoreAsync(JsonStoreBase):
     """
-    See the documentation for :py:class:`JsonStoreSync`. This class implements the same interfaces,
-    with async support.
-    """
+    This class is a convenient abstraction over the resource entities exposed by SirixDB.
+    As such, there is no JsonStore on the SirixDB server, only the underlying resource is stored.
 
+    This class is for storing many distinct, JSON objects in a single resource, where the objects/records
+    store data of similar type. As such, it's usage parallels a that of a document store, and an object is
+    an abstraction similar to a single document in such a store.
+    """
     async def find_all(
         self,
         query_dict: Dict,
@@ -358,25 +402,6 @@ class JsonStoreAsync(JsonStoreBase):
         start_result_index: Optional[int] = None,
         end_result_index: Optional[int] = None,
     ) -> List[QueryResult]:
-        """
-        Finds and returns all records where the values of ``query_dict`` match the
-        corresponding values the record.
-
-        ``projection`` can optionally be used to retrieve only certain fields of the
-        matching records.
-
-        By default, the node_key of of each record is returned as a ``nodeKey`` field in the record.
-        The ``node_key`` parameter controls this behavior.
-
-        :param query_dict: a ``dict`` with which to query the records.
-        :param projection: a ``list`` of field names to return for the matching records.
-        :param node_key: a ``bool`` determining whether or not to return a ``nodeKey`` field containing
-                        the nodeKey of the record.
-        :param revision: the revision to search, defaults to latest. May be an integer or a ``datetime`` instance
-        :param start_result_index: index of first result to return.
-        :param end_result_index: index of last result to return.
-        :return: an ``Awaitable`` ``list`` of :py:class:`QueryResult` records matching the query.
-        """
         params = self._prepare_find_all(
             query_dict,
             projection,
@@ -387,3 +412,23 @@ class JsonStoreAsync(JsonStoreBase):
         )
         result = await self._client.post_query(params)
         return loads(result)["rest"]
+
+    async def history(
+        self, node_key: int, subtree: bool = True, revision: Optional[Revision] = None
+    ) -> Union[List[SubtreeRevision], List[RevisionType]]:
+        return await super().history(node_key, subtree, revision)
+
+    async def resource_history(self) -> List[Commit]:
+        return await super().resource_history()
+
+    async def history_embed(
+        self, node_key: int, revision: Optional[Revision] = None
+    ) -> List[QueryResult]:
+        result = await super().history_embed(node_key, revision)
+        return result["rest"]
+
+    async def find_by_key(
+        self, node_key: Union[int, None], revision: Union[Revision, None] = None,
+    ):
+        result = await super().find_by_key(node_key, revision)
+        return result["rest"]

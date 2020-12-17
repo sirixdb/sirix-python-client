@@ -13,7 +13,7 @@ try:
 
         revisionNumber: int
         revisionTimestamp: str
-        revision: Dict
+        revision: Union[Dict, List]
 
     class Commit(TypedDict):
         """

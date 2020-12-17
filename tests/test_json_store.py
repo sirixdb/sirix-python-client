@@ -113,20 +113,20 @@ def test_history():
     store.create()
     store.insert_one({"generic": 1, "location": {"state": "NY", "city": "New York"}})
     store.insert_one({"generic": 1, "location": {"state": "CA", "city": "Los Angeles"}})
-    assert len(store.history()) == 3
-    history = store.history(11)["rest"]
+    assert len(store.resource_history()) == 3
+    history = store.history(11)
     assert len(history) == 1
     history = history[0]
     assert type(history["revisionTimestamp"]) == str
     assert type(history["revisionNumber"]) == int
     assert len(history) == 2
-    assert len(store.history(11, subtree=False)["rest"][0]) == 3
+    assert len(store.history(11, subtree=False)[0]) == 3
 
 
 def test_update_by_key():
     store.create()
     store.insert_one({"generic": 1, "location": {"state": "NY", "city": "New York"}})
-    store.update_by_key(2, "location", {"state": "CA", "city": "Los Angeles"})
+    store.update_by_key(2, {"location": {"state": "CA", "city": "Los Angeles"}})
     assert store.find_one({"generic": 1}, node_key=False) == [
         {"generic": 1, "location": {"state": "CA", "city": "Los Angeles"}}
     ]
