@@ -221,18 +221,18 @@ class JsonStoreBase(ABC):
         raise NotImplementedError()
 
     def update_by_key(
-        self, node_key: int, update_dict: Dict[str, Union[List, Dict, str, int, None]],
+        self, node_key: int, field: str, value: Union[List, Dict, str, int, None],
     ) -> Union[str, Awaitable[str]]:
         """
 
         :param node_key: the nodeKey of the record to update
-        :param update_dict: the keys in the record to be updated, with the values to update with
+        :param field: the field in the record to update
+        :param value: the value to update in the record
         :return:
         """
         query = (
-            f"let $obj := sdb:select-item(jn:doc('{self.db_name}','{self.name}'),{node_key}) "
-            f"let $update := {stringify(update_dict)} "
-            "return for $key in bit:fields($update) return replace json value of $obj=>$key with $update=>$key"
+            f"let $rec := sdb:select-item(jn:doc('{self.db_name}','{self.name}'),{node_key}) "
+            f" return replace json value of $rec=>{stringify(field)} with {stringify(value)}"
         )
         return self._client.post_query({"query": query})
 
