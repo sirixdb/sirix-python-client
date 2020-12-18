@@ -427,7 +427,8 @@ class JsonStoreAsync(JsonStoreBase):
     async def history(
         self, node_key: int, subtree: bool = True, revision: Optional[Revision] = None
     ) -> Union[List[SubtreeRevision], List[RevisionType]]:
-        return await super().history(node_key, subtree, revision)
+        result = await super().history(node_key, subtree, revision)
+        return result["rest"]
 
     async def resource_history(self) -> List[Commit]:
         return await super().resource_history()
