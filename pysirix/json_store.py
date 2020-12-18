@@ -146,9 +146,11 @@ class JsonStoreBase(ABC):
 
     @staticmethod
     def _prepare_query_dict(query_dict: Dict) -> str:
-        query_list = []
+        query_list = ["where"]
         for k, v in query_dict.items():
             query_list.append(f"deep-equal($i=>{stringify(k)}, {stringify(v)}) and")
+        if len(query_list) == 1:
+            return ""
         return " ".join(query_list)[:-4]
 
     def _prepare_find_all(
@@ -161,15 +163,15 @@ class JsonStoreBase(ABC):
         end_result_index: Optional[int] = None,
     ):
         if revision is None:
-            query_list = [f"for $i in jn:doc('{self.db_name}','{self.name}') where"]
+            query_list = [f"for $i in jn:doc('{self.db_name}','{self.name}')"]
         elif isinstance(revision, datetime):
             query_list = [
                 "for $i in bit:array-values(jn:open"
-                f"('{self.db_name}','{self.name}',xs:dateTime('{revision.isoformat()}'))) where"
+                f"('{self.db_name}','{self.name}',xs:dateTime('{revision.isoformat()}')))"
             ]
         else:
             query_list = [
-                f"for $i in bit:array-values(jn:doc('{self.db_name}','{self.name}',{revision})) where"
+                f"for $i in bit:array-values(jn:doc('{self.db_name}','{self.name}',{revision}))"
             ]
         query_list.append(self._prepare_query_dict(query_dict))
         query_string = " ".join(
@@ -248,7 +250,7 @@ class JsonStoreBase(ABC):
         :return:
         """
         query = (
-            f"for $i in jn:doc('{self.db_name}','{self.name}') where {self._prepare_query_dict(query_dict)}"
+            f"for $i in jn:doc('{self.db_name}','{self.name}') {self._prepare_query_dict(query_dict)}"
             f" let $update := {stringify(update_dict)}"
             " for $key in bit:fields($update) return replace json value of $i=>$key with $update=>$key"
         )
@@ -281,7 +283,7 @@ class JsonStoreBase(ABC):
         """
         query = (
             f"let $records := for $i in jn:doc('{self.db_name}','{self.name}')"
-            f" where {self._prepare_query_dict(query_dict)} return $i"
+            f" {self._prepare_query_dict(query_dict)} return $i"
             f" let $fields := {stringify(fields)}"
             f" for $i in $fields return delete json $records=>$i"
         )
@@ -295,7 +297,7 @@ class JsonStoreBase(ABC):
         """
         query = (
             f"let $doc := jn:doc('{self.db_name}','{self.name}')"
-            f" let $m := for $i at $pos in $doc where {self._prepare_query_dict(query_dict)} return $pos - 1"
+            f" let $m := for $i at $pos in $doc {self._prepare_query_dict(query_dict)} return $pos - 1"
             " for $i in $m order by $i descending return delete json $doc[[$i]]"
         )
         return self._client.post_query({"query": query})
