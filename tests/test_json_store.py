@@ -1,4 +1,3 @@
-import json
 from datetime import datetime
 
 import httpx
@@ -145,10 +144,10 @@ def test_update_many():
     assert len(store.find_all({"generic": 1})) == 3
 
 
-def test_delete_field():
+def test_delete_fields():
     store.create()
     store.insert_one({"generic": 1, "location": {"state": "CA", "city": "Los Angeles"}})
-    store.delete_field({"generic": 1}, "location")
+    store.delete_field({"generic": 1}, ["location"])
     assert store.find_one({"generic": 1}, node_key=False) == [{"generic": 1}]
 
 

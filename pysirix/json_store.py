@@ -237,7 +237,9 @@ class JsonStoreBase(ABC):
         return self._client.post_query({"query": query})
 
     def update_many(
-        self, query_dict: Dict, update_dict: Dict[str, Union[List, Dict, str, int, None]]
+        self,
+        query_dict: Dict,
+        update_dict: Dict[str, Union[List, Dict, str, int, None]],
     ) -> Union[str, Awaitable[str]]:
         """
 
@@ -252,31 +254,36 @@ class JsonStoreBase(ABC):
         )
         return self._client.post_query({"query": query})
 
-    def delete_field_by_key(
-        self, node_key: int, field: str
+    def delete_fields_by_key(
+        self, node_key: int, fields: List[str]
     ) -> Union[str, Awaitable[str]]:
         """
 
         :param node_key: the nodeKey of the record to update
-        :param field: the key of the field of the record to delete
+        :param fields: the keys of the fields of the record to delete
         :return:
         """
         query = (
             f"let $obj := sdb:select-item(jn:doc('{self.db_name}','{self.name}'),{node_key})"
-            f" return delete json $obj=>{stringify(field)}"
+            f" let $update := {stringify(fields)}"
+            f" for $i in $fields return delete json $obj=>$i"
         )
         return self._client.post_query({"query": query})
 
-    def delete_field(self, query_dict: Dict, field: str) -> Union[str, Awaitable[str]]:
+    def delete_field(
+        self, query_dict: Dict, fields: List[str]
+    ) -> Union[str, Awaitable[str]]:
         """
 
         :param query_dict: a ``dict`` of field names and their values to match against
-        :param field: the key of the field of the record to delete
+        :param fields: the keys of the fields of the records to delete
         :return:
         """
         query = (
-            f"for $i in jn:doc('{self.db_name}','{self.name}') where {self._prepare_query_dict(query_dict)}"
-            f" return delete json $i=>{stringify(field)}"
+            f"let $records := for $i in jn:doc('{self.db_name}','{self.name}')"
+            f" where {self._prepare_query_dict(query_dict)} return $i"
+            f" let $fields := {stringify(fields)}"
+            f" for $i in $fields return delete json $records=>$i"
         )
         return self._client.post_query({"query": query})
 
@@ -343,6 +350,7 @@ class JsonStoreSync(JsonStoreBase):
     store data of similar type. As such, it's usage parallels a that of a document store, and an object is
     an abstraction similar to a single document in such a store.
     """
+
     def find_all(
         self,
         query_dict: Dict,
@@ -393,6 +401,7 @@ class JsonStoreAsync(JsonStoreBase):
     store data of similar type. As such, it's usage parallels a that of a document store, and an object is
     an abstraction similar to a single document in such a store.
     """
+
     async def find_all(
         self,
         query_dict: Dict,
