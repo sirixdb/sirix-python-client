@@ -126,9 +126,9 @@ def test_history():
 def test_update_by_key():
     store.create()
     store.insert_one({"generic": 1, "location": {"state": "NY", "city": "New York"}})
-    store.update_by_key(2, "location", {"state": "CA", "city": "Los Angeles"})
-    assert store.find_one({"generic": 1}, node_key=False) == [
-        {"generic": 1, "location": {"state": "CA", "city": "Los Angeles"}}
+    store.update_by_key(2, {"location": {"state": "CA", "city": "Los Angeles"}, "generic": 2})
+    assert store.find_one({"generic": 2}, node_key=False) == [
+        {"generic": 2, "location": {"state": "CA", "city": "Los Angeles"}}
     ]
 
 
@@ -138,10 +138,11 @@ def test_update_many():
         [
             {"generic": 1, "location": {"state": "CA", "city": "Los Angeles"}},
             {"generic": 2, "location": {"state": "NY", "city": "New York"}},
+            {"generic": 2, "location": {"state": "CA", "city": "Los Angeles"}},
         ]
     )
-    store.update_many({"generic": 2}, "generic", 1)
-    assert len(store.find_all({"generic": 1})) == 2
+    store.update_many({"generic": 2}, {"generic": 1})
+    assert len(store.find_all({"generic": 1})) == 3
 
 
 def test_delete_field():

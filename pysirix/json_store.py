@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Union, Dict, List, Awaitable, Optional, Tuple
+from typing import Union, Dict, List, Awaitable, Optional
 from pysirix.types import Commit, Revision as RevisionType, SubtreeRevision
 from json import dumps, loads
 
@@ -221,34 +221,34 @@ class JsonStoreBase(ABC):
         raise NotImplementedError()
 
     def update_by_key(
-        self, node_key: int, field: str, value: Union[List, Dict, str, int, None],
+        self, node_key: int, update_dict: Dict[str, Union[List, Dict, str, int, None]],
     ) -> Union[str, Awaitable[str]]:
         """
 
         :param node_key: the nodeKey of the record to update
-        :param field: the field in the record to update
-        :param value: the value to update in the record
+        :param update_dict: a dict of keys and matching values to replace in the given record
         :return:
         """
         query = (
             f"let $rec := sdb:select-item(jn:doc('{self.db_name}','{self.name}'),{node_key}) "
-            f" return replace json value of $rec=>{stringify(field)} with {stringify(value)}"
+            f" let $update := {stringify(update_dict)}"
+            " for $key in bit:fields($update) return replace json value of $rec=>$key with $update=>$key"
         )
         return self._client.post_query({"query": query})
 
     def update_many(
-        self, query_dict: Dict, field: str, value: Union[None, int, str, List, Dict]
+        self, query_dict: Dict, update_dict: Dict[str, Union[List, Dict, str, int, None]]
     ) -> Union[str, Awaitable[str]]:
         """
 
         :param query_dict: a ``dict`` of field names and their values to match against
-        :param field: the key of the field of the record to update
-        :param value: the value with which to replace the field in the record
+        :param update_dict: a dict of keys and matching values to replace in the selected record
         :return:
         """
         query = (
             f"for $i in jn:doc('{self.db_name}','{self.name}') where {self._prepare_query_dict(query_dict)}"
-            f" return replace json value of $i=>{stringify(field)} with {stringify(value)}"
+            f" let $update := {stringify(update_dict)}"
+            " for $key in bit:fields($update) return replace json value of $i=>$key with $update=>$key"
         )
         return self._client.post_query({"query": query})
 
@@ -381,7 +381,7 @@ class JsonStoreSync(JsonStoreBase):
     def find_by_key(
         self, node_key: Union[int, None], revision: Union[Revision, None] = None,
     ):
-        return super().find_by_key(node_key, revision)["rest"]
+        return super().find_by_key(node_key, revision)
 
 
 class JsonStoreAsync(JsonStoreBase):
@@ -431,4 +431,4 @@ class JsonStoreAsync(JsonStoreBase):
         self, node_key: Union[int, None], revision: Union[Revision, None] = None,
     ):
         result = await super().find_by_key(node_key, revision)
-        return result["rest"]
+        return result
