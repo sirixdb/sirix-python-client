@@ -14,7 +14,7 @@ def setup_function():
     client = httpx.Client(base_url=base_url)
     sirix = pysirix.sirix_sync("admin", "admin", client)
     db = sirix.database("First", DBType.JSON)
-    store: pysirix.JsonStoreSync = db.json_store("test_resource")
+    store = db.json_store("test_resource")
 
 
 def teardown_function():
