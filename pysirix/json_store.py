@@ -439,5 +439,4 @@ class JsonStoreAsync(JsonStoreBase):
     async def find_by_key(
         self, node_key: Union[int, None], revision: Union[Revision, None] = None,
     ):
-        result = await super().find_by_key(node_key, revision)
-        return result
+        return await super().find_by_key(node_key, revision)

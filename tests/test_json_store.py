@@ -120,6 +120,8 @@ def test_history():
     assert type(history["revisionNumber"]) == int
     assert len(history) == 2
     assert len(store.history(11, subtree=False)[0]) == 3
+    embedded = store.history_embed(11)
+    assert len(embedded[0]) == 3
 
 
 def test_update_by_key():
