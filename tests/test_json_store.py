@@ -56,6 +56,8 @@ def test_find_all_store():
     assert response[0] == {"city": "New York", "state": "NY"}
     response = store.find_all({"city": "New York"})
     assert response[0] == {"city": "New York", "state": "NY", "nodeKey": 2}
+    response = store.find_all({"city": "New York"}, hash=True)
+    assert "hash" in response[0]
 
 
 def test_find_all_projection():
@@ -71,6 +73,8 @@ def test_find_all_projection():
         "location": {"state": "CA", "city": "Los Angeles"},
         "nodeKey": 11,
     }
+    response = store.find_all({"key": 2}, ["location"], hash=True)
+    assert "hash" in response[0]
 
 
 def test_find_all_old_revision_number():
@@ -127,7 +131,9 @@ def test_history():
 def test_update_by_key():
     store.create()
     store.insert_one({"generic": 1, "location": {"state": "NY", "city": "New York"}})
-    store.update_by_key(2, {"location": {"state": "CA", "city": "Los Angeles"}, "generic": 2})
+    store.update_by_key(
+        2, {"location": {"state": "CA", "city": "Los Angeles"}, "generic": 2}
+    )
     assert store.find_one({"generic": 2}, node_key=False) == [
         {"generic": 2, "location": {"state": "CA", "city": "Los Angeles"}}
     ]

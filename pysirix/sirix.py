@@ -39,6 +39,12 @@ class Sirix:
         """
         return self._auth.authenticate()
 
+    def dispose(self):
+        """
+        Remove the authentication timer.
+        """
+        self._auth.dispose()
+
     def database(self, database_name: str, database_type: DBType):
         """
         Returns a :py:class:`Database` instance.

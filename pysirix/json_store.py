@@ -159,6 +159,7 @@ class JsonStoreBase(ABC):
         projection: List[str] = None,
         revision: Revision = None,
         node_key=True,
+        hash=False,
         start_result_index: Optional[int] = None,
         end_result_index: Optional[int] = None,
     ):
@@ -174,15 +175,19 @@ class JsonStoreBase(ABC):
                 f"for $i in bit:array-values(jn:doc('{self.db_name}','{self.name}',{revision}))"
             ]
         query_list.append(self._prepare_query_dict(query_dict))
-        query_string = " ".join(
+        return_obj = "".join(
             [
-                *query_list,
-                "return {$i,'nodeKey': sdb:nodekey($i)}" if node_key else "return {$i}",
+                "return {$i",
+                ",'nodeKey': sdb:nodekey($i)" if node_key else "",
+                ",'hash': sdb:hash($i)}" if hash else "}",
             ]
         )
+        query_string = " ".join([*query_list, return_obj])
         if projection is not None:
             if node_key:
                 projection.append("nodeKey")
+            if hash:
+                projection.append("hash")
             projection_string = ",".join(projection)
             query_string = "".join([query_string, "{", projection_string, "}"])
         params = {"query": query_string}
@@ -198,6 +203,7 @@ class JsonStoreBase(ABC):
         projection: List[str] = None,
         revision: Revision = None,
         node_key=True,
+        hash=False,
         start_result_index: Optional[int] = None,
         end_result_index: Optional[int] = None,
     ) -> List[QueryResult]:
@@ -215,6 +221,7 @@ class JsonStoreBase(ABC):
         :param projection: a ``list`` of field names to return for the matching records.
         :param node_key: a ``bool`` determining whether or not to return a ``nodeKey`` field containing
                         the nodeKey of the record.
+        :param hash: a ``bool`` determining whether or not to return a ``hash`` field containing the hash of the record.
         :param revision: the revision to search, defaults to latest. May be an integer or a ``datetime`` instance
         :param start_result_index: index of first result to return.
         :param end_result_index: index of last result to return.
@@ -322,6 +329,7 @@ class JsonStoreBase(ABC):
         projection: List[str] = None,
         revision: Revision = None,
         node_key=True,
+        hash=False,
     ) -> List[QueryResult]:
         """
         This method is the same as :py:meth:`find_many`, except that this method will only return the first result,
@@ -331,6 +339,7 @@ class JsonStoreBase(ABC):
         :param projection:
         :param revision:
         :param node_key:
+        :param hash:
         :return:
         """
         return self.find_all(
@@ -338,6 +347,7 @@ class JsonStoreBase(ABC):
             projection,
             revision,
             node_key,
+            hash,
             start_result_index=0,
             end_result_index=0,
         )
@@ -359,6 +369,7 @@ class JsonStoreSync(JsonStoreBase):
         projection: List[str] = None,
         revision: Revision = None,
         node_key=True,
+        hash=False,
         start_result_index: Optional[int] = None,
         end_result_index: Optional[int] = None,
     ) -> List[QueryResult]:
@@ -367,6 +378,7 @@ class JsonStoreSync(JsonStoreBase):
             projection,
             revision,
             node_key,
+            hash,
             start_result_index,
             end_result_index,
         )
@@ -410,6 +422,7 @@ class JsonStoreAsync(JsonStoreBase):
         projection: List[str] = None,
         revision: Revision = None,
         node_key=True,
+        hash=False,
         start_result_index: Optional[int] = None,
         end_result_index: Optional[int] = None,
     ) -> List[QueryResult]:
@@ -418,6 +431,7 @@ class JsonStoreAsync(JsonStoreBase):
             projection,
             revision,
             node_key,
+            hash,
             start_result_index,
             end_result_index,
         )

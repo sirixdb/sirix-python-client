@@ -43,6 +43,12 @@ class Auth:
         else:
             self._authenticate()
 
+    def dispose(self):
+        """
+        Remove the authentication timer.
+        """
+        self._timer.cancel()
+
     def _authenticate(self):
         """
         Initial authentication, for synchronous, threaded applications.
