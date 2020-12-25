@@ -16,9 +16,9 @@ async def test_sirix_async_init():
     client = httpx.AsyncClient(base_url=base_url)
     sirix = await pysirix.sirix_async("admin", "admin", client)
     data = sirix._auth._token_data
-    assert type(data.access_token) == str
-    assert type(data.refresh_token) == str
-    assert type(data.expires_in) == int
+    assert type(data["access_token"]) == str
+    assert type(data["refresh_token"]) == str
+    assert type(data["expires_in"]) == int
     await client.aclose()
 
 

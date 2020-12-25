@@ -14,9 +14,9 @@ def test_sirix_sync_init():
     client = httpx.Client(base_url=base_url)
     sirix = pysirix.sirix_sync("admin", "admin", client)
     data = sirix._auth._token_data
-    assert type(data.access_token) == str
-    assert type(data.refresh_token) == str
-    assert type(data.expires_in) == int
+    assert type(data["access_token"]) == str
+    assert type(data["refresh_token"]) == str
+    assert type(data["expires_in"]) == int
     client.close()
 
 

@@ -5,8 +5,6 @@ import httpx
 
 from typing import Union, Awaitable
 
-from pysirix.info import TokenData
-
 
 class Auth:
     """
@@ -84,7 +82,7 @@ class Auth:
         Refresh the access token, using the refresh token. For synchronous, threaded applications.
         """
         resp = self._client.post(
-            "/token", json={"refresh_token": self._token_data.refresh_token}
+            "/token", json={"refresh_token": self._token_data['refresh_token']}
         )
         self._handle_data(resp)
 
@@ -93,7 +91,7 @@ class Auth:
         Refresh the access token, using the refresh token. For asynchronous applications.
         """
         resp = await self._client.post(
-            "/token", json={"refresh_token": self._token_data.refresh_token}
+            "/token", json={"refresh_token": self._token_data['refresh_token']}
         )
         await self._async_handle_data(resp)
 
@@ -104,11 +102,11 @@ class Auth:
         :param resp: the ``httpx.Response`` object.
         """
         data = {k.replace("-", "_"): v for k, v in resp.json().items()}
-        self._token_data = TokenData(**data)
+        self._token_data = data
         self._client.headers[
             "Authorization"
-        ] = f"{self._token_data.token_type} {self._token_data.access_token}"
-        self._timer = Timer(self._token_data.expires_in - 10, self._refresh)
+        ] = f"{self._token_data['token_type']} {self._token_data['access_token']}"
+        self._timer = Timer(self._token_data['expires_in'] - 10, self._refresh)
         self._timer.daemon = True
         self._timer.start()
 
@@ -119,10 +117,10 @@ class Auth:
         :param resp: the ``httpx.Response`` object.
         """
         data = {k.replace("-", "_"): v for k, v in resp.json().items()}
-        self._token_data = TokenData(**data)
+        self._token_data = data
         self._client.headers[
             "Authorization"
-        ] = f"{self._token_data.token_type} {self._token_data.access_token}"
+        ] = f"{self._token_data['token_type']} {self._token_data['access_token']}"
         self._timer = ensure_future(self._sleep_then_refresh())
 
     async def _sleep_then_refresh(self):
@@ -131,5 +129,5 @@ class Auth:
         This method sleeps, then calls :py:func:`_async_refresh`
         10 seconds before the access token is set to expire.
         """
-        await sleep(self._token_data.expires_in - 10)
+        await sleep(self._token_data['expires_in'] - 10)
         await self._async_refresh()
