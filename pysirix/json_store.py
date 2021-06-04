@@ -36,6 +36,14 @@ def stringify(v: Union[None, int, str, Dict, List]):
     )
 
 
+query_function_include = (
+    "declare function local:q($i, $q) {"
+    "let $m := for $k in jn:keys($q) return if (not(empty($i=>$k))) then deep-equal($i=>$k, $q=>$k) else false()"
+    "return empty(index-of($m, false()))"
+    "};"
+)
+
+
 class JsonStoreBase(ABC):
     def __init__(
         self,
@@ -92,7 +100,10 @@ class JsonStoreBase(ABC):
         :return: will return the string "[]". If in async mode, an awaitable that resolves this string.
         """
         return self._client.create_resource(
-            self.db_name, self.db_type, self.name, "[]",
+            self.db_name,
+            self.db_type,
+            self.name,
+            "[]",
         )
 
     def resource_history(self) -> Union[List[Commit], Awaitable[List[Commit]]]:
@@ -144,15 +155,6 @@ class JsonStoreBase(ABC):
             parse_revision(revision, params)
         return self._client.read_resource(self.db_name, self.db_type, self.name, params)
 
-    @staticmethod
-    def _prepare_query_dict(query_dict: Dict) -> str:
-        query_list = ["where"]
-        for k, v in query_dict.items():
-            query_list.append(f"deep-equal($i=>{stringify(k)}, {stringify(v)}) and")
-        if len(query_list) == 1:
-            return ""
-        return " ".join(query_list)[:-4]
-
     def _prepare_find_all(
         self,
         query_dict: Dict,
@@ -164,17 +166,22 @@ class JsonStoreBase(ABC):
         end_result_index: Optional[int] = None,
     ):
         if revision is None:
-            query_list = [f"for $i in jn:doc('{self.db_name}','{self.name}')"]
+            query_list = [
+                query_function_include,
+                f"for $i in jn:doc('{self.db_name}','{self.name}')",
+            ]
         elif isinstance(revision, datetime):
             query_list = [
+                query_function_include,
                 "for $i in bit:array-values(jn:open"
-                f"('{self.db_name}','{self.name}',xs:dateTime('{revision.isoformat()}')))"
+                f"('{self.db_name}','{self.name}',xs:dateTime('{revision.isoformat()}')))",
             ]
         else:
             query_list = [
-                f"for $i in bit:array-values(jn:doc('{self.db_name}','{self.name}',{revision}))"
+                query_function_include,
+                f"for $i in bit:array-values(jn:doc('{self.db_name}','{self.name}',{revision}))",
             ]
-        query_list.append(self._prepare_query_dict(query_dict))
+        query_list.append(f"where local:q($i, {stringify(query_dict)})")
         return_obj = "".join(
             [
                 "return {$i",
@@ -230,7 +237,9 @@ class JsonStoreBase(ABC):
         raise NotImplementedError()
 
     def update_by_key(
-        self, node_key: int, update_dict: Dict[str, Union[List, Dict, str, int, None]],
+        self,
+        node_key: int,
+        update_dict: Dict[str, Union[List, Dict, str, int, None]],
     ) -> Union[str, Awaitable[str]]:
         """
 
@@ -257,7 +266,8 @@ class JsonStoreBase(ABC):
         :return:
         """
         query = (
-            f"for $i in jn:doc('{self.db_name}','{self.name}') {self._prepare_query_dict(query_dict)}"
+            f"{query_function_include}"
+            f"for $i in jn:doc('{self.db_name}','{self.name}') where local:q($i, {stringify(query_dict)})"
             f" let $update := {stringify(update_dict)}"
             " for $key in bit:fields($update) return replace json value of $i=>$key with $update=>$key"
         )
@@ -289,8 +299,9 @@ class JsonStoreBase(ABC):
         :return:
         """
         query = (
+            f"{query_function_include}"
             f"let $records := for $i in jn:doc('{self.db_name}','{self.name}')"
-            f" {self._prepare_query_dict(query_dict)} return $i"
+            f" where local:q($i, {stringify(query_dict)}) return $i"
             f" let $fields := {stringify(fields)}"
             f" for $i in $fields return delete json $records=>$i"
         )
@@ -303,14 +314,17 @@ class JsonStoreBase(ABC):
         :return:
         """
         query = (
+            f"{query_function_include}"
             f"let $doc := jn:doc('{self.db_name}','{self.name}')"
-            f" let $m := for $i at $pos in $doc {self._prepare_query_dict(query_dict)} return $pos - 1"
+            f" let $m := for $i at $pos in $doc where local:q($i, {stringify(query_dict)}) return $pos - 1"
             " for $i in $m order by $i descending return delete json $doc[[$i]]"
         )
         return self._client.post_query({"query": query})
 
     def find_by_key(
-        self, node_key: Union[int, None], revision: Union[Revision, None] = None,
+        self,
+        node_key: Union[int, None],
+        revision: Union[Revision, None] = None,
     ):
         """
 
@@ -387,9 +401,7 @@ class JsonStoreSync(JsonStoreBase):
 
     def history(
         self, node_key: int, subtree: bool = True, revision: Optional[Revision] = None
-    ) -> Union[
-        List[SubtreeRevision], List[RevisionType],
-    ]:
+    ) -> Union[List[SubtreeRevision], List[RevisionType],]:
         return super().history(node_key, subtree, revision)["rest"]
 
     def resource_history(self) -> List[Commit]:
@@ -401,7 +413,9 @@ class JsonStoreSync(JsonStoreBase):
         return super().history_embed(node_key, revision)["rest"]
 
     def find_by_key(
-        self, node_key: Union[int, None], revision: Union[Revision, None] = None,
+        self,
+        node_key: Union[int, None],
+        revision: Union[Revision, None] = None,
     ):
         return super().find_by_key(node_key, revision)
 
@@ -454,6 +468,8 @@ class JsonStoreAsync(JsonStoreBase):
         return result["rest"]
 
     async def find_by_key(
-        self, node_key: Union[int, None], revision: Union[Revision, None] = None,
+        self,
+        node_key: Union[int, None],
+        revision: Union[Revision, None] = None,
     ):
         return await super().find_by_key(node_key, revision)
