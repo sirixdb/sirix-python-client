@@ -183,9 +183,13 @@ class JsonStoreBase(ABC):
             ]
         query_list.append(f"where local:q($i, {stringify(query_dict)})")
         return_obj = (
-            "return {$i"
-            ",'nodeKey': sdb:nodekey($i)" if node_key else ""
-            ",'hash': sdb:hash($i)}" if hash else "}"
+            "return {$i,'nodeKey': sdb:nodekey($i),'hash': sdb:hash($i)}"
+            if node_key and hash
+            else "return {$i,'nodeKey': sdb:nodekey($i)}"
+            if node_key
+            else "return {$i,'hash': sdb:hash($i)}"
+            if hash
+            else "{$i}"
         )
         query_list.append(return_obj)
         query_string = " ".join(query_list)
