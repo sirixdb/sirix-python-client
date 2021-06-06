@@ -182,14 +182,13 @@ class JsonStoreBase(ABC):
                 f"for $i in bit:array-values(jn:doc('{self.db_name}','{self.name}',{revision}))",
             ]
         query_list.append(f"where local:q($i, {stringify(query_dict)})")
-        return_obj = "".join(
-            [
-                "return {$i",
-                ",'nodeKey': sdb:nodekey($i)" if node_key else "",
-                ",'hash': sdb:hash($i)}" if hash else "}",
-            ]
+        return_obj = (
+            "return {$i"
+            ",'nodeKey': sdb:nodekey($i)" if node_key else ""
+            ",'hash': sdb:hash($i)}" if hash else "}"
         )
-        query_string = " ".join([*query_list, return_obj])
+        query_list.append(return_obj)
+        query_string = " ".join(query_list)
         if projection is not None:
             if node_key:
                 projection.append("nodeKey")
