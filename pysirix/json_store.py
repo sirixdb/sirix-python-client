@@ -189,7 +189,7 @@ class JsonStoreBase(ABC):
             if node_key
             else "return {$i,'hash': sdb:hash($i)}"
             if hash
-            else "{$i}"
+            else "return {$i}"
         )
         query_list.append(return_obj)
         query_string = " ".join(query_list)
