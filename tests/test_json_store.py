@@ -132,11 +132,20 @@ def test_update_by_key():
     store.create()
     store.insert_one({"generic": 1, "location": {"state": "NY", "city": "New York"}})
     store.update_by_key(
-        2, {"location": {"state": "CA", "city": "Los Angeles"}, "generic": 2}
+        2,
+        {"location": {"state": "CA", "city": "Los Angeles"}, "generic": 2},
+        upsert=False,
     )
     assert store.find_one({"generic": 2}, node_key=False) == [
         {"generic": 2, "location": {"state": "CA", "city": "Los Angeles"}}
     ]
+
+
+def test_upsert_non_existent_field():
+    store.create()
+    store.insert_one({})
+    store.update_by_key(2, {"key": "value"})
+    assert store.find_one({"key": "value"}, node_key=False) == [{"key": "value"}]
 
 
 def test_update_many():

@@ -67,19 +67,20 @@ class Database:
             self._auth,
         )
 
-    def json_store(self, name: str):
+    def json_store(self, name: str, root: str = ""):
         """
         Returns a :py:class:`JsonStoreSync` or :py:class:`JsonStoreAsync` instance,
         depending or whether :py:func:`sirix_sync` or :py:func:`sirix_async` was used
         for initialization.
 
         :param name: the resource name for the store.
+        :param root: where the store is located in the resource.
         :return: an instance of :py:class:`JsonStoreSync` or :py:class:`JsonStoreAsync`.
         """
         if isinstance(self._client, AsyncClient):
-            return JsonStoreAsync(self.database_name, name, self._client, self._auth)
+            return JsonStoreAsync(self.database_name, name, self._client, self._auth, root)
         else:
-            return JsonStoreSync(self.database_name, name, self._client, self._auth)
+            return JsonStoreSync(self.database_name, name, self._client, self._auth, root)
 
     def delete(self) -> Union[Awaitable[None], None]:
         """

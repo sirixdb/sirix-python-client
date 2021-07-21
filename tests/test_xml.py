@@ -54,12 +54,9 @@ def test_create_xml_database():
 
 
 def test_create_xml_resource():
-    assert resource.create(ET.fromstring("<a><b><c/></b></a>")) == xml_string
+    assert resource.create(ET.fromstring("<a><b><c/></b></a>")).replace("\r", "") == xml_string
 
 
 def test_read():
     resource.create(ET.fromstring("<a><b><c/></b></a>"))
-    assert (
-        ET.tostring(resource.read(2), encoding="unicode").replace("\\n", "\n")
-        == xml_node
-    )
+    assert ET.tostring(resource.read(2), encoding="unicode") == xml_node

@@ -64,7 +64,9 @@ class AsyncClient:
         self, db_name: str, db_type: DBType, name: str, data: BytesLikeAsync
     ) -> str:
         resp = await self.client.put(
-            f"{db_name}/{name}", headers={"Content-Type": db_type.value}, data=data,
+            f"{db_name}/{name}",
+            headers={"Content-Type": db_type.value},
+            content=data,
         )
         with include_response_text_in_errors():
             resp.raise_for_status()
@@ -139,7 +141,7 @@ class AsyncClient:
             f"{db_name}/{name}",
             params={"nodeId": node_id, "insert": insert.value},
             headers={"ETag": etag, "Content-Type": db_type.value},
-            data=data,
+            content=data,
         )
         with include_response_text_in_errors():
             resp.raise_for_status()

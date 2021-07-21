@@ -43,18 +43,35 @@ query_function_include = (
     "};"
 )
 
+upsert_function_include = (
+    "declare %updating function local:upsert-fields($r, $u) {"
+    "for $key in bit:fields($u) return if (empty($r=>$key)) then insert json $u into $r"
+    " else replace json value of $r=>$key with $u=>$key"
+    "};"
+)
+
+update_function_include = (
+    "declare %updating function local:update-fields($r, $u) {"
+    "for $key in bit:fields($u) return replace json value of $r=>$key with $u=>$key"
+    "};"
+)
+
 
 class JsonStoreBase(ABC):
+    __slots__ = ("db_name", "db_type", "name", "_client", "_auth")
+
     def __init__(
         self,
         db_name: str,
         name: str,
         client: Union[SyncClient, AsyncClient],
         auth: Auth,
+        root: str = "",
     ):
         self.db_name = db_name
         self.db_type = DBType.JSON
         self.name = name
+        self.root = root
         self._client = client
         self._auth = auth
 
@@ -66,7 +83,7 @@ class JsonStoreBase(ABC):
         :return: an emtpy ``str`` or an empty ``Awaitable[str]``.
         """
         insert_dict = dumps(insert_dict)
-        query = f"append json jn:parse('{insert_dict}') into jn:doc('{self.db_name}','{self.name}')"
+        query = f"append json jn:parse('{insert_dict}') into jn:doc('{self.db_name}','{self.name}'){self.root}"
         return self._client.post_query({"query": query})
 
     def insert_many(
@@ -80,7 +97,7 @@ class JsonStoreBase(ABC):
         """
         insert_list = dumps(insert_list)
         query = (
-            f"let $doc := jn:doc('{self.db_name}','{self.name}')"
+            f"let $doc := jn:doc('{self.db_name}','{self.name}'){self.root}"
             f"for $i in jn:parse('{insert_list}') return append json $i into $doc"
         )
         return self._client.post_query({"query": query})
@@ -93,17 +110,18 @@ class JsonStoreBase(ABC):
         """
         return self._client.resource_exists(self.db_name, self.db_type, self.name)
 
-    def create(self) -> Union[str, Awaitable[str]]:
+    def create(self, data: str = "[]") -> Union[str, Awaitable[str]]:
         """
         Creates the store, will overwrite the store if it already exists.
 
+        :param data: data with which to initialize the store
         :return: will return the string "[]". If in async mode, an awaitable that resolves this string.
         """
         return self._client.create_resource(
             self.db_name,
             self.db_type,
             self.name,
-            "[]",
+            data,
         )
 
     def resource_history(self) -> Union[List[Commit], Awaitable[List[Commit]]]:
@@ -168,18 +186,18 @@ class JsonStoreBase(ABC):
         if revision is None:
             query_list = [
                 query_function_include,
-                f"for $i in jn:doc('{self.db_name}','{self.name}')",
+                f"for $i in jn:doc('{self.db_name}','{self.name}'){self.root}",
             ]
         elif isinstance(revision, datetime):
             query_list = [
                 query_function_include,
                 "for $i in bit:array-values(jn:open"
-                f"('{self.db_name}','{self.name}',xs:dateTime('{revision.isoformat()}')))",
+                f"('{self.db_name}','{self.name}',xs:dateTime('{revision.isoformat()}')){self.root})",
             ]
         else:
             query_list = [
                 query_function_include,
-                f"for $i in bit:array-values(jn:doc('{self.db_name}','{self.name}',{revision}))",
+                f"for $i in bit:array-values(jn:doc('{self.db_name}','{self.name}',{revision})){self.root}",
             ]
         query_list.append(f"where local:q($i, {stringify(query_dict)})")
         return_obj = (
@@ -243,17 +261,19 @@ class JsonStoreBase(ABC):
         self,
         node_key: int,
         update_dict: Dict[str, Union[List, Dict, str, int, None]],
+        upsert: bool = True,
     ) -> Union[str, Awaitable[str]]:
         """
 
         :param node_key: the nodeKey of the record to update
         :param update_dict: a dict of keys and matching values to replace in the given record
+        :param upsert: whether to insert if the field does not already exist
         :return:
         """
         query = (
+            f"{upsert_function_include if upsert else update_function_include}"
             f"let $rec := sdb:select-item(jn:doc('{self.db_name}','{self.name}'),{node_key}) "
-            f" let $update := {stringify(update_dict)}"
-            " for $key in bit:fields($update) return replace json value of $rec=>$key with $update=>$key"
+            f"return local:{'upsert' if upsert else 'update'}-fields($rec, {stringify(update_dict)})"
         )
         return self._client.post_query({"query": query})
 
@@ -261,18 +281,19 @@ class JsonStoreBase(ABC):
         self,
         query_dict: Dict,
         update_dict: Dict[str, Union[List, Dict, str, int, None]],
+        upsert: bool = True,
     ) -> Union[str, Awaitable[str]]:
         """
 
         :param query_dict: a ``dict`` of field names and their values to match against
         :param update_dict: a dict of keys and matching values to replace in the selected record
+        :param upsert: whether to insert if the field does not already exist
         :return:
         """
         query = (
-            f"{query_function_include}"
-            f"for $i in jn:doc('{self.db_name}','{self.name}') where local:q($i, {stringify(query_dict)})"
-            f" let $update := {stringify(update_dict)}"
-            " for $key in bit:fields($update) return replace json value of $i=>$key with $update=>$key"
+            f"{query_function_include}{upsert_function_include if upsert else update_function_include}"
+            f"for $i in jn:doc('{self.db_name}','{self.name}'){self.root} where local:q($i, {stringify(query_dict)})"
+            f" return local:{'upsert' if upsert else 'update'}-fields($i, {stringify(update_dict)})"
         )
         return self._client.post_query({"query": query})
 
@@ -281,7 +302,7 @@ class JsonStoreBase(ABC):
     ) -> Union[str, Awaitable[str]]:
         """
 
-        :param node_key: the nodeKey of the record to update
+        :param node_key: the nodeKey of the record to delete
         :param fields: the keys of the fields of the record to delete
         :return:
         """
@@ -303,7 +324,7 @@ class JsonStoreBase(ABC):
         """
         query = (
             f"{query_function_include}"
-            f"let $records := for $i in jn:doc('{self.db_name}','{self.name}')"
+            f"let $records := for $i in jn:doc('{self.db_name}','{self.name}'){self.root}"
             f" where local:q($i, {stringify(query_dict)}) return $i"
             f" let $fields := {stringify(fields)}"
             f" for $i in $fields return delete json $records=>$i"
@@ -318,7 +339,7 @@ class JsonStoreBase(ABC):
         """
         query = (
             f"{query_function_include}"
-            f"let $doc := jn:doc('{self.db_name}','{self.name}')"
+            f"let $doc := jn:doc('{self.db_name}','{self.name}'){self.root}"
             f" let $m := for $i at $pos in $doc where local:q($i, {stringify(query_dict)}) return $pos - 1"
             " for $i in $m order by $i descending return delete json $doc[[$i]]"
         )
