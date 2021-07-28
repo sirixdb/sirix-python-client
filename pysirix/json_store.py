@@ -1,11 +1,12 @@
 from datetime import datetime
 from typing import Union, Dict, List, Awaitable, Optional
+
 from pysirix.types import Commit, Revision as RevisionType, SubtreeRevision
 from json import dumps, loads
 
 from abc import ABC
 
-from pysirix.constants import DBType, Revision
+from pysirix.constants import DBType, Revision, TimeAxisShift
 from pysirix.async_client import AsyncClient
 from pysirix.auth import Auth
 from pysirix.sync_client import SyncClient
@@ -39,7 +40,7 @@ def stringify(v: Union[None, int, str, Dict, List]):
 query_function_include = (
     "declare function local:q($i, $q) {"
     "let $m := for $k in jn:keys($q) return if (not(empty($i=>$k))) then deep-equal($i=>$k, $q=>$k) else false()"
-    "return empty(index-of($m, false()))"
+    " return empty(index-of($m, false()))"
     "};"
 )
 
@@ -178,8 +179,9 @@ class JsonStoreBase(ABC):
         query_dict: Dict,
         projection: List[str] = None,
         revision: Revision = None,
-        node_key=True,
-        hash=False,
+        node_key: bool = True,
+        hash: bool = False,
+        time_axis_shift: TimeAxisShift = TimeAxisShift.none,
         start_result_index: Optional[int] = None,
         end_result_index: Optional[int] = None,
     ):
@@ -200,6 +202,10 @@ class JsonStoreBase(ABC):
                 f"for $i in bit:array-values(jn:doc('{self.db_name}','{self.name}',{revision})){self.root}",
             ]
         query_list.append(f"where local:q($i, {stringify(query_dict)})")
+        if time_axis_shift == TimeAxisShift.oldest:
+            query_list.append("let $i := jn:first-existing($i)")
+        elif time_axis_shift == TimeAxisShift.latest:
+            query_list.append("let $i := jn:last-existing($i)")
         return_obj = (
             "return {$i,'nodeKey': sdb:nodekey($i),'hash': sdb:hash($i)}"
             if node_key and hash
@@ -230,8 +236,9 @@ class JsonStoreBase(ABC):
         query_dict: Dict,
         projection: List[str] = None,
         revision: Revision = None,
-        node_key=True,
-        hash=False,
+        node_key: bool = True,
+        hash: bool = False,
+        time_axis_shift: TimeAxisShift = TimeAxisShift.none,
         start_result_index: Optional[int] = None,
         end_result_index: Optional[int] = None,
     ) -> List[QueryResult]:
@@ -251,6 +258,7 @@ class JsonStoreBase(ABC):
                         the nodeKey of the record.
         :param hash: a ``bool`` determining whether or not to return a ``hash`` field containing the hash of the record.
         :param revision: the revision to search, defaults to latest. May be an integer or a ``datetime`` instance
+        :param time_axis_shift: specify fetching the most or least recent existing revision of the record
         :param start_result_index: index of first result to return.
         :param end_result_index: index of last result to return.
         :return: a ``list`` of :py:class:`QueryResult` records matching the query.
@@ -366,8 +374,9 @@ class JsonStoreBase(ABC):
         query_dict: Dict,
         projection: List[str] = None,
         revision: Revision = None,
-        node_key=True,
-        hash=False,
+        node_key: bool = True,
+        hash: bool = False,
+        time_axis_shift: TimeAxisShift = TimeAxisShift.none,
     ) -> List[QueryResult]:
         """
         This method is the same as :py:meth:`find_many`, except that this method will only return the first result,
@@ -378,6 +387,7 @@ class JsonStoreBase(ABC):
         :param revision:
         :param node_key:
         :param hash:
+        :param time_axis_shift:
         :return:
         """
         return self.find_all(
@@ -386,6 +396,7 @@ class JsonStoreBase(ABC):
             revision,
             node_key,
             hash,
+            time_axis_shift,
             start_result_index=0,
             end_result_index=0,
         )
@@ -406,8 +417,9 @@ class JsonStoreSync(JsonStoreBase):
         query_dict: Dict,
         projection: List[str] = None,
         revision: Revision = None,
-        node_key=True,
-        hash=False,
+        node_key: bool = True,
+        hash: bool = False,
+        time_axis_shift: TimeAxisShift = TimeAxisShift.none,
         start_result_index: Optional[int] = None,
         end_result_index: Optional[int] = None,
     ) -> List[QueryResult]:
@@ -417,6 +429,7 @@ class JsonStoreSync(JsonStoreBase):
             revision,
             node_key,
             hash,
+            time_axis_shift,
             start_result_index,
             end_result_index,
         )
@@ -459,8 +472,9 @@ class JsonStoreAsync(JsonStoreBase):
         query_dict: Dict,
         projection: List[str] = None,
         revision: Revision = None,
-        node_key=True,
-        hash=False,
+        node_key: bool = True,
+        hash: bool = False,
+        time_axis_shift: TimeAxisShift = TimeAxisShift.none,
         start_result_index: Optional[int] = None,
         end_result_index: Optional[int] = None,
     ) -> List[QueryResult]:
@@ -470,6 +484,7 @@ class JsonStoreAsync(JsonStoreBase):
             revision,
             node_key,
             hash,
+            time_axis_shift,
             start_result_index,
             end_result_index,
         )

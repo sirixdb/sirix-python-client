@@ -4,7 +4,7 @@ from pysirix.sirix import Sirix
 from pysirix.database import Database
 from pysirix.resource import Resource
 from pysirix.json_store import JsonStoreSync, JsonStoreAsync
-from pysirix.constants import Insert, DBType
+from pysirix.constants import Insert, DBType, TimeAxisShift
 from pysirix.errors import SirixServerError
 from pysirix.types import (
     QueryResult,
@@ -65,4 +65,5 @@ __all__ = [
     "DeleteDiff",
     "Metadata",
     "MetaNode",
+    "TimeAxisShift",
 ]

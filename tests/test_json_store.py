@@ -1,8 +1,9 @@
+import time
 from datetime import datetime
 
 import httpx
 import pysirix
-from pysirix import DBType
+from pysirix import DBType, TimeAxisShift
 
 base_url = "http://localhost:9443"
 
@@ -146,6 +147,30 @@ def test_upsert_non_existent_field():
     store.insert_one({})
     store.update_by_key(2, {"key": "value"})
     assert store.find_one({"key": "value"}, node_key=False) == [{"key": "value"}]
+
+
+def test_shift_time_axis():
+    store.create()
+    store.insert_one({"id": 0})
+    store.update_by_key(2, {"key": "value"})
+    assert (
+        store.find_one(
+            {"id": 0},
+            node_key=False,
+            revision=2,
+            time_axis_shift=TimeAxisShift.latest,
+        )
+        == [{"key": "value", "id": 0}]
+    )
+    assert (
+        store.find_one(
+            {"id": 0},
+            node_key=False,
+            revision=3,
+            time_axis_shift=TimeAxisShift.oldest,
+        )
+        == [{"id": 0}]
+    )
 
 
 def test_update_many():

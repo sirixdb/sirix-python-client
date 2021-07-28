@@ -23,6 +23,12 @@ class DBType(Enum):
     JSON = "application/json"
 
 
+class TimeAxisShift(Enum):
+    oldest = -1
+    none = 0
+    latest = 1
+
+
 class MetadataType(Enum):
     """
     This class defines the scope of the metadata to return using the
