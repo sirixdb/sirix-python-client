@@ -29,4 +29,4 @@ jobs:
       - name: test with pytest
         run: python -m pytest --cov=pysirix -v
       - name: dump log
-        run: cat /opt/sirix/sirix-data/sirix.log
+        run: cat ./sirix.log
