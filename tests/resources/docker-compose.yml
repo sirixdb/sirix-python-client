@@ -24,4 +24,4 @@ services:
     volumes:
       - /opt/sirix/sirix-data:/opt/sirix/sirix-data
       - ./sirix-conf.json:/opt/sirix/sirix-conf.json
-      - ./logback-test.xml:/opt/sirix/logback-test.xml
+      - ./logback-test.xml:/opt/sirix/sirix-data/logback-test.xml
