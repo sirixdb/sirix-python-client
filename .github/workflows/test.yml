@@ -28,5 +28,3 @@ jobs:
           pip install -r requirements-all.txt
       - name: test with pytest
         run: python -m pytest --cov=pysirix -v
-      - name: dump log
-        run: cat ./sirix.log
