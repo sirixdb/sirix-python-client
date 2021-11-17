@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="pysirix",
-    version="0.5.2",
+    version="0.5.3",
     author="Moshe Uminer",
     author_email="mosheduminer@gmail.com",
     description="The SirixDB Python SDK",
