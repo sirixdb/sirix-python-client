@@ -122,7 +122,7 @@ class SyncClient:
         resp = self.client.put(
             f"{db_name}/{name}",
             headers={"Content-Type": db_type.value},
-            params={"hash_type": hash_type},
+            params={"hashType": hash_type},
             content=data,
         )
         with include_response_text_in_errors():
