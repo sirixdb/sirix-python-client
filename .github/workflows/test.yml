@@ -27,4 +27,4 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements-all.txt
       - name: test with pytest
-        run: python -m pytest --cov=pysirix -v
+        run: python -m pytest --cov=pysirix --cov-config=.coveragerc -v

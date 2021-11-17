@@ -42,7 +42,7 @@ class Resource:
         self._client = client
         self._auth = auth
 
-    def create(self, data: Union[str, Dict, ET.Element]):
+    def create(self, data: Union[str, Dict, ET.Element], hash_type: str = "ROLLING"):
         """
         :param data: the data with which to initialize the resource.
                 May be an instance of ``dict``, or an instance of
@@ -57,7 +57,11 @@ class Resource:
             else ET.tostring(data)
         )
         return self._client.create_resource(
-            self.db_name, self.db_type, self.resource_name, data
+            self.db_name,
+            self.db_type,
+            self.resource_name,
+            data,
+            hash_type,
         )
 
     def exists(self):

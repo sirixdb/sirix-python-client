@@ -61,11 +61,17 @@ class AsyncClient:
         return False
 
     async def create_resource(
-        self, db_name: str, db_type: DBType, name: str, data: BytesLikeAsync
+        self,
+        db_name: str,
+        db_type: DBType,
+        name: str,
+        data: BytesLikeAsync,
+        hash_type: str,
     ) -> str:
         resp = await self.client.put(
             f"{db_name}/{name}",
             headers={"Content-Type": db_type.value},
+            params={"hash_type": hash_type},
             content=data,
         )
         with include_response_text_in_errors():

@@ -15,7 +15,7 @@ class SyncClient:
         """
         The methods of this class call all SirixDB endpoints, with minimal handling.
         This class is used for synchronous calls, the :py:class:`AsyncClient` handles asynchronous calls.
-        
+
         :param client: an instance of ``httpx.Client``.
         """
         self.client = client
@@ -102,7 +102,12 @@ class SyncClient:
         return False
 
     def create_resource(
-        self, db_name: str, db_type: DBType, name: str, data: BytesLike
+        self,
+        db_name: str,
+        db_type: DBType,
+        name: str,
+        data: BytesLike,
+        hash_type: str,
     ) -> str:
         """
         Call the ``/{database}/{resource}`` endpoint with a PUT request.
@@ -115,7 +120,10 @@ class SyncClient:
         :raises: :py:class:`pysirix.SirixServerError`.
         """
         resp = self.client.put(
-            f"{db_name}/{name}", headers={"Content-Type": db_type.value}, content=data,
+            f"{db_name}/{name}",
+            headers={"Content-Type": db_type.value},
+            params={"hash_type": hash_type},
+            content=data,
         )
         with include_response_text_in_errors():
             resp.raise_for_status()
