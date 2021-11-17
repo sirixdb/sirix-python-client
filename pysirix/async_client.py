@@ -66,7 +66,7 @@ class AsyncClient:
         db_type: DBType,
         name: str,
         data: BytesLikeAsync,
-        hash_type: str,
+        hash_type: str = "ROLLING",
     ) -> str:
         resp = await self.client.put(
             f"{db_name}/{name}",

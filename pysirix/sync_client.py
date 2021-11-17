@@ -107,7 +107,7 @@ class SyncClient:
         db_type: DBType,
         name: str,
         data: BytesLike,
-        hash_type: str,
+        hash_type: str = "ROLLING",
     ) -> str:
         """
         Call the ``/{database}/{resource}`` endpoint with a PUT request.
