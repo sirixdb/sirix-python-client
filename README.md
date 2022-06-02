@@ -58,7 +58,7 @@ async def main():
             "foo": ["bar", None, 2.33],
             "bar": {"hello": "world", "helloo": True},
             "baz": "hello",
-            "tada": [{"foo": "bar"}, {"baz": False}, "boo", {}, []],
+            "tada": [{"foo": "bar"}, {"baz": False}, "boo", {}, []]
         }
     )
     
