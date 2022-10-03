@@ -39,21 +39,21 @@ def stringify(v: Union[None, int, str, Dict, List]):
 
 query_function_include = (
     "declare function local:q($i, $q) {"
-    "let $m := for $k in jn:keys($q) return if (not(empty($i=>$k))) then deep-equal($i=>$k, $q=>$k) else false()"
+    "let $m := for $k in jn:keys($q) return if (not(empty($i.$k))) then deep-equal($i.$k, $q.$k) else false()"
     " return empty(index-of($m, false()))"
     "};"
 )
 
 upsert_function_include = (
     "declare %updating function local:upsert-fields($r, $u) {"
-    "for $key in bit:fields($u) return if (empty($r=>$key)) then insert json $u into $r"
-    " else replace json value of $r=>$key with $u=>$key"
+    "for $key in bit:fields($u) return if (empty($r.$key)) then insert json $u into $r"
+    " else replace json value of $r.$key with $u.$key"
     "};"
 )
 
 update_function_include = (
     "declare %updating function local:update-fields($r, $u) {"
-    "for $key in bit:fields($u) return replace json value of $r=>$key with $u=>$key"
+    "for $key in bit:fields($u) return replace json value of $r.$key with $u.$key"
     "};"
 )
 
@@ -317,7 +317,7 @@ class JsonStoreBase(ABC):
         query = (
             f"let $obj := sdb:select-item(jn:doc('{self.db_name}','{self.name}'),{node_key})"
             f" let $update := {stringify(fields)}"
-            f" for $i in $fields return delete json $obj=>$i"
+            f" for $i in $fields return delete json $obj.$i"
         )
         return self._client.post_query({"query": query})
 
@@ -335,7 +335,7 @@ class JsonStoreBase(ABC):
             f"let $records := for $i in jn:doc('{self.db_name}','{self.name}'){self.root}"
             f" where local:q($i, {stringify(query_dict)}) return $i"
             f" let $fields := {stringify(fields)}"
-            f" for $i in $fields return delete json $records=>$i"
+            f" for $i in $fields return delete json $records.$i"
         )
         return self._client.post_query({"query": query})
 
