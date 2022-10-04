@@ -135,7 +135,7 @@ class JsonStoreBase(ABC):
 
     def history_embed(self, node_key: int, revision: Optional[Revision] = None):
         query = (
-            f"let $node := sdb:select-item(., {node_key}) let $result := for $rev in jn:all-times($node)"
+            f"let $node := sdb:select-item($$, {node_key}) let $result := for $rev in jn:all-times($node)"
             f" return if (not(exists(jn:previous($rev)))) then $rev"
             f" else if (sdb:hash($rev) ne sdb:hash(jn:previous($rev))) then $rev"
             " else () return $result"
