@@ -168,7 +168,7 @@ class JsonStoreBase(ABC):
                 " else () return $result"
             )
         else:
-            query = f"sdb:item-history(sdb:select-item(., {node_key}))"
+            query = f"sdb:item-history(sdb:select-item($$, {node_key}))"
         params = {"query": query}
         if revision:
             parse_revision(revision, params)
