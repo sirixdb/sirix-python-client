@@ -162,7 +162,7 @@ class JsonStoreBase(ABC):
         if subtree:
             revision_data = '{"revisionNumber": sdb:revision($rev), "revisionTimestamp": xs:string(sdb:timestamp($rev))}'
             query = (
-                f"let $node := sdb:select-item(., {node_key}) let $result := for $rev in jn:all-times($node)"
+                f"let $node := sdb:select-item($$, {node_key}) let $result := for $rev in jn:all-times($node)"
                 f" return if (not(exists(jn:previous($rev)))) then {revision_data}"
                 f" else if (sdb:hash($rev) ne sdb:hash(jn:previous($rev))) then {revision_data}"
                 " else () return $result"
