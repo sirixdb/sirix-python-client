@@ -3,7 +3,7 @@ anyio==3.3.4
 atomicwrites==1.4.0
 attrs==21.2.0
 Babel==2.9.1
-certifi==2021.10.8
+certifi==2022.12.7
 charset-normalizer==2.0.7
 colorama==0.4.4
 coverage==6.1.2
