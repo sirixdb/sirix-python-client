@@ -1,21 +1,31 @@
-version: '3'
+version: '3.4'
 services:
   keycloak:
-    image: jboss/keycloak:7.0.1
+    build: .
     ports:
       - 8080:8080
     environment:
-      - KEYCLOAK_USER=admin
-      - KEYCLOAK_PASSWORD=admin
-      - KEYCLOAK_LOGLEVEL=DEBUG
-      - KEYCLOAK_IMPORT=/opt/keycloak/realm-export.json
+      - KEYCLOAK_ADMIN=admin
+      - KEYCLOAK_ADMIN_PASSWORD=admin
+      - KC_LOG_LEVEL=DEBUG
+      - KC_IMPORT=/opt/keycloak/data/import/realm-export.json
     restart: always
     volumes:
-      - ./realm-export.json:/opt/keycloak/realm-export.json
-      - ./create-sirix-users.sh:/opt/jboss/startup-scripts/create-sirix-users.sh
-    command:
-      - "-b 0.0.0.0"
-      - "-bmanagement 0.0.0.0"
+      - ./realm-export.json:/opt/keycloak/data/import/realm-export.json
+    entrypoint: ["/opt/keycloak/scripts/wait-for-keycloak.sh"]
+    command: >
+      start-dev
+      --import-realm
+      --http-relative-path=/
+      --hostname-strict=false
+      --proxy=edge
+    networks:
+      - auth-network
+    healthcheck:
+      test: "curl -f http://localhost:8080/ || exit 1"
+      timeout: 3s
+      start_period: 10s
+      retries: 20
   server:
     image: sirixdb/sirix
     ports:
@@ -25,3 +35,8 @@ services:
       - /opt/sirix/sirix-data:/opt/sirix/sirix-data
       - ./sirix-conf.json:/opt/sirix/sirix-conf.json
       - ./logback-test.xml:/opt/sirix/sirix-data/logback-test.xml
+    networks:
+      - auth-network
+networks:
+  auth-network:
+    driver: bridge
