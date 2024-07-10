@@ -349,7 +349,7 @@ class JsonStoreBase(ABC):
             f"{query_function_include}"
             f"let $doc := jn:doc('{self.db_name}','{self.name}'){self.root}"
             f" let $m := for $i at $pos in $doc where local:q($i, {stringify(query_dict)}) return $pos - 1"
-            " for $i in $m order by $i descending return delete json $doc[[$i]]"
+            " for $i in $m order by $i descending return delete json $doc[$i]"
         )
         return self._client.post_query({"query": query})
 
