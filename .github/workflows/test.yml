@@ -13,6 +13,8 @@ jobs:
     strategy:
       matrix:
         python-version: [ '3.7', '3.8', '3.9', '3.10' ]
+    env:
+        GITHUB_ACTIONS: true
     steps:
       - uses: actions/checkout@v2
       - name: setup python

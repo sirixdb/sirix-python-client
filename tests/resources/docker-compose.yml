@@ -1,4 +1,3 @@
-version: '3.4'
 services:
   keycloak:
     build: .
@@ -22,10 +21,10 @@ services:
     networks:
       - auth-network
     healthcheck:
-      test: "curl -f http://localhost:8080/ || exit 1"
-      timeout: 3s
-      start_period: 10s
-      retries: 20
+      test: [ "CMD", "curl", "-f", "http://keycloak:8080/realms/master" ]
+      interval: 60s
+      timeout: 20s
+      retries: 10
   server:
     image: sirixdb/sirix
     ports:
