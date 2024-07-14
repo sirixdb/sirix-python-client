@@ -17,7 +17,6 @@ services:
       --import-realm
       --http-relative-path=/
       --hostname-strict=false
-      --proxy=edge
     networks:
       - auth-network
     healthcheck:
@@ -30,9 +29,11 @@ services:
     ports:
       - 9443:9443
     restart: always
+    depends_on:
+      keycloak:
+        condition: service_healthy
     volumes:
-      - /opt/sirix/sirix-data:/opt/sirix/sirix-data
-      - ./sirix-conf.json:/opt/sirix/sirix-conf.json
+      - ./sirix-docker-conf.json:/opt/sirix/sirix-docker-conf.json
       - ./logback-test.xml:/opt/sirix/sirix-data/logback-test.xml
     networks:
       - auth-network
