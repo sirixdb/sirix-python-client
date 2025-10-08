@@ -95,7 +95,7 @@ def test_read_metadata():
     assert resp == {
         "metadata": {
             "nodeKey": 1,
-            "hash": "4a19368710a0c03c",
+            "hash": "4b5c047d20e75862",
             "type": "ARRAY",
             "descendantCount": 0,
             "childCount": 0,

@@ -93,7 +93,7 @@ class JsonStoreBase(ABC):
         """
         Inserts a list of records into the store. New records are added at the the tail of the store.
 
-        :param insert_list: either a JSON string of ``list`` of ``dict``\s, or a ``list`` that can be converted to JSON
+        :param insert_list: either a JSON string of ``list`` of ``dict``\\s, or a ``list`` that can be converted to JSON
         :return: a ``str`` "{rest: []}" or an ``Awaitable[str]`` resolving to this string.
         """
         insert_list = dumps(insert_list)

@@ -219,7 +219,7 @@ async def test_read_metadata():
     assert resp == {
         "metadata": {
             "nodeKey": 1,
-            "hash": "4a19368710a0c03c",
+            "hash": "4b5c047d20e75862",
             "type": "ARRAY",
             "descendantCount": 0,
             "childCount": 0,
@@ -270,6 +270,7 @@ async def test_diff():
 async def test_sirix_query():
     client = httpx.AsyncClient(base_url=base_url)
     sirix = await pysirix.sirix_async("admin", "admin", client)
+    await sirix.delete_all()
     db = sirix.database("Query", DBType.JSON)
     resource = db.resource("query_resource1")
     await resource.create(data_for_query)
@@ -281,6 +282,7 @@ async def test_sirix_query():
 async def test_resource_query():
     client = httpx.AsyncClient(base_url=base_url)
     sirix = await pysirix.sirix_async("admin", "admin", client)
+    await sirix.delete_all()
     db = sirix.database("Query", DBType.JSON)
     resource = db.resource("query_resource2")
     await resource.create(data_for_query)

@@ -35,6 +35,7 @@ def test_auth_refresh():
 def test_get_info():
     client = httpx.Client(base_url=base_url)
     sirix = pysirix.sirix_sync("admin", "admin", client)
+    sirix.delete_all()
     data = sirix.get_info()
     assert data == []
     client.close()
@@ -85,6 +86,7 @@ def test_create_resource():
 def test_sirix_query():
     client = httpx.Client(base_url=base_url)
     sirix = pysirix.sirix_sync("admin", "admin", client)
+    sirix.delete_all()
     db = sirix.database("Query", DBType.JSON)
     resource = db.resource("query_resource1")
     resource.create(data_for_query)
@@ -96,6 +98,7 @@ def test_sirix_query():
 def test_resource_query():
     client = httpx.Client(base_url=base_url)
     sirix = pysirix.sirix_sync("admin", "admin", client)
+    sirix.delete_all()
     db = sirix.database("Query", DBType.JSON)
     resource = db.resource("query_resource")
     resource.create(data_for_query)
