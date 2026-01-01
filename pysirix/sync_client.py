@@ -26,7 +26,7 @@ class SyncClient:
         the endpoint is called with the query ``withResources=true``
 
         :param resources: whether to query resources as well
-        :return: a ``list`` of ``dict``\s, where each ``dict`` has a ``name``
+        :return: a ``list`` of ``dict``s, where each ``dict`` has a ``name``
                         field, a ``type`` field, and (if ``resources`` is
                         ``True``) a ``resources`` field (containing a ``list`` of names).
         :raises: :py:class:`pysirix.SirixServerError`.
