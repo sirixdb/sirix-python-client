@@ -24,9 +24,20 @@ jobs:
           architecture: x64
       - name: setup SirixDB server
         run: bash ./test.sh
+      - name: verify services are running
+        run: |
+          docker ps
+          echo "Checking Keycloak..."
+          curl -f http://localhost:8080/realms/master || echo "Keycloak not ready"
+          echo "Checking SirixDB..."
+          curl -k -f https://localhost:9443 || echo "SirixDB not ready"
       - name: install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements-all.txt
       - name: test with pytest
-        run: python -m pytest --cov=pysirix --cov-config=.coveragerc -v
+        run: python -m pytest --cov=pysirix --cov-config=.coveragerc -v -s
+      - name: show docker logs on failure
+        if: failure()
+        run: |
+          docker compose -f ./tests/resources/docker-compose.yml logs
