@@ -250,7 +250,7 @@ async def test_diff():
     sirix = await pysirix.sirix_async("admin", "admin", client)
     db = sirix.database("First", DBType.JSON)
     resource = db.resource("test_resource33")
-    await resource.create([])
+    await resource.create([], use_dewey_ids=True)
     await resource.update(1, {})
     assert await resource.diff(1, 2) == [
         {
