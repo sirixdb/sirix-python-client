@@ -33,7 +33,7 @@ services:
       keycloak:
         condition: service_healthy
     volumes:
-      - ./sirix-docker-conf.json:/opt/sirix/sirix-docker-conf.json
+      - ./sirix-docker-conf.json:/opt/sirix/sirix-conf.json
       - ./logback-test.xml:/opt/sirix/sirix-data/logback-test.xml
     networks:
       - auth-network

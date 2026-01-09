@@ -21,20 +21,31 @@ def parse_revision(revision: Revision, params: Dict) -> None:
 
 
 def stringify(v: Union[None, int, str, Dict, List]):
-    return (
-        f'"{v}"'
-        if isinstance(v, str)
-        else f"{v}"
-        if isinstance(v, int)
-        else "true()"
-        if v is True
-        else "false()"
-        if v is False
-        else "jn:null()"
-        if v is None
-        # not a primitive value
-        else f"jn:parse('{dumps(v)}')"
-    )
+    """
+    Convert a Python value to a JSONiq literal expression.
+    Uses literal JSON syntax for objects and arrays instead of jn:parse
+    for better compatibility with update operations.
+    """
+    if v is None:
+        return "jn:null()"
+    if v is True:
+        return "true()"
+    if v is False:
+        return "false()"
+    if isinstance(v, str):
+        # Escape backslashes and double quotes for JSONiq string literals
+        escaped = v.replace('\\', '\\\\').replace('"', '\\"')
+        return f'"{escaped}"'
+    if isinstance(v, (int, float)):
+        return f"{v}"
+    if isinstance(v, list):
+        items = ", ".join(stringify(item) for item in v)
+        return f"[{items}]"
+    if isinstance(v, dict):
+        pairs = ", ".join(f'"{k}": {stringify(val)}' for k, val in v.items())
+        return f"{{{pairs}}}"
+    # Fallback for other types
+    return f"jn:parse('{dumps(v)}')"
 
 
 query_function_include = (
@@ -278,12 +289,26 @@ class JsonStoreBase(ABC):
         :param upsert: whether to insert if the field does not already exist
         :return:
         """
-        query = (
-            f"{upsert_function_include if upsert else update_function_include}"
-            f"let $rec := sdb:select-item(jn:doc('{self.db_name}','{self.name}'),{node_key}) "
-            f"return local:{'upsert' if upsert else 'update'}-fields($rec, {stringify(update_dict)})"
-        )
-        return self._client.post_query({"query": query})
+        # Execute each field update as a separate query.
+        # Note: Combined updates in a single query are now supported in SirixDB after
+        # the fix for insertSubtree auto-commit issue. However, we use separate queries
+        # for compatibility with older SirixDB versions.
+        result = None
+        for key, value in update_dict.items():
+            stringified_value = stringify(value)
+            if upsert:
+                query = (
+                    f"let $rec := sdb:select-item(jn:doc('{self.db_name}','{self.name}'),{node_key}) "
+                    f"return if (empty($rec.{key})) then insert json {{\"{key}\": {stringified_value}}} into $rec "
+                    f"else replace json value of $rec.{key} with {stringified_value}"
+                )
+            else:
+                query = (
+                    f"let $rec := sdb:select-item(jn:doc('{self.db_name}','{self.name}'),{node_key}) "
+                    f"return replace json value of $rec.{key} with {stringified_value}"
+                )
+            result = self._client.post_query({"query": query})
+        return result if result is not None else ""
 
     def update_many(
         self,
