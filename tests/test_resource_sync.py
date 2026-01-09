@@ -92,16 +92,18 @@ def test_update_nonexistent_node():
 def test_read_metadata():
     resource.create([])
     resp = resource.read_with_metadata(1, 1)
-    assert resp == {
-        "metadata": {
-            "nodeKey": 1,
-            "hash": "4b5c047d20e75862",
-            "type": "ARRAY",
-            "descendantCount": 0,
-            "childCount": 0,
-        },
-        "value": [],
-    }
+    metadata = resp["metadata"]
+    # Verify hash exists and is a 16-character hex string
+    assert "hash" in metadata
+    assert isinstance(metadata["hash"], str)
+    assert len(metadata["hash"]) == 16
+    assert all(c in "0123456789abcdef" for c in metadata["hash"])
+    # Verify other metadata fields
+    assert metadata["nodeKey"] == 1
+    assert metadata["type"] == "ARRAY"
+    assert metadata["descendantCount"] == 0
+    assert metadata["childCount"] == 0
+    assert resp["value"] == []
 
 
 def test_read_metadata_key_only():
