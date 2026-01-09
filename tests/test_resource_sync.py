@@ -141,7 +141,7 @@ def test_history():
 
 
 def test_diff():
-    resource.create([])
+    resource.create([], use_dewey_ids=True)
     resource.update(1, {})
     assert resource.diff(1, 2) == [
         {

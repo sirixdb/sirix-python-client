@@ -42,12 +42,13 @@ class Resource:
         self._client = client
         self._auth = auth
 
-    def create(self, data: Union[str, Dict, ET.Element], hash_type: str = "ROLLING"):
+    def create(self, data: Union[str, Dict, ET.Element], hash_type: str = "ROLLING", use_dewey_ids: bool = False):
         """
         :param data: the data with which to initialize the resource.
                 May be an instance of ``dict``, or an instance of
                 ``xml.etree.ElementTree.Element`` (depending on the database type),
                 or a ``str`` of properly formed json or xml.
+        :param use_dewey_ids: whether to use DeweyIDs for node identification.
         """
         data = (
             data
@@ -62,6 +63,7 @@ class Resource:
             self.resource_name,
             data,
             hash_type,
+            use_dewey_ids,
         )
 
     def exists(self):
