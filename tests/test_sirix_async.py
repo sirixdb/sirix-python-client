@@ -222,10 +222,10 @@ async def test_read_metadata():
         assert isinstance(metadata["hash"], str)
         assert len(metadata["hash"]) == 16
         assert all(c in "0123456789abcdef" for c in metadata["hash"])
+        assert metadata["descendantCount"] == 0
     # Verify other metadata fields
     assert metadata["nodeKey"] == 1
     assert metadata["type"] == "ARRAY"
-    assert metadata["descendantCount"] == 0
     assert metadata["childCount"] == 0
     assert resp["value"] == []
     await sirix.delete_all()
