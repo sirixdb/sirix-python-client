@@ -261,6 +261,7 @@ async def test_diff():
                 "insertPosition": "asFirstChild",
                 "insertPositionNodeKey": 1,
                 "nodeKey": 2,
+                "path": "/[0]",
                 "type": "jsonFragment",
             }
         }

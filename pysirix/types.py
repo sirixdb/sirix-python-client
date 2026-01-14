@@ -45,47 +45,69 @@ try:
         revisionNumber: int
         revision: Union[List, Dict, str, int, float, None]
 
-    class InsertDiff(TypedDict):
+    class InsertDiff(TypedDict, total=False):
         """
         This type is available only in python 3.8+.
         Otherwise, defaults to ``dict``.
+
+        Fields ``path``, ``deweyID``, ``depth``, and ``data`` are optional depending
+        on resource configuration (PathSummary and DeweyIDs).
         """
 
         nodeKey: int
         insertPositionNodeKey: int
         insertPosition: InsertPosition
+        path: str
         deweyID: str
         depth: int
         type: str
         data: DataType
 
-    class ReplaceDiff(TypedDict):
+    class ReplaceDiff(TypedDict, total=False):
         """
         This type is available only in python 3.8+.
         Otherwise, defaults to ``dict``.
+
+        Fields ``path``, ``deweyID``, ``depth``, and ``data`` are optional depending
+        on resource configuration (PathSummary and DeweyIDs).
         """
 
-        nodeKey: int
-        type: DataType
+        oldNodeKey: int
+        newNodeKey: int
+        path: str
+        deweyID: str
+        depth: int
+        type: str
         data: str
 
-    class UpdateDiff(TypedDict):
+    class UpdateDiff(TypedDict, total=False):
         """
         This type is available only in python 3.8+.
         Otherwise, defaults to ``dict``.
+
+        Fields ``path``, ``deweyID``, ``depth``, ``name``, ``type``, and ``value``
+        are optional depending on the update type and resource configuration.
         """
 
         nodeKey: int
+        path: str
+        deweyID: str
+        depth: int
+        name: str
         type: DataType
         value: Union[str, int, float, bool, None]
 
-    class DeleteDiff(TypedDict):
+    class DeleteDiff(TypedDict, total=False):
         """
         This type is available only in python 3.8+.
         Otherwise, defaults to ``dict``.
+
+        Fields ``path``, ``deweyID``, and ``depth`` are optional depending
+        on resource configuration (PathSummary and DeweyIDs).
         """
 
         nodeKey: int
+        path: str
         deweyID: str
         depth: int
 
