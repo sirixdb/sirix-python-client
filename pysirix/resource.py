@@ -42,13 +42,14 @@ class Resource:
         self._client = client
         self._auth = auth
 
-    def create(self, data: Union[str, Dict, ET.Element], hash_type: str = "ROLLING", use_dewey_ids: bool = False):
+    def create(self, data: Union[str, Dict, ET.Element], hash_type: str = "ROLLING", use_dewey_ids: bool = False, hash_kind: str = None):
         """
         :param data: the data with which to initialize the resource.
                 May be an instance of ``dict``, or an instance of
                 ``xml.etree.ElementTree.Element`` (depending on the database type),
                 or a ``str`` of properly formed json or xml.
         :param use_dewey_ids: whether to use DeweyIDs for node identification.
+        :param hash_kind: the hash kind parameter (if needed for newer SirixDB versions).
         """
         data = (
             data
@@ -64,6 +65,7 @@ class Resource:
             data,
             hash_type,
             use_dewey_ids,
+            hash_kind,
         )
 
     def exists(self):

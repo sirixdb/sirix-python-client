@@ -109,6 +109,7 @@ class SyncClient:
         data: BytesLike,
         hash_type: str = "ROLLING",
         use_dewey_ids: bool = False,
+        hash_kind: str = None,
     ) -> str:
         """
         Call the ``/{database}/{resource}`` endpoint with a PUT request.
@@ -118,12 +119,15 @@ class SyncClient:
         :param name: the name of the resource.
         :param data: the data to initialize the database with.
         :param use_dewey_ids: whether to use DeweyIDs for node identification.
+        :param hash_kind: the hash kind parameter (if needed for newer SirixDB versions).
         :return: a ``str`` of ``data``.
         :raises: :py:class:`pysirix.SirixServerError`.
         """
         params = {"hashType": hash_type}
         if use_dewey_ids:
             params["useDeweyIDs"] = "true"
+        if hash_kind is not None:
+            params["hashKind"] = hash_kind
         resp = self.client.put(
             f"{db_name}/{name}",
             headers={"Content-Type": db_type.value},

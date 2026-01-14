@@ -68,10 +68,13 @@ class AsyncClient:
         data: BytesLikeAsync,
         hash_type: str = "ROLLING",
         use_dewey_ids: bool = False,
+        hash_kind: str = None,
     ) -> str:
         params = {"hashType": hash_type}
         if use_dewey_ids:
             params["useDeweyIDs"] = "true"
+        if hash_kind is not None:
+            params["hashKind"] = hash_kind
         resp = await self.client.put(
             f"{db_name}/{name}",
             headers={"Content-Type": db_type.value},
