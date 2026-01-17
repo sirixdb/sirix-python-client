@@ -182,6 +182,7 @@ class Resource:
         second_revision: Revision,
         node_id: int = None,
         max_depth: int = None,
+        include_data: bool = True,
     ):
         params = {}
         if isinstance(first_revision, datetime):
@@ -196,6 +197,8 @@ class Resource:
             params["startNodeKey"] = node_id
         if max_depth is not None:
             params["maxDepth"] = max_depth
+        if include_data:
+            params["include-data"] = "true"
         return self._client.diff(self.db_name, self.resource_name, params)
 
     def get_etag(self, node_id: int) -> Union[str, Awaitable[str]]:
