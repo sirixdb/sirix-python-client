@@ -7,7 +7,7 @@ charset-normalizer==2.0.7
 colorama==0.4.4
 coverage==7.3.2
 docutils==0.17.1
-h11==0.12.0
+h11==0.16.0
 httpcore==0.15.0
 httpx==0.23.0
 idna==3.7
