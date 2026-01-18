@@ -58,7 +58,12 @@ class AsyncClient:
         )
         if resp.status_code == 200:
             return True
-        return False
+        if resp.status_code == 404:
+            return False
+        # For other errors (especially 5xx), raise an exception
+        with include_response_text_in_errors():
+            resp.raise_for_status()
+        return False  # Unreachable, but satisfies type checker
 
     async def create_resource(
         self,

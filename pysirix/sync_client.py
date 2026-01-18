@@ -94,12 +94,17 @@ class SyncClient:
         :param db_type: the type of the database.
         :param name: the name of the resource.
         :return: a ``bool`` indicating the existence (or lack thereof) of the resource.
-        :raises: :py:class:`pysirix.SirixServerError`.
+        :raises: :py:class:`pysirix.SirixServerError` for server errors (5xx).
         """
         resp = self.client.head(f"{db_name}/{name}", headers={"Accept": db_type.value})
         if resp.status_code == 200:
             return True
-        return False
+        if resp.status_code == 404:
+            return False
+        # For other errors (especially 5xx), raise an exception
+        with include_response_text_in_errors():
+            resp.raise_for_status()
+        return False  # Unreachable, but satisfies type checker
 
     def create_resource(
         self,
