@@ -71,6 +71,10 @@ class Sirix:
         query: str,
         start_result_seq_index: int = None,
         end_result_seq_index: int = None,
+        commit_message: str = None,
+        commit_timestamp: str = None,
+        plan: bool = None,
+        plan_stage: str = None,
     ):
         """
         Execute a custom query on SirixDB.
@@ -81,6 +85,10 @@ class Sirix:
         :param query: the query ``str`` to execute.
         :param start_result_seq_index: the first index of the results from which to return, defaults to first.
         :param end_result_seq_index: the last index of the results to return, defaults to last.
+        :param commit_message: optional commit message for modifying queries.
+        :param commit_timestamp: optional commit timestamp for modifying queries.
+        :param plan: whether to return a query plan instead of executing.
+        :param plan_stage: the plan stage to return.
         :return: the query result.
         """
         query_obj = {
@@ -88,6 +96,14 @@ class Sirix:
             "startResultSeqIndex": start_result_seq_index,
             "endResultSeqIndex": end_result_seq_index,
         }
+        if commit_message is not None:
+            query_obj["commitMessage"] = commit_message
+        if commit_timestamp is not None:
+            query_obj["commitTimestamp"] = commit_timestamp
+        if plan is not None:
+            query_obj["plan"] = plan
+        if plan_stage is not None:
+            query_obj["planStage"] = plan_stage
         query_obj = {k: v for k, v in query_obj.items() if v}
         return self._client.post_query(query_obj)
 

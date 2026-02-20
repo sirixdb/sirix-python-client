@@ -42,7 +42,7 @@ class AsyncClient:
             resp.raise_for_status()
 
     async def get_database_info(self, name: str) -> Dict:
-        resp = await self.client.get(name)
+        resp = await self.client.get(name, headers={"Accept": "application/json"})
         with include_response_text_in_errors():
             resp.raise_for_status()
         return resp.json()
@@ -74,17 +74,48 @@ class AsyncClient:
         hash_type: str = "ROLLING",
         use_dewey_ids: bool = False,
         hash_kind: str = None,
+        commit_message: str = None,
+        commit_timestamp: str = None,
     ) -> str:
         params = {"hashType": hash_type}
         if use_dewey_ids:
             params["useDeweyIDs"] = "true"
         if hash_kind is not None:
             params["hashKind"] = hash_kind
+        if commit_message is not None:
+            params["commitMessage"] = commit_message
+        if commit_timestamp is not None:
+            params["commitTimestamp"] = commit_timestamp
         resp = await self.client.put(
             f"{db_name}/{name}",
             headers={"Content-Type": db_type.value},
             params=params,
             content=data,
+        )
+        with include_response_text_in_errors():
+            resp.raise_for_status()
+        return resp.text
+
+    async def create_resources(
+        self,
+        db_name: str,
+        db_type: DBType,
+        resources: Dict[str, BytesLikeAsync],
+        hash_type: str = "ROLLING",
+        use_dewey_ids: bool = False,
+    ) -> str:
+        content_type = db_type.value
+        files = [
+            ("resource", (name, data, content_type))
+            for name, data in resources.items()
+        ]
+        params = {"hashType": hash_type}
+        if use_dewey_ids:
+            params["useDeweyIDs"] = "true"
+        resp = await self.client.post(
+            db_name,
+            files=files,
+            params=params,
         )
         with include_response_text_in_errors():
             resp.raise_for_status()
@@ -107,13 +138,47 @@ class AsyncClient:
         else:
             return ET.fromstring(resp.text)
 
-    async def history(self, db_name: str, db_type: DBType, name: str) -> List[Commit]:
+    async def history(
+        self,
+        db_name: str,
+        db_type: DBType,
+        name: str,
+        revisions: int = None,
+        start_revision: int = None,
+        end_revision: int = None,
+    ) -> List[Commit]:
+        params = {}
+        if revisions is not None:
+            params["revisions"] = revisions
+        if start_revision is not None:
+            params["startRevision"] = start_revision
+        if end_revision is not None:
+            params["endRevision"] = end_revision
         resp = await self.client.get(
-            f"{db_name}/{name}/history", headers={"Accept": db_type.value}
+            f"{db_name}/{name}/history", params=params, headers={"Accept": db_type.value}
         )
         with include_response_text_in_errors():
             resp.raise_for_status()
         return resp.json()["history"]
+
+    async def path_summary(
+        self,
+        db_name: str,
+        db_type: DBType,
+        name: str,
+        revision: int = None,
+    ) -> Dict:
+        params = {}
+        if revision is not None:
+            params["revision"] = revision
+        resp = await self.client.get(
+            f"{db_name}/{name}/pathSummary",
+            params=params,
+            headers={"Accept": db_type.value},
+        )
+        with include_response_text_in_errors():
+            resp.raise_for_status()
+        return resp.json()
 
     async def diff(
         self, db_name: str, name: str, params: Dict[str, str]
@@ -152,12 +217,19 @@ class AsyncClient:
         data: BytesLikeAsync,
         insert: Insert,
         etag: Union[str, None],
+        commit_message: str = None,
+        commit_timestamp: str = None,
     ) -> str:
         if not etag:
             etag = await self.get_etag(db_name, db_type, name, {"nodeId": node_id})
+        params = {"nodeId": node_id, "insert": insert.value}
+        if commit_message is not None:
+            params["commitMessage"] = commit_message
+        if commit_timestamp is not None:
+            params["commitTimestamp"] = commit_timestamp
         resp = await self.client.post(
             f"{db_name}/{name}",
-            params={"nodeId": node_id, "insert": insert.value},
+            params=params,
             headers={"ETag": etag, "Content-Type": db_type.value},
             content=data,
         )
