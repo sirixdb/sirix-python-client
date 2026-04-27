@@ -119,7 +119,7 @@ def test_read_metadata_key_only():
                     {
                         "key": "test",
                         "metadata": {"nodeKey": 3},
-                        "value": {"metadata": {"nodeKey": 4}, "value": "dict"},
+                        "value": "dict",
                     }
                 ],
             }

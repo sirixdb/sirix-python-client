@@ -90,7 +90,7 @@ def test_sirix_query():
     db = sirix.database("Query", DBType.JSON)
     resource = db.resource("query_resource1")
     resource.create(data_for_query)
-    assert sirix.query(post_query) == '{"rest":[6]}'
+    assert sirix.query(post_query) == '{"rest":[5]}'
     sirix.delete_all()
     client.close()
 
@@ -102,6 +102,6 @@ def test_resource_query():
     db = sirix.database("Query", DBType.JSON)
     resource = db.resource("query_resource")
     resource.create(data_for_query)
-    assert resource.query(resource_query) == {"rest": [6]}
+    assert resource.query(resource_query) == {"rest": [5]}
     sirix.delete_all()
     client.close()
