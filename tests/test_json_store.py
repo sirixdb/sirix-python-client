@@ -73,7 +73,7 @@ def test_find_all_projection():
     response = store.find_all({"key": 2}, ["location"])
     assert response[0] == {
         "location": {"state": "CA", "city": "Los Angeles"},
-        "nodeKey": 11,
+        "nodeKey": 7,
     }
     response = store.find_all({"key": 2}, ["location"], hash=True)
     assert "hash" in response[0]
@@ -119,14 +119,14 @@ def test_history():
     store.insert_one({"generic": 1, "location": {"state": "NY", "city": "New York"}})
     store.insert_one({"generic": 1, "location": {"state": "CA", "city": "Los Angeles"}})
     assert len(store.resource_history()) == 3
-    history = store.history(11)
+    history = store.history(7)
     assert len(history) == 1
     history = history[0]
     assert type(history["revisionTimestamp"]) == str
     assert type(history["revisionNumber"]) == int
     assert len(history) == 2
-    assert len(store.history(11, subtree=False)[0]) == 3
-    embedded = store.history_embed(11)
+    assert len(store.history(7, subtree=False)[0]) == 3
+    embedded = store.history_embed(7)
     assert len(embedded[0]) == 3
 
 

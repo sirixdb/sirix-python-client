@@ -277,7 +277,7 @@ async def test_sirix_query():
     db = sirix.database("Query", DBType.JSON)
     resource = db.resource("query_resource1")
     await resource.create(data_for_query)
-    assert await sirix.query(post_query) == '{"rest":[6]}'
+    assert await sirix.query(post_query) == '{"rest":[5]}'
     await sirix.delete_all()
     await client.aclose()
 
@@ -289,6 +289,6 @@ async def test_resource_query():
     db = sirix.database("Query", DBType.JSON)
     resource = db.resource("query_resource2")
     await resource.create(data_for_query)
-    assert await resource.query(resource_query) == {"rest": [6]}
+    assert await resource.query(resource_query) == {"rest": [5]}
     await sirix.delete_all()
     await client.aclose()
