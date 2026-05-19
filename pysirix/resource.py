@@ -42,7 +42,15 @@ class Resource:
         self._client = client
         self._auth = auth
 
-    def create(self, data: Union[str, Dict, ET.Element], hash_type: str = "ROLLING", use_dewey_ids: bool = False, hash_kind: str = None):
+    def create(
+        self,
+        data: Union[str, Dict, ET.Element],
+        hash_type: str = "ROLLING",
+        use_dewey_ids: bool = False,
+        hash_kind: str = None,
+        commit_message: str = None,
+        commit_timestamp: str = None,
+    ):
         """
         :param data: the data with which to initialize the resource.
                 May be an instance of ``dict``, or an instance of
@@ -50,6 +58,8 @@ class Resource:
                 or a ``str`` of properly formed json or xml.
         :param use_dewey_ids: whether to use DeweyIDs for node identification.
         :param hash_kind: the hash kind parameter (if needed for newer SirixDB versions).
+        :param commit_message: optional commit message for this revision.
+        :param commit_timestamp: optional commit timestamp for this revision.
         """
         data = (
             data
@@ -66,6 +76,8 @@ class Resource:
             hash_type,
             use_dewey_ids,
             hash_kind,
+            commit_message,
+            commit_timestamp,
         )
 
     def exists(self):
@@ -85,6 +97,10 @@ class Resource:
         max_level: Union[int, None] = None,
         top_level_limit: Optional[int] = None,
         top_level_skip_last_node: Optional[int] = None,
+        number_of_nodes: Optional[int] = None,
+        max_children: Optional[int] = None,
+        pretty_print: Optional[bool] = None,
+        start_node_key: Optional[int] = None,
     ) -> Union[Union[dict, ET.Element], Awaitable[Union[dict, ET.Element]]]:
         """
         Read the node (and its sub-nodes) corresponding to ``node_id``.
@@ -95,11 +111,16 @@ class Resource:
         :param max_level: the maximum depth for reading sub-nodes, defaults to latest.
         :param top_level_limit: the maximum number of top level nodes to return (used for paging).
         :param top_level_skip_last_node: the last nodeId to skip (used for paging).
+        :param number_of_nodes: limit the number of nodes returned.
+        :param max_children: limit the number of children per node.
+        :param pretty_print: whether to pretty-print the output.
+        :param start_node_key: the start node key for reading.
         :return: either a ``dict`` or an instance of ``xml.etree.ElementTree.Element``,
                         depending on the database type of this resource.
         """
         params = self._build_read_params(
-            node_id, revision, max_level, top_level_limit, top_level_skip_last_node
+            node_id, revision, max_level, top_level_limit, top_level_skip_last_node,
+            number_of_nodes, max_children, pretty_print, start_node_key,
         )
         return self._client.read_resource(
             self.db_name, self.db_type, self.resource_name, params
@@ -113,6 +134,10 @@ class Resource:
         max_level: Optional[int] = None,
         top_level_limit: Optional[int] = None,
         top_level_skip_last_node: Optional[int] = None,
+        number_of_nodes: Optional[int] = None,
+        max_children: Optional[int] = None,
+        pretty_print: Optional[bool] = None,
+        start_node_key: Optional[int] = None,
     ):
         """
         Read the node (and its sub-nodes) corresponding to ``node_id``, with metadata for each node.
@@ -124,10 +149,15 @@ class Resource:
         :param max_level: the maximum depth for reading sub-nodes, defaults to latest.
         :param top_level_limit: the maximum number of top level nodes to return (used for paging).
         :param top_level_skip_last_node: the last nodeId to skip (used for paging).
+        :param number_of_nodes: limit the number of nodes returned.
+        :param max_children: limit the number of children per node.
+        :param pretty_print: whether to pretty-print the output.
+        :param start_node_key: the start node key for reading.
         :return:
         """
         params = self._build_read_params(
-            node_id, revision, max_level, top_level_limit, top_level_skip_last_node
+            node_id, revision, max_level, top_level_limit, top_level_skip_last_node,
+            number_of_nodes, max_children, pretty_print, start_node_key,
         )
         params["withMetadata"] = meta_type.value
         return self._client.read_resource(
@@ -141,6 +171,10 @@ class Resource:
         max_level: Union[int, None] = None,
         top_level_limit: Optional[int] = None,
         top_level_skip_last_node: Optional[int] = None,
+        number_of_nodes: Optional[int] = None,
+        max_children: Optional[int] = None,
+        pretty_print: Optional[bool] = None,
+        start_node_key: Optional[int] = None,
     ) -> Dict[str, Union[str, int]]:
         """
         Helper method to build a parameters ``dict`` for reading a resource.
@@ -153,7 +187,15 @@ class Resource:
         if top_level_limit:
             params["nextTopLevelNodes"] = top_level_limit
         if top_level_skip_last_node:
-            params["lastTopLevelNodeKey"] = top_level_skip_last_node
+            params["startNodeKey"] = top_level_skip_last_node
+        if number_of_nodes is not None:
+            params["numberOfNodes"] = number_of_nodes
+        if max_children is not None:
+            params["maxChildren"] = max_children
+        if pretty_print is not None:
+            params["prettyPrint"] = "true" if pretty_print else "false"
+        if start_node_key is not None:
+            params["startNodeKey"] = start_node_key
         if revision:
             if type(revision) == int:
                 params["revision"] = revision
@@ -168,13 +210,35 @@ class Resource:
                     params["end-revision"] = revision[1]
         return params
 
-    def history(self) -> List[Commit]:
+    def history(
+        self,
+        revisions: int = None,
+        start_revision: int = None,
+        end_revision: int = None,
+    ) -> List[Commit]:
         """
         Get a ``list`` of all commits/revision of this resource.
 
+        :param revisions: limit the number of revisions returned.
+        :param start_revision: the start revision number for a range query.
+        :param end_revision: the end revision number for a range query.
         :return: a ``list`` of ``dict`` of the form :py:class:`pysirix.Commit`.
         """
-        return self._client.history(self.db_name, self.db_type, self.resource_name)
+        return self._client.history(
+            self.db_name, self.db_type, self.resource_name,
+            revisions, start_revision, end_revision,
+        )
+
+    def path_summary(self, revision: int = None):
+        """
+        Get the path summary of this resource.
+
+        :param revision: the revision number to get the path summary for.
+        :return: a ``dict`` with path summary data.
+        """
+        return self._client.path_summary(
+            self.db_name, self.db_type, self.resource_name, revision
+        )
 
     def diff(
         self,
@@ -226,6 +290,8 @@ class Resource:
         data: Union[str, ET.Element, Dict],
         insert: Insert = Insert.CHILD,
         etag: str = None,
+        commit_message: str = None,
+        commit_timestamp: str = None,
     ) -> Union[str, Awaitable[str]]:
         """
         Update a resource.
@@ -235,6 +301,8 @@ class Resource:
                 ``xml.etree.ElementTree.Element``
         :param insert: the position of the update in relation to the node referenced by node_id.
         :param etag: the ETag of the node referenced by node_id.
+        :param commit_message: optional commit message for this revision.
+        :param commit_timestamp: optional commit timestamp for this revision.
         """
         data = (
             data
@@ -244,7 +312,8 @@ class Resource:
             else ET.tostring(data)
         )
         return self._client.update(
-            self.db_name, self.db_type, self.resource_name, node_id, data, insert, etag
+            self.db_name, self.db_type, self.resource_name, node_id, data, insert, etag,
+            commit_message, commit_timestamp,
         )
 
     def query(
@@ -252,6 +321,10 @@ class Resource:
         query: str,
         start_result_seq_index: int = None,
         end_result_seq_index: int = None,
+        commit_message: str = None,
+        commit_timestamp: str = None,
+        plan: bool = None,
+        plan_stage: str = None,
     ):
         """
         Execute a custom query on this resource.
@@ -260,6 +333,10 @@ class Resource:
         :param query: the query ``str`` to execute.
         :param start_result_seq_index: the first index of the results from which to return, defaults to first.
         :param end_result_seq_index: the last index of the results to return, defaults to last.
+        :param commit_message: optional commit message for modifying queries.
+        :param commit_timestamp: optional commit timestamp for modifying queries.
+        :param plan: whether to return a query plan instead of executing.
+        :param plan_stage: the plan stage to return.
         :return: the query result.
         """
         params = {
@@ -267,6 +344,14 @@ class Resource:
             "startResultSeqIndex": start_result_seq_index,
             "endResultSeqIndex": end_result_seq_index,
         }
+        if commit_message is not None:
+            params["commitMessage"] = commit_message
+        if commit_timestamp is not None:
+            params["commitTimestamp"] = commit_timestamp
+        if plan is not None:
+            params["plan"] = "true" if plan else "false"
+        if plan_stage is not None:
+            params["planStage"] = plan_stage
         params = {k: v for k, v in params.items() if v}
         return self._client.read_resource(
             self.db_name, self.db_type, self.resource_name, params

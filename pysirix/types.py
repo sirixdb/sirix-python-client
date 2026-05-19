@@ -111,6 +111,17 @@ try:
         deweyID: str
         depth: int
 
+    class PathSummaryNode(TypedDict, total=False):
+        """
+        This type is available only in python 3.8+.
+        Otherwise, defaults to ``dict``.
+        """
+
+        path: str
+        references: int
+        level: int
+        nodeKey: int
+
     class Metadata(TypedDict):
         """
         ``descendantCount`` and ``childCount`` are provided only where ``type`` is :py:class:`pysirix.info.NodeType`
@@ -168,6 +179,7 @@ except ImportError:
     DeleteDiff = Dict
     Metadata = Dict
     MetaNode = Dict
+    PathSummaryNode = Dict
 
 import sys
 

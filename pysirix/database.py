@@ -6,6 +6,7 @@ from pysirix.json_store import JsonStoreSync, JsonStoreAsync
 from pysirix.sync_client import SyncClient
 from pysirix.async_client import AsyncClient
 from pysirix.resource import Resource
+from pysirix.types import BytesLike
 
 
 class Database:
@@ -81,6 +82,28 @@ class Database:
             return JsonStoreAsync(self.database_name, name, self._client, self._auth, root)
         else:
             return JsonStoreSync(self.database_name, name, self._client, self._auth, root)
+
+    def create_resources(
+        self,
+        resources: Dict[str, Union[str, BytesLike]],
+        hash_type: str = "ROLLING",
+        use_dewey_ids: bool = False,
+    ):
+        """
+        Create multiple resources in this database via multipart upload.
+
+        :param resources: a dict mapping resource names to their data content.
+        :param hash_type: the hash type to use.
+        :param use_dewey_ids: whether to use DeweyIDs for node identification.
+        :return: a ``str`` response.
+        """
+        return self._client.create_resources(
+            self.database_name,
+            self.database_type,
+            resources,
+            hash_type,
+            use_dewey_ids,
+        )
 
     def delete(self) -> Union[Awaitable[None], None]:
         """

@@ -16,6 +16,7 @@ from pysirix.types import (
     DeleteDiff,
     Metadata,
     MetaNode,
+    PathSummaryNode,
 )
 
 
@@ -66,4 +67,5 @@ __all__ = [
     "Metadata",
     "MetaNode",
     "TimeAxisShift",
+    "PathSummaryNode",
 ]

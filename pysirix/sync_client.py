@@ -115,6 +115,8 @@ class SyncClient:
         hash_type: str = "ROLLING",
         use_dewey_ids: bool = False,
         hash_kind: str = None,
+        commit_message: str = None,
+        commit_timestamp: str = None,
     ) -> str:
         """
         Call the ``/{database}/{resource}`` endpoint with a PUT request.
@@ -125,6 +127,8 @@ class SyncClient:
         :param data: the data to initialize the database with.
         :param use_dewey_ids: whether to use DeweyIDs for node identification.
         :param hash_kind: the hash kind parameter (if needed for newer SirixDB versions).
+        :param commit_message: optional commit message for this revision.
+        :param commit_timestamp: optional commit timestamp for this revision.
         :return: a ``str`` of ``data``.
         :raises: :py:class:`pysirix.SirixServerError`.
         """
@@ -133,11 +137,51 @@ class SyncClient:
             params["useDeweyIDs"] = "true"
         if hash_kind is not None:
             params["hashKind"] = hash_kind
+        if commit_message is not None:
+            params["commitMessage"] = commit_message
+        if commit_timestamp is not None:
+            params["commitTimestamp"] = commit_timestamp
         resp = self.client.put(
             f"{db_name}/{name}",
             headers={"Content-Type": db_type.value},
             params=params,
             content=data,
+        )
+        with include_response_text_in_errors():
+            resp.raise_for_status()
+        return resp.text
+
+    def create_resources(
+        self,
+        db_name: str,
+        db_type: DBType,
+        resources: Dict[str, BytesLike],
+        hash_type: str = "ROLLING",
+        use_dewey_ids: bool = False,
+    ) -> str:
+        """
+        Call the ``/{database}`` endpoint with a POST request using multipart upload.
+
+        :param db_name: the name of the database.
+        :param db_type: the type of the database.
+        :param resources: a dict mapping resource names to their data content.
+        :param hash_type: the hash type to use.
+        :param use_dewey_ids: whether to use DeweyIDs for node identification.
+        :return: a ``str`` response.
+        :raises: :py:class:`pysirix.SirixServerError`.
+        """
+        content_type = db_type.value
+        files = [
+            ("resource", (name, data, content_type))
+            for name, data in resources.items()
+        ]
+        params = {"hashType": hash_type}
+        if use_dewey_ids:
+            params["useDeweyIDs"] = "true"
+        resp = self.client.post(
+            db_name,
+            files=files,
+            params=params,
         )
         with include_response_text_in_errors():
             resp.raise_for_status()
@@ -170,22 +214,69 @@ class SyncClient:
         else:
             return ET.fromstring(resp.text)
 
-    def history(self, db_name: str, db_type: DBType, name: str) -> List[Commit]:
+    def history(
+        self,
+        db_name: str,
+        db_type: DBType,
+        name: str,
+        revisions: int = None,
+        start_revision: int = None,
+        end_revision: int = None,
+    ) -> List[Commit]:
         """
         Call the ``/{database}/{resource}/history`` endpoint with a GET request.
 
         :param db_name: the name of the database.
         :param db_type: the type of the database.
         :param name: the name of the resource.
+        :param revisions: limit the number of revisions returned.
+        :param start_revision: the start revision number for a range query.
+        :param end_revision: the end revision number for a range query.
         :return: a ``list`` of ``dict`` containing the history of the resource.
         :raises: :py:class:`pysirix.SirixServerError`.
         """
+        params = {}
+        if revisions is not None:
+            params["revisions"] = revisions
+        if start_revision is not None:
+            params["startRevision"] = start_revision
+        if end_revision is not None:
+            params["endRevision"] = end_revision
         resp = self.client.get(
-            f"{db_name}/{name}/history", headers={"Accept": db_type.value}
+            f"{db_name}/{name}/history", params=params, headers={"Accept": db_type.value}
         )
         with include_response_text_in_errors():
             resp.raise_for_status()
         return resp.json()["history"]
+
+    def path_summary(
+        self,
+        db_name: str,
+        db_type: DBType,
+        name: str,
+        revision: int = None,
+    ) -> Dict:
+        """
+        Call the ``/{database}/{resource}/pathSummary`` endpoint with a GET request.
+
+        :param db_name: the name of the database.
+        :param db_type: the type of the database.
+        :param name: the name of the resource.
+        :param revision: the revision number to get the path summary for.
+        :return: a ``dict`` with path summary data.
+        :raises: :py:class:`pysirix.SirixServerError`.
+        """
+        params = {}
+        if revision is not None:
+            params["revision"] = revision
+        resp = self.client.get(
+            f"{db_name}/{name}/pathSummary",
+            params=params,
+            headers={"Accept": db_type.value},
+        )
+        with include_response_text_in_errors():
+            resp.raise_for_status()
+        return resp.json()
 
     def diff(
         self, db_name: str, name: str, params: Dict[str, str]
@@ -249,6 +340,8 @@ class SyncClient:
         data: BytesLike,
         insert: Insert,
         etag: Union[str, None],
+        commit_message: str = None,
+        commit_timestamp: str = None,
     ) -> str:
         """
         Call the ``/{database}/{resource}`` endpoint with a POST request.
@@ -260,14 +353,21 @@ class SyncClient:
         :param data: the data used in the update operation.
         :param insert: the position of the update in relation to the node referenced by node_id.
         :param etag: the ETag of the node referenced by node_id.
+        :param commit_message: optional commit message for this revision.
+        :param commit_timestamp: optional commit timestamp for this revision.
         :return: the resource as a ``str``.
         :raises: :py:class:`pysirix.SirixServerError`.
         """
         if not etag:
             etag = self.get_etag(db_name, db_type, name, {"nodeId": node_id})
+        params = {"nodeId": node_id, "insert": insert.value}
+        if commit_message is not None:
+            params["commitMessage"] = commit_message
+        if commit_timestamp is not None:
+            params["commitTimestamp"] = commit_timestamp
         resp = self.client.post(
             f"{db_name}/{name}",
-            params={"nodeId": node_id, "insert": insert.value},
+            params=params,
             headers={"ETag": etag, "Content-Type": db_type.value},
             content=data,
         )
