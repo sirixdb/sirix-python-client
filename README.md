@@ -38,6 +38,13 @@ resource.create(
 resource.update(4, {"new": "stuff"}, insert=Insert.RIGHT)
 ```
 
+Node hashes are **off by default**: `resource.create(...)` sends `hashType=NONE`. Enable them explicitly with
+`resource.create(data, hash_type="ROLLING")` (or `"POSTORDER"`). Be aware that while hashes are enabled a deleted
+value can still be confirmed from the hashes of its ancestors. With `NONE`, JSON containers have no stored subtree
+hash aggregates (`sdb:hash` returns zero for them), so hash-based diff shortcuts require explicit opt-in.
+Primitive leaves still derive hashes from their own content, so `history` and `history_embed` can detect their
+value changes even with `NONE`; detecting changes within a container through these methods requires stored hashes.
+
 Or with Async Support:
 ```python
 from pysirix import sirix_async, DBType, Insert
