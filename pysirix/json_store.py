@@ -149,10 +149,11 @@ class JsonStoreBase(ABC):
         """
         Returns the revisions of a node, each embedding the node's value in that revision.
 
-        Revisions are selected by comparing node hashes (``sdb:hash``). Node hashes are off by default, so
-        on a resource created without ``hash_type="ROLLING"`` (or ``"POSTORDER"``) only the first revision
-        is returned. Create the resource with hashes enabled (:py:meth:`Resource.create`) to get every
-        changed revision.
+        Revisions are selected by comparing node hashes (``sdb:hash``). Stored subtree hashes are off by
+        default (``hashType=NONE``), so a container's hash is zero and only its first revision is returned.
+        Primitive leaves still derive hashes from their own content, so their value changes can be detected
+        even with ``NONE``. To detect changes within a container, create the resource with
+        ``hash_type="ROLLING"`` or ``"POSTORDER"`` (:py:meth:`Resource.create`).
         """
         query = (
             f"let $node := sdb:select-item($$, {node_key}) let $result := for $rev in jn:all-times($node)"
@@ -171,10 +172,12 @@ class JsonStoreBase(ABC):
         """
         This method returns the history of a node in the resource.
 
-        With ``subtree=True`` the changed revisions are found by comparing node hashes (``sdb:hash``). Node hashes
-        are off by default, so on a resource created without ``hash_type="ROLLING"`` (or ``"POSTORDER"``)
-        only the first revision is returned. Create the resource with hashes enabled
-        (:py:meth:`Resource.create`) to get every changed revision.
+        With ``subtree=True`` the changed revisions are found by comparing node hashes (``sdb:hash``).
+        Stored subtree hashes are off by default (``hashType=NONE``), so a container's hash is zero and only
+        its first revision is returned. Primitive leaves still derive hashes from their own content, so
+        their value changes can be detected even with ``NONE``. To detect changes within a container,
+        create the resource with ``hash_type="ROLLING"`` or ``"POSTORDER"`` (:py:meth:`Resource.create`).
+        With ``subtree=False``, history uses the node's revision history rather than hash comparisons.
 
         :param node_key: the root of the subtree whose history should be returned. Defaults to document root.
         :param subtree: whether to account for changes in the subtree of the given node. Defaults to ``True``.

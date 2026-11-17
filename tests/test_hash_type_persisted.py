@@ -135,8 +135,8 @@ async def test_async_json_store_create_persists_no_hashes():
 
 
 def test_subtree_history_needs_explicit_hashes():
-    """``history(subtree=True)`` compares ``sdb:hash`` across revisions, so it only sees every change when
-    the resource opted in to hashes; with the default (off) only the first revision is reported."""
+    """For the root object container, ``history(subtree=True)`` needs stored subtree hashes to detect
+    descendant changes; with the default (off), its zero hash yields only the first revision."""
     client, sirix = sync_session()
     db_name = unique_db_name()
     try:
