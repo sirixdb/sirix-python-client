@@ -113,6 +113,8 @@ try:
 
     class Metadata(TypedDict):
         """
+        ``hash`` and ``descendantCount`` are omitted when stored node hashes are disabled
+        (the default for new resources; see :py:meth:`pysirix.resource.Resource.create`).
         ``descendantCount`` and ``childCount`` are provided only where ``type`` is :py:class:`pysirix.info.NodeType`
         OBJECT or ARRAY.
         """

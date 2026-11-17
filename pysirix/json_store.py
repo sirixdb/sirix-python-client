@@ -127,7 +127,7 @@ class JsonStoreBase(ABC):
         Creates the store, will overwrite the store if it already exists.
 
         :param data: data with which to initialize the store. The store is created with node hashes
-                off (``hashType=NONE``); use :py:meth:`Resource.create` to enable ``"ROLLING"`` or ``"POSTORDER"`` hashes.
+                off (``hashType=NONE``); use :py:meth:`pysirix.resource.Resource.create` to configure hashes.
         :return: will return the string "[]". If in async mode, an awaitable that resolves this string.
         """
         return self._client.create_resource(
@@ -149,11 +149,8 @@ class JsonStoreBase(ABC):
         """
         Returns the revisions of a node, each embedding the node's value in that revision.
 
-        Revisions are selected by comparing node hashes (``sdb:hash``). Stored subtree hashes are off by
-        default (``hashType=NONE``), so a container's hash is zero and only its first revision is returned.
-        Primitive leaves still derive hashes from their own content, so their value changes can be detected
-        even with ``NONE``. To detect changes within a container, create the resource with
-        ``hash_type="ROLLING"`` or ``"POSTORDER"`` (:py:meth:`Resource.create`).
+        Uses the same hash comparisons and container-versus-leaf limitations as
+        :py:meth:`history` with ``subtree=True``.
         """
         query = (
             f"let $node := sdb:select-item($$, {node_key}) let $result := for $rev in jn:all-times($node)"
@@ -176,7 +173,8 @@ class JsonStoreBase(ABC):
         Stored subtree hashes are off by default (``hashType=NONE``), so a container's hash is zero and only
         its first revision is returned. Primitive leaves still derive hashes from their own content, so
         their value changes can be detected even with ``NONE``. To detect changes within a container,
-        create the resource with ``hash_type="ROLLING"`` or ``"POSTORDER"`` (:py:meth:`Resource.create`).
+        create the resource with ``hash_type="ROLLING"`` or ``"POSTORDER"``
+        (:py:meth:`pysirix.resource.Resource.create`).
         With ``subtree=False``, history uses the node's revision history rather than hash comparisons.
 
         :param node_key: the root of the subtree whose history should be returned. Defaults to document root.
@@ -285,7 +283,8 @@ class JsonStoreBase(ABC):
         :param projection: a ``list`` of field names to return for the matching records.
         :param node_key: a ``bool`` determining whether or not to return a ``nodeKey`` field containing
                         the nodeKey of the record.
-        :param hash: a ``bool`` determining whether or not to return a ``hash`` field containing the hash of the record.
+        :param hash: a ``bool`` determining whether or not to return a ``hash`` field containing
+                ``sdb:hash`` of the record. The hash limitations described in :py:meth:`history` apply.
         :param revision: the revision to search, defaults to latest. May be an integer or a ``datetime`` instance
         :param time_axis_shift: specify fetching the most or least recent existing revision of the record
         :param start_result_index: index of first result to return.
