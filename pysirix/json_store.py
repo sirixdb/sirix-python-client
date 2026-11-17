@@ -126,7 +126,8 @@ class JsonStoreBase(ABC):
         """
         Creates the store, will overwrite the store if it already exists.
 
-        :param data: data with which to initialize the store
+        :param data: data with which to initialize the store. The store is created with node hashes
+                off (``hashType=NONE``); use :py:meth:`Resource.create` to enable ``"ROLLING"`` or ``"POSTORDER"`` hashes.
         :return: will return the string "[]". If in async mode, an awaitable that resolves this string.
         """
         return self._client.create_resource(
@@ -145,6 +146,14 @@ class JsonStoreBase(ABC):
         return self._client.history(self.db_name, self.db_type, self.name)
 
     def history_embed(self, node_key: int, revision: Optional[Revision] = None):
+        """
+        Returns the revisions of a node, each embedding the node's value in that revision.
+
+        Revisions are selected by comparing node hashes (``sdb:hash``). Node hashes are off by default, so
+        on a resource created without ``hash_type="ROLLING"`` (or ``"POSTORDER"``) only the first revision
+        is returned. Create the resource with hashes enabled (:py:meth:`Resource.create`) to get every
+        changed revision.
+        """
         query = (
             f"let $node := sdb:select-item($$, {node_key}) let $result := for $rev in jn:all-times($node)"
             f" return if (not(exists(jn:previous($rev)))) then $rev"
@@ -162,11 +171,17 @@ class JsonStoreBase(ABC):
         """
         This method returns the history of a node in the resource.
 
+        With ``subtree=True`` the changed revisions are found by comparing node hashes (``sdb:hash``). Node hashes
+        are off by default, so on a resource created without ``hash_type="ROLLING"`` (or ``"POSTORDER"``)
+        only the first revision is returned. Create the resource with hashes enabled
+        (:py:meth:`Resource.create`) to get every changed revision.
+
         :param node_key: the root of the subtree whose history should be returned. Defaults to document root.
         :param subtree: whether to account for changes in the subtree of the given node. Defaults to ``True``.
         :param revision: the revision in which the node with the given ``node_key`` exists
                 (if it does not exist currently). Defaults to the latest revision. May be an integer or a
                 ``datetime`` instance
+
         :return: If ``subtree`` is ``True``, a list of :py:class:`pysirix.types.SubtreeRevision`. Else, a list of
                 :py:class:`pysirix.types.RevisionType`.
         """

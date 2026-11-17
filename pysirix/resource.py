@@ -42,12 +42,18 @@ class Resource:
         self._client = client
         self._auth = auth
 
-    def create(self, data: Union[str, Dict, ET.Element], hash_type: str = "ROLLING", use_dewey_ids: bool = False, hash_kind: str = None):
+    def create(self, data: Union[str, Dict, ET.Element], hash_type: str = "NONE", use_dewey_ids: bool = False, hash_kind: str = None):
         """
         :param data: the data with which to initialize the resource.
                 May be an instance of ``dict``, or an instance of
                 ``xml.etree.ElementTree.Element`` (depending on the database type),
                 or a ``str`` of properly formed json or xml.
+        :param hash_type: the node hash type of the new resource: ``"NONE"`` (the default),
+                ``"ROLLING"`` or ``"POSTORDER"``. Node hashes are off by default.
+                Hashes are an explicit choice: while they are enabled, a deleted value can still
+                be confirmed from the hashes of its ancestors, and a resource that stores hashes
+                cannot later be erased without residue. Leaving them off also removes the hash work
+                on every commit.
         :param use_dewey_ids: whether to use DeweyIDs for node identification.
         :param hash_kind: the hash kind parameter (if needed for newer SirixDB versions).
         """
@@ -204,6 +210,10 @@ class Resource:
     def get_etag(self, node_id: int) -> Union[str, Awaitable[str]]:
         """
         Get the ETag of a given node.
+
+        The ETag is the node's hash, so it is only meaningful for resources created with node
+        hashes enabled (``hash_type="ROLLING"`` or ``"POSTORDER"``). Node hashes are off by default;
+        for such a resource the server returns an empty ETag.
 
         :param node_id: the nodeKey corresponding to which the ETag should be returned.
         :return: a ``str`` ETag.

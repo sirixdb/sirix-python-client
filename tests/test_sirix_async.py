@@ -126,9 +126,9 @@ async def test_get_etag():
     sirix = await pysirix.sirix_async("admin", "admin", client)
     db = sirix.database("First", DBType.JSON)
     resource = db.resource("test_resource15")
-    await resource.create([])
+    await resource.create([], hash_type="ROLLING")
     etag = await resource.get_etag(1)
-    assert type(etag) == str
+    assert type(etag) == str and etag != ""  # hashes are opt-in; etags are node hashes
     await sirix.delete_all()
     await client.aclose()
 
@@ -138,7 +138,7 @@ async def test_get_etag_nonexistent():
     sirix = await pysirix.sirix_async("admin", "admin", client)
     db = sirix.database("First", DBType.JSON)
     resource = db.resource("test_resource17")
-    await resource.create([])
+    await resource.create([], hash_type="ROLLING")
     with pytest.raises(SirixServerError):
         await resource.get_etag(2)
     await sirix.delete_all()
@@ -163,7 +163,7 @@ async def test_delete_by_etag():
     sirix = await pysirix.sirix_async("admin", "admin", client)
     db = sirix.database("First", DBType.JSON)
     resource = db.resource("test_resource21")
-    await resource.create({})
+    await resource.create({}, hash_type="ROLLING")
     etag = await resource.get_etag(1)
     await resource.delete(1, etag)
     with pytest.raises(SirixServerError):
@@ -177,7 +177,7 @@ async def test_update_by_etag():
     sirix = await pysirix.sirix_async("admin", "admin", client)
     db = sirix.database("First", DBType.JSON)
     resource = db.resource("test_resource23")
-    await resource.create([])
+    await resource.create([], hash_type="ROLLING")
     etag = await resource.get_etag(1)
     await resource.update(1, {}, etag=etag)
     assert await resource.read(None) == [{}]

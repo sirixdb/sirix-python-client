@@ -44,13 +44,13 @@ def test_read_resource():
 
 
 def test_get_etag():
-    resource.create([])
+    resource.create([], hash_type="ROLLING")
     etag = resource.get_etag(1)
-    assert type(etag) == str
+    assert type(etag) == str and etag != ""  # hashes are opt-in; etags are node hashes
 
 
 def test_get_etag_nonexistent():
-    resource.create([])
+    resource.create([], hash_type="ROLLING")
     with pytest.raises(SirixServerError):
         resource.get_etag(2)
 
@@ -63,7 +63,7 @@ def test_delete_by_node_id():
 
 
 def test_delete_by_etag():
-    resource.create([])
+    resource.create([], hash_type="ROLLING")
     etag = resource.get_etag(1)
     resource.delete(1, etag)
     with pytest.raises(SirixServerError):
@@ -71,7 +71,7 @@ def test_delete_by_etag():
 
 
 def test_update_by_etag():
-    resource.create([])
+    resource.create([], hash_type="ROLLING")
     etag = resource.get_etag(1)
     resource.update(1, {}, etag=etag)
     assert resource.read(None) == [{}]

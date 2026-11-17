@@ -112,7 +112,7 @@ class SyncClient:
         db_type: DBType,
         name: str,
         data: BytesLike,
-        hash_type: str = "ROLLING",
+        hash_type: str = "NONE",
         use_dewey_ids: bool = False,
         hash_kind: str = None,
     ) -> str:
@@ -123,6 +123,10 @@ class SyncClient:
         :param db_type: the type of the database.
         :param name: the name of the resource.
         :param data: the data to initialize the database with.
+        :param hash_type: the node hash type, sent as the ``hashType`` query parameter:
+                ``"NONE"`` (the default), ``"ROLLING"`` or ``"POSTORDER"``. Node hashes are off by
+                default; enabling them lets a deleted value be confirmed from the hashes of its
+                ancestors.
         :param use_dewey_ids: whether to use DeweyIDs for node identification.
         :param hash_kind: the hash kind parameter (if needed for newer SirixDB versions).
         :return: a ``str`` of ``data``.

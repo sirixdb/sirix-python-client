@@ -71,10 +71,19 @@ class AsyncClient:
         db_type: DBType,
         name: str,
         data: BytesLikeAsync,
-        hash_type: str = "ROLLING",
+        hash_type: str = "NONE",
         use_dewey_ids: bool = False,
         hash_kind: str = None,
     ) -> str:
+        """
+        Call the ``/{database}/{resource}`` endpoint with a PUT request.
+
+        ``hash_type`` is sent as the ``hashType`` query parameter and defaults to ``"NONE"``:
+        node hashes are off unless ``"ROLLING"`` or ``"POSTORDER"`` is passed explicitly.
+        Enabling node hashes lets a deleted value be confirmed from the hashes of its ancestors.
+
+        :raises: :py:class:`pysirix.SirixServerError`.
+        """
         params = {"hashType": hash_type}
         if use_dewey_ids:
             params["useDeweyIDs"] = "true"

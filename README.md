@@ -38,6 +38,11 @@ resource.create(
 resource.update(4, {"new": "stuff"}, insert=Insert.RIGHT)
 ```
 
+Node hashes are **off by default**: `resource.create(...)` sends `hashType=NONE`. Enable them explicitly with
+`resource.create(data, hash_type="ROLLING")` (or `"POSTORDER"`). Be aware that while hashes are enabled a deleted
+value can still be confirmed from the hashes of its ancestors, and that `sdb:hash` and hash-based diff shortcuts
+only work on resources created with hashes.
+
 Or with Async Support:
 ```python
 from pysirix import sirix_async, DBType, Insert
