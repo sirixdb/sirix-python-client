@@ -207,16 +207,18 @@ class Resource:
             params["include-data"] = "true"
         return self._client.diff(self.db_name, self.resource_name, params)
 
-    def get_etag(self, node_id: int) -> Union[str, Awaitable[str]]:
+    def get_etag(
+        self, node_id: int
+    ) -> Union[Optional[str], Awaitable[Optional[str]]]:
         """
         Get the ETag of a given node.
 
         The ETag is the node's hash, so it is only meaningful for resources created with node
         hashes enabled (``hash_type="ROLLING"`` or ``"POSTORDER"``). Node hashes are off by default;
-        for such a resource the server returns an empty ETag.
+        for such a resource the server returns no ETag (or an empty one).
 
         :param node_id: the nodeKey corresponding to which the ETag should be returned.
-        :return: a ``str`` ETag.
+        :return: the ``str`` ETag, or ``None`` if the server sent no (or an empty) ETag.
         """
         params = {"nodeId": node_id}
         """
