@@ -1,7 +1,7 @@
 from httpx import AsyncClient as Client
 
 import xml.etree.ElementTree as ET
-from typing import Dict, Union, List
+from typing import Dict, Union, List, Optional
 
 from pysirix.constants import DBType, Insert
 from pysirix.errors import include_response_text_in_errors
@@ -144,13 +144,13 @@ class AsyncClient:
         db_type: DBType,
         name: str,
         params: Dict[str, Union[str, int]],
-    ) -> str:
+    ) -> Optional[str]:
         resp = await self.client.head(
             f"{db_name}/{name}", params=params, headers={"Accept": db_type.value}
         )
         with include_response_text_in_errors():
             resp.raise_for_status()
-        return resp.headers["etag"]
+        return resp.headers.get("etag") or None
 
     async def update(
         self,
@@ -164,10 +164,13 @@ class AsyncClient:
     ) -> str:
         if not etag:
             etag = await self.get_etag(db_name, db_type, name, {"nodeId": node_id})
+        headers = {"Content-Type": db_type.value}
+        if etag:
+            headers["ETag"] = etag
         resp = await self.client.post(
             f"{db_name}/{name}",
             params={"nodeId": node_id, "insert": insert.value},
-            headers={"ETag": etag, "Content-Type": db_type.value},
+            headers=headers,
             content=data,
         )
         with include_response_text_in_errors():
