@@ -246,7 +246,10 @@ class Resource:
         :param data: the updated data, can be of type ``str``, ``dict``, or
                 ``xml.etree.ElementTree.Element``
         :param insert: the position of the update in relation to the node referenced by node_id.
-        :param etag: the ETag of the node referenced by node_id.
+        :param etag: the ETag of the node referenced by node_id. If omitted or empty,
+                fetch it using :py:meth:`get_etag`. Send the ``ETag`` request header
+                only when a non-empty ETag is supplied or fetched; otherwise update
+                without an ETag precondition.
         """
         data = (
             data
@@ -293,9 +296,9 @@ class Resource:
 
         :param node_id: an ``int`` corresponding to the node to delete.
                         Should be specified as none to delete the entire resource.
-        :param etag: the ``etag`` of the node to delete. This can be fetched using
-                        the py:method`get_etag` method. If ``etag`` is specified as
-                        ``None``, then the ``etag`` will be fetched and provided implicitly.
+        :param etag: the ETag of the node to delete. If ``None`` or empty and a node
+                is specified, fetch it using :py:meth:`get_etag`. Request header
+                handling follows the ETag policy described in :py:meth:`update`.
         """
         return self._client.resource_delete(
             self.db_name, self.db_type, self.resource_name, node_id, etag

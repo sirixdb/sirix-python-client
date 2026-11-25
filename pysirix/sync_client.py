@@ -234,7 +234,7 @@ class SyncClient:
         :param db_type: the type of the database.
         :param name: the name of the resource.
         :param params: the query parameters to call the endpoint with.
-        :return: the ETag of the node queried.
+        :return: the value described by :py:meth:`pysirix.resource.Resource.get_etag`.
         :raises: :py:class:`pysirix.SirixServerError`.
         """
         resp = self.client.head(
@@ -263,7 +263,7 @@ class SyncClient:
         :param node_id: the nodeKey of the node in relation to which the update is performed.
         :param data: the data used in the update operation.
         :param insert: the position of the update in relation to the node referenced by node_id.
-        :param etag: the ETag of the node referenced by node_id.
+        :param etag: see :py:meth:`pysirix.resource.Resource.update` for ETag handling.
         :return: the resource as a ``str``.
         :raises: :py:class:`pysirix.SirixServerError`.
         """
@@ -297,7 +297,7 @@ class SyncClient:
         :param db_type: the type of the database.
         :param name: the name of the resource.
         :param node_id: the nodeKey of the node to delete. ``None`` to delete the entire resource.
-        :param etag: the etag of the node to delete.
+        :param etag: see :py:meth:`pysirix.resource.Resource.delete` for ETag handling.
         :raises: :py:class:`pysirix.SirixServerError`.
         """
         if node_id and not etag:
