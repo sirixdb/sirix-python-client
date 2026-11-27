@@ -87,7 +87,7 @@ def read_parser():
         "--skip",
         type=int,
         default=None,
-        help="The last nodeId to skip (assuming you want to skip...). Defaults to None.",
+        help="The node key to start from, sent as startNodeKey (used for paging). Defaults to None.",
     )
     parser.add_argument(
         "-l",
