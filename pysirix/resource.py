@@ -100,7 +100,8 @@ class Resource:
         :param revision: the revision to read from, defaults to latest.
         :param max_level: the maximum depth for reading sub-nodes, defaults to latest.
         :param top_level_limit: the maximum number of top level nodes to return (used for paging).
-        :param top_level_skip_last_node: the node key to start from, sent as ``startNodeKey`` (used for paging).
+        :param top_level_skip_last_node: the node key to start from, sent as
+                ``startNodeKey`` (used for paging).
         :return: either a ``dict`` or an instance of ``xml.etree.ElementTree.Element``,
                         depending on the database type of this resource.
         """
@@ -129,7 +130,7 @@ class Resource:
         :param meta_type: the type of metadata to return, defaults to all.
         :param max_level: the maximum depth for reading sub-nodes, defaults to latest.
         :param top_level_limit: the maximum number of top level nodes to return (used for paging).
-        :param top_level_skip_last_node: the node key to start from, sent as ``startNodeKey`` (used for paging).
+        :param top_level_skip_last_node: the paging cursor; see :meth:`read` for its semantics.
         :return:
         """
         params = self._build_read_params(
